@@ -1,0 +1,13 @@
+{
+  "private": true,
+  "devDependencies": {
+    "minecraft-scripting-types-server": "latest",
+    "stoneserver-scripting-types": "latest",
+    "typescript": "latest",
+    "typescript-bundle": "latest"
+  },
+  "scripts": {
+    "build": "tsc-bundle tsconfig.json --entryPoint main",
+    "watch": "tsc-bundle tsconfig.json --watch --entryPoint main"
+  }
+}
