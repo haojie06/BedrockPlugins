@@ -15,4 +15,4 @@ plugins for stoneserver（Minecraft bedrock edition server）
 
 ---
 
-The Bedrock Dedicated Server（Alpha）software doesn't provide interfaces for developers, and the script engine only has limited APIs, stoneserver is a better choice which optimizes the performance and expands the interces of the official script engine. I use this repository for storing my codes and released plugins. 
+The Bedrock Dedicated Server（Alpha）software doesn't provide interfaces for developers, and the script engine only has limited APIs, **CodeHz's** [stoneserver](https://github.com/codehz/StoneServer) is a better choice which optimizes the performance and expands the interces of the official script engine. I use this repository for storing my codes and released plugins.  [**official demo**](https://github.com/stone-addons) *use typescript*
