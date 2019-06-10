@@ -4,7 +4,7 @@ plugins for stoneserver（Minecraft bedrock edition server）
 
 用这个仓库储存我这个初学者糟糕的代码） 目前已有插件
 
-1. easyEssentials 目前功能：
+1. easyEssentials v1.0 目前功能：
  - 返回死亡地点 /back
  - 自杀 /suicide
  - 传送点系列（使用了sqlite）
@@ -12,7 +12,9 @@ plugins for stoneserver（Minecraft bedrock edition server）
     - /warp 传送至传送点
     - /delwarp 删除传送点
     - /warps 显示所有传送点
-
+2. logSystem日志插件（超级简化版coi）v1.1 *1.12继续更新*
+- /logs ax ay az bx by bz 显示范围内所有的破坏/放置/开箱记录
+- /logs ax ay az bx by bz action   action有break/place/open分别对应上面的几个记录，查询区域内的指定类型记录
 ## 如何使用
 
 要使用插件请使用stoneserver，解压release中的压缩包到，把插件文件加移动到和启动脚本同名的游戏文件夹 比如 start/games/com.mojang/development_behavior_packs/ 里面，从插件文件夹的 manifest.json 复制出[header]下的两行
