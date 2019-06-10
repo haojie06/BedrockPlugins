@@ -155,7 +155,7 @@ this.registerCommand("logs", {
           //server.log("特定行为查找" + action);
           records = readRecord(sX,sY,sZ,eX,eY,eZ,dim,action);
         }
-        let say:string = `§a§l日志系统1.0 by haojie06 以下为查找到的记录：§f\n`;
+        let say:string = `§a§l日志系统1.1 by haojie06 以下为查找到的记录：§f\n`;
         for(let line of records){
           say = say + line + "\n";
         }

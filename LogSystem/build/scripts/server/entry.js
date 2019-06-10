@@ -95,7 +95,7 @@
                         line = `${length + 1}:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §a放置了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度${data.dim}`;
                         break;
                     case "open":
-                        line = `${length + 1}:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §9打开了§ ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度${data.dim}`;
+                        line = `${length + 1}:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §9打开了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度${data.dim}`;
                         break;
                     default:
                         break;
@@ -313,7 +313,7 @@
                                 //server.log("特定行为查找" + action);
                                 records = database_1.readRecord(sX, sY, sZ, eX, eY, eZ, dim, action);
                             }
-                            let say = `§a§l日志系统1.0 by haojie06 以下为查找到的记录：§f\n`;
+                            let say = `§a§l日志系统1.1 by haojie06 以下为查找到的记录：§f\n`;
                             for (let line of records) {
                                 say = say + line + "\n";
                             }
