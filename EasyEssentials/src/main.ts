@@ -43,7 +43,7 @@ system.initialize = function () {
                 if (info.dim !== 0) throw "Cannot cross-dimension teleport";
                 if (deathMap[info.name] == undefined) throw "未记录死亡点";
                 //打开确认ui
-                this.openModalForm(
+                this.ModalFormopen(
                     original.entity,
                     JSON.stringify({
                       type: "modal",
