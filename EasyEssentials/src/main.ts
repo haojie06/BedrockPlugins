@@ -28,7 +28,7 @@ system.initialize = function () {
                 //来源不是实体
                 if (!original.entity) throw "Player required";
                 const info = this.actorInfo(original.entity);
-                this.invokeConsoleCommand("kill","kill " + info.name);
+                this.invokeConsoleCommand("kill","kill " + '"' + '"' + info.name + '"' + '"');
             }
         }as CommandOverload<MySystem, []>]
     })
@@ -55,7 +55,7 @@ system.initialize = function () {
                   )
                   .then (sel =>{
                     if (JSON.parse(sel) === true) {
-                        this.invokeConsoleCommand("ess","tp " + info.name + " " + deathMap[info.name]);
+                        this.invokeConsoleCommand("ess","tp " + '"' + info.name + '"' + " " + deathMap[info.name]);
                         deathMap[info.name] = undefined;
                     }
                   })
@@ -177,8 +177,8 @@ this.registerCommand("delwarp",{
             )
             .then (sel =>{
                 if (JSON.parse(sel) === true) {   
-                    this.invokeConsoleCommand("warp",`tp ${info.name} ${position}`);
-                    this.invokeConsoleCommand("warp",`tell ${info.name} 已为你传送`);
+                    this.invokeConsoleCommand("warp",`tp "${info.name}" ${position}`);
+                    this.invokeConsoleCommand("warp",`tell "${info.name}" 已为你传送`);
                 }
             })
             .catch(server.log);
@@ -201,7 +201,7 @@ this.registerCommand("delwarp",{
             let show:string;
             for(var data of datas){
                 show += `${data.name}:(${data.position} by ${data.owner})`;
-            this.invokeConsoleCommand("warp",`tell ${info.name} ${show}`)
+            this.invokeConsoleCommand("warp",`tell "${info.name}" ${show}`)
             } 
             }
         }as CommandOverload<MySystem, []> ]
