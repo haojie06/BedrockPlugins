@@ -1,0 +1,18 @@
+{
+  "format_version": 1,
+  "header": {
+    "description": "LogSystem",
+    "name": "a plugin recording players' actions",
+    "uuid": "6c15c63c-9de2-4ea8-884d-e4abb511f452",
+    "version": [0, 0, 0],
+    "min_engine_version": [1, 9, 0]
+  },
+  "modules": [
+    {
+      "description": "data",
+      "type": "data",
+      "uuid": "a9014673-63ba-470c-be2e-e5fecc86e541",
+      "version": [0, 0, 0]
+    }
+  ]
+}
