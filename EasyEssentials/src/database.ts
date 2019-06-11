@@ -44,15 +44,15 @@ function fix(arr: TemplateStringsArray) {
   export const SELECT_HOME_BY_NAME = fix`SELECT * FROM homes WHERE owner=$owner AND homeName=$homeName;`;
 
   //添加home记录
-  export const INSERT_HOME = fix`
+  export const INSERT_HOME  = fix`
   INSERT INTO homes (
     homeName, position, owner
   ) values (
-    $name, $position, $owner
+    $homeName, $position, $owner
   );`;
 
   //删除一个home
-  export const DELETE_HOME_NAME = fix`DELETE FROM homes WHERE homeName=$homeName AND owner=$owner;`;
+  export const DELETE_HOME_BY_NAME = fix`DELETE FROM homes WHERE homeName=$homeName AND owner=$owner;`;
 
   export const db = new SQLite3("ess.db");
   db.exec(CREATE_TABLE);

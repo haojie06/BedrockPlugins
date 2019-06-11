@@ -1,11 +1,12 @@
 import { MySystem,system } from "./system";
-import { db, INSERT_WARP,SELECT_WARP_BY_NAME,SELECT_ALL_WARP,DELETE_WARP_BY_NAME } from "./database";
+import { db,DELETE_HOME_BY_NAME ,INSERT_HOME, INSERT_WARP,SELECT_WARP_BY_NAME,SELECT_ALL_WARP,DELETE_WARP_BY_NAME, SELECT_HOME_BY_OWNER,SELECT_HOME_BY_NAME } from "./database";
+
 //死亡坐标map
 var deathMap:{[key:string]:string} = {};
 
 // 初始化时调用
 const showWarp = (entity)=>{
-    server.log(`数据库记录： ${entity.name}--${entity.position}--${entity.owner}`);
+    //server.log(`数据库记录： ${entity.name}--${entity.position}--${entity.owner}`);
 }
 system.initialize = function () {
     server.log("EasyEssentials: plugin loaded");
@@ -21,7 +22,7 @@ system.initialize = function () {
                 //来源不是实体
                 if (!original.entity) throw "Player required";
                 const info = this.actorInfo(original.entity);
-                this.invokeConsoleCommand("kill",`kill ${info.name}`);
+                this.invokeConsoleCommand("kill",`kill "${info.name}"`);
             }
         }as CommandOverload<MySystem, []>]
     });
@@ -205,23 +206,144 @@ this.registerCommand("delwarp",{
     system.listenForEvent("minecraft:entity_death",onEntityDeath);
 
     //让玩家可以设置多个home
-
     this.registerCommand("sethome",{
-        description:"设置家",
+        description:"在当前坐标设置家",
         permission:0,
         overloads:[{
             parameters:[{
                 name:"home的名字",
                 type:"string"}],
-            handler(original,[homeName]){
+            handler(original,[$homeName]){
                 if  (!original.entity) throw "只有玩家玩家可以设置home";
                 const info = this.actorInfo(original.entity);
-                //判断是否可以写入数据库
+                if (info.dim != 0) throw "请勿在主世界之外设置家";
+                //判断是否可以写入数据库 
+                //先选出所有记录
+                let $owner = info.name;
+                var datas = Array.from(db.query(SELECT_HOME_BY_OWNER,{$owner}));
+                //在这里设置玩家家的上限 
+                if(datas.length < 3){
+                    //server.log("数量符合要求" + datas.length);
+                    //判断是否有重名的home
+                    for (let data of datas){
+                        if (data.homeName == $homeName) {
+                            throw "已经设置过同名的home";
+                        }
+                    }
+                    let $position = getPositionofEntity(original.entity);
+                    //可以执行添加
+                    db.update(INSERT_HOME,{$homeName,$position,$owner});
+                }else{
+                    throw "设置的home数量超过上限";
+                }
             }
         }as CommandOverload<MySystem, ["string"]>]
     });
-};
 
+        //让玩家可以设置多个home
+        this.registerCommand("homelist",{
+            description:"查看所有已设置的家",
+            permission:0,
+            overloads:[{
+                parameters:[],
+                handler(original,[]){
+                    if  (!original.entity) throw "只有玩家玩家可以查看home";
+                    const info = this.actorInfo(original.entity);
+                    //先选出所有记录
+                    let $owner = info.name;
+                    var datas = Array.from(db.query(SELECT_HOME_BY_OWNER,{$owner}));
+                    //在这里设置玩家家的上限 
+                    if(datas.length == 0) throw "你还没有设置家哟";
+                    let say = `§9§l下面为你已设置的家:§r\n`;
+                        for (let index in datas){
+                            say += `§a<${Number(index)+1}>.home:${datas[index].homeName} position: ${datas[index].position}\n`;
+                    }
+                    this.invokeConsoleCommand("home",`tell "${$owner}" ${say}`);
+                }
+            }as CommandOverload<MySystem, []>]
+        });
+
+
+    //删除已设置的home
+    this.registerCommand("delhome",{
+        description:"删除已经设置的家",
+        permission:0,
+        overloads:[{
+            parameters:[{
+                name:"home的名字",
+                type:"string"}],
+            handler(original,[$homeName]){
+                if  (!original.entity) throw "只有玩家玩家可以删除home";
+                const info = this.actorInfo(original.entity);
+                //判断是否可以删除 
+                //先选出所有记录
+                let $owner = info.name;
+                var datas = Array.from(db.query(SELECT_HOME_BY_OWNER,{$owner}));
+                //在这里设置玩家家的上限 
+                if(datas.length != 0){
+                    //记录是否删除
+                    let flag = false;
+                    //判断是否有重名的home
+                    for (let data of datas){
+                        if (data.homeName == $homeName) {
+                            //可以执行删除
+                            db.update(DELETE_HOME_BY_NAME,{$homeName,$owner});
+                            flag = true;
+                        }
+                    }
+                    if (flag){
+                        this.invokeConsoleCommand("home",`tell "${$owner}" §a已删除${$homeName}`);
+                    }
+                    else{
+                        this.invokeConsoleCommand("home",`tell "${$owner}" §c删除${$homeName}失败`);
+                    }
+                }else{
+                    throw "home数量为0";
+                }
+            }
+        }as CommandOverload<MySystem, ["string"]>]
+    });
+
+    //尾巴
+    //执行 /home传送
+this.registerCommand("home",{
+    description:"传送至已设置的家",
+    permission:0,
+    overloads:[{
+        parameters:[{
+            name:"home的名字",
+            type:"string",
+            optional:true}],
+        handler(original,[$homeName]){
+            if  (!original.entity) throw "只有玩家玩家可以使用/home";
+            const info = this.actorInfo(original.entity);
+            if (info.dim != 0) throw "只有在主世界才能使用/home";
+            //先选出所有记录
+            let $owner = info.name;
+            var datas = Array.from(db.query(SELECT_HOME_BY_OWNER,{$owner}));
+            //在这里设置玩家家的上限 
+            if(datas.length != 0){
+                if ($homeName == ""){
+                    this.invokeConsoleCommand("home",`tp "${$owner}" ${datas[0].position}`);
+                    this.invokeConsoleCommand("home",`tell "${$owner}" 已传送至${datas[0].homeName}`)
+                }
+                else{
+                //判断是否有重名的home
+                for (let data of datas){
+                    if (data.homeName == $homeName) {
+                        //可以执行传送
+                        this.invokeConsoleCommand("home",`tp "${$owner}" ${data.position}`);
+                        this.invokeConsoleCommand("home",`tell "${$owner}" 已传送至${data.homeName}`)
+                        }
+                    }   
+                }
+            }else{
+                throw "你还没有设置家哟~";
+            }
+        }
+    }as CommandOverload<MySystem, ["string"]>]
+});
+};
 
 
 
@@ -235,7 +357,6 @@ function onEntityDeath(eventData){
         if (system.hasComponent(entity, "minecraft:position")) {
             let position:string = getPositionofEntity(entity);
             let name:string = getNameofEntity(entity);
-            server.log(name + " " + position);
             deathMap[name] = position;
         }
     }
@@ -259,10 +380,21 @@ function getPositionofEntity(entity: IEntity){
     let position;
     if (system.hasComponent(entity, "minecraft:position")) {
         let comp = system.getComponent(entity,MinecraftComponent.Position);
-        position = comp.data.x.toFixed(0) + " " + comp.data.y.toFixed(0) + " " + comp.data.z.toFixed(0);
+        let px,py,pz;
+        position = transNum(comp.data.x) + " " + transNum(comp.data.y) + " " + transNum(comp.data.z);
     }
     else{
         position = "无法获得坐标";
     }
     return position;
+}
+
+function transNum(num:number):number{
+    if (num >= 0){
+        num = Math.floor(num);
+    }
+    else{
+        num = Math.floor(num);
+    }
+    return num;
 }
