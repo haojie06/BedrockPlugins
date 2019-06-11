@@ -29,7 +29,7 @@ const showWarp = (entity)=>{
     //server.log(`数据库记录： ${entity.name}--${entity.position}--${entity.owner}`);
 }
 system.initialize = function () {
-    server.log("EasyEssentials: plugin loaded");
+    server.log("EasyEssentials v1.2: plugin loaded");
     //添加自杀命令
     this.registerCommand("suicide",{
         description:"杀死你自己",
@@ -223,6 +223,7 @@ this.registerCommand("delwarp",{
                     let $position = getPositionofEntity(original.entity);
                     //可以执行添加
                     db.update(INSERT_HOME,{$homeName,$position,$owner});
+                    this.invokeConsoleCommand("home",`tell "${$owner}" 已为你设置名为${$homeName}的家`);
                 }else{
                     throw "设置的home数量超过上限";
                 }

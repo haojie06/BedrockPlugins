@@ -89,7 +89,7 @@
             //server.log(`数据库记录： ${entity.name}--${entity.position}--${entity.owner}`);
         };
         system_1.system.initialize = function () {
-            server.log("EasyEssentials: plugin loaded");
+            server.log("EasyEssentials v1.2: plugin loaded");
             //添加自杀命令
             this.registerCommand("suicide", {
                 description: "杀死你自己",
@@ -288,6 +288,7 @@
                                 let $position = getPositionofEntity(original.entity);
                                 //可以执行添加
                                 database_1.db.update(database_1.INSERT_HOME, { $homeName, $position, $owner });
+                                this.invokeConsoleCommand("home", `tell "${$owner}" 已为你设置名为${$homeName}的家`);
                             }
                             else {
                                 throw "设置的home数量超过上限";
