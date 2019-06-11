@@ -72,9 +72,21 @@
         Object.defineProperty(exports, "__esModule", { value: true });
         //死亡坐标map
         var deathMap = {};
+        //消息类
+        class Request {
+            constructor(request, source, target, life) {
+                this.request = request;
+                this.source = source;
+                this.target = target;
+                this.time = new Date().getTime();
+                this.outTime = this.time + life * 1000; //过期时间
+            }
+        }
+        //消息队列
+        var requestlist = [];
         // 初始化时调用
         const showWarp = (entity) => {
-            server.log(`数据库记录： ${entity.name}--${entity.position}--${entity.owner}`);
+            //server.log(`数据库记录： ${entity.name}--${entity.position}--${entity.owner}`);
         };
         system_1.system.initialize = function () {
             server.log("EasyEssentials: plugin loaded");
@@ -108,21 +120,8 @@
                                 throw "Cannot cross-dimension teleport";
                             if (deathMap[info.name] == undefined)
                                 throw "未记录死亡点";
-                            //打开确认ui
-                            this.openModalForm(original.entity, JSON.stringify({
-                                type: "modal",
-                                title: "back Menu",
-                                content: `你打算返回上一个死亡地点吗(${deathMap[info.name]})`,
-                                button1: "Yes",
-                                button2: "No"
-                            }))
-                                .then(sel => {
-                                if (JSON.parse(sel) === true) {
-                                    this.invokeConsoleCommand("ess", "tp " + '"' + info.name + '"' + " " + deathMap[info.name]);
-                                    deathMap[info.name] = undefined;
-                                }
-                            })
-                                .catch(server.log);
+                            this.invokeConsoleCommand("ess", "tp " + '"' + info.name + '"' + " " + deathMap[info.name]);
+                            deathMap[info.name] = undefined;
                         }
                     }]
             });
@@ -230,20 +229,8 @@
                                 throw "无效的传送点";
                             let position = datas[0].position;
                             let owner = datas[0].owner;
-                            this.openModalForm(original.entity, JSON.stringify({
-                                type: "modal",
-                                title: "warp",
-                                content: `你将要传送至名为${$name}的传送点(${position})`,
-                                button1: "Yes",
-                                button2: "No"
-                            }))
-                                .then(sel => {
-                                if (JSON.parse(sel) === true) {
-                                    this.invokeConsoleCommand("warp", `tp "${info.name}" ${position}`);
-                                    this.invokeConsoleCommand("warp", `tell "${info.name}" 已为你传送`);
-                                }
-                            })
-                                .catch(server.log);
+                            this.invokeConsoleCommand("warp", `tp "${info.name}" ${position}`);
+                            this.invokeConsoleCommand("warp", `tell "${info.name}" 已为你传送`);
                         }
                     }]
             });
@@ -291,7 +278,7 @@
                             var datas = Array.from(database_1.db.query(database_1.SELECT_HOME_BY_OWNER, { $owner }));
                             //在这里设置玩家家的上限 
                             if (datas.length < 3) {
-                                server.log("数量符合要求" + datas.length);
+                                //server.log("数量符合要求" + datas.length);
                                 //判断是否有重名的home
                                 for (let data of datas) {
                                     if (data.homeName == $homeName) {
@@ -325,7 +312,6 @@
                             if (datas.length == 0)
                                 throw "你还没有设置家哟";
                             let say = `§9§l下面为你已设置的家:§r\n`;
-                            server.log(datas.length);
                             for (let index in datas) {
                                 say += `§a<${Number(index) + 1}>.home:${datas[index].homeName} position: ${datas[index].position}\n`;
                             }
@@ -375,7 +361,6 @@
                         }
                     }]
             });
-            //尾巴
             //执行 /home传送
             this.registerCommand("home", {
                 description: "传送至已设置的家",
@@ -398,7 +383,6 @@
                             //在这里设置玩家家的上限 
                             if (datas.length != 0) {
                                 if ($homeName == "") {
-                                    server.log("未带参数");
                                     this.invokeConsoleCommand("home", `tp "${$owner}" ${datas[0].position}`);
                                     this.invokeConsoleCommand("home", `tell "${$owner}" 已传送至${datas[0].homeName}`);
                                 }
@@ -419,6 +403,171 @@
                         }
                     }]
             });
+            this.registerCommand("spawn", {
+                description: "返回主城",
+                permission: 0,
+                overloads: [{
+                        parameters: [],
+                        handler(original) {
+                            if (!original.entity)
+                                throw "需要是玩家";
+                            const info = this.actorInfo(original.entity);
+                            if (info.dim !== 0)
+                                throw "无法跨维度传送";
+                            const world = this.worldInfo();
+                            const [x, y, z] = world.spawnPoint;
+                            if (y === 32767)
+                                throw "无法找到世界出生点，请/setworldpoint";
+                            this.invokeConsoleCommand("§a§lspawn", `tp "${info.name}" ${x} ${y} ${z}`);
+                            this.invokeConsoleCommand("§a§lspawn", `tell "${info.name}" 已传送至主城`);
+                        }
+                    }]
+            });
+            //tpa系列（由于ui版的tpa出现了传送失败的情况，这里暂时先使用命令版）
+            this.registerCommand("tpa", {
+                description: "请求传送到ta人那",
+                permission: 0,
+                overloads: [
+                    {
+                        parameters: [
+                            {
+                                type: "player-selector",
+                                name: "target"
+                            },
+                            {
+                                type: "message",
+                                name: "message",
+                                optional: true
+                            }
+                        ],
+                        handler(origin, [players, msg]) {
+                            if (!origin.entity ||
+                                origin.entity.__identifier__ !== "minecraft:player")
+                                throw "玩家才可tpa";
+                            if (players.length !== 1)
+                                throw `一次只能tpa一个人哟`;
+                            const info = this.actorInfo(origin.entity);
+                            if (!info)
+                                throw `Cannot found actor info`;
+                            const target = players[0];
+                            const targetinfo = this.actorInfo(target);
+                            if (targetinfo.dim != info.dim)
+                                throw "无法在不同维度之间tpa";
+                            this.invokeConsoleCommand("§ateleport", `tell "${info.name}" §a已发送请求`);
+                            this.invokeConsoleCommand("§ateleport", `tell "${targetinfo.name}" §b${info.name} 想要传送到你这里：${msg}，1分钟内有效，输入/tpac接受 /tpad 拒绝`);
+                            //向消息队列增加消息
+                            let req = new Request("tpa", info.name, targetinfo.name, 60);
+                            addToRequestList(req);
+                        }
+                    }
+                ]
+            });
+            this.registerCommand("tpahere", {
+                description: "邀请他人传送到你的位置",
+                permission: 0,
+                overloads: [
+                    {
+                        parameters: [
+                            {
+                                type: "player-selector",
+                                name: "target"
+                            },
+                            {
+                                type: "message",
+                                name: "message",
+                                optional: true
+                            }
+                        ],
+                        handler(origin, [players, msg]) {
+                            if (!origin.entity ||
+                                origin.entity.__identifier__ !== "minecraft:player")
+                                throw "玩家才可tpa";
+                            if (players.length !== 1)
+                                throw `一次只能tpa一个人哟`;
+                            const info = this.actorInfo(origin.entity);
+                            if (!info)
+                                throw `Cannot found actor info`;
+                            const target = players[0];
+                            const targetinfo = this.actorInfo(target);
+                            if (targetinfo.dim != info.dim)
+                                throw "无法在不同维度之间tpahere";
+                            this.invokeConsoleCommand("§ateleport", `tell "${info.name}" §a已发送邀请`);
+                            this.invokeConsoleCommand("§ateleport", `tell "${targetinfo.name}" §b${info.name} 邀请你传送到ta那：${msg}，1分钟内有效，输入/tpac接受 /tpad 拒绝`);
+                            //向消息队列增加消息
+                            let req = new Request("tpahere", info.name, targetinfo.name, 60);
+                            addToRequestList(req);
+                        }
+                    }
+                ]
+            });
+            //接受与拒绝
+            this.registerCommand("tpac", {
+                description: "同意他人的传送请求",
+                permission: 0,
+                overloads: [
+                    {
+                        parameters: [],
+                        handler(origin, []) {
+                            if (!origin.entity ||
+                                origin.entity.__identifier__ !== "minecraft:player")
+                                throw "玩家才可tpa";
+                            const info = this.actorInfo(origin.entity);
+                            if (!info)
+                                throw `Cannot found actor info`;
+                            //向消息队列取出消息
+                            let req = getFromRequestList(info.name, "tpac");
+                            if (req == undefined) {
+                                throw "没有人向你发送请求";
+                            }
+                            //server.log(`tpac-------request${req.request} size:${requestlist.length}`);
+                            let source = info.name;
+                            if (req.request == "tpa") {
+                                //接受tpa
+                                this.invokeConsoleCommand("tpa", `tp "${req.source}" "${source}"`);
+                                this.invokeConsoleCommand("tpa", `tell "${req.source}" §a${source}接受了你的请求`);
+                            }
+                            else if (req.request == "tpahere") {
+                                this.invokeConsoleCommand("tpa", `tp "${source}" "${req.source}"`);
+                                this.invokeConsoleCommand("tpa", `tell "${req.source}" §a${source}接受了你的邀请`);
+                            }
+                        }
+                    }
+                ]
+            });
+            this.registerCommand("tpad", {
+                description: "拒绝他人的传送请求",
+                permission: 0,
+                overloads: [
+                    {
+                        parameters: [],
+                        handler(origin, []) {
+                            if (!origin.entity ||
+                                origin.entity.__identifier__ !== "minecraft:player")
+                                throw "玩家才可tpa";
+                            const info = this.actorInfo(origin.entity);
+                            if (!info)
+                                throw `Cannot found actor info`;
+                            //向消息队列取出消息
+                            let req = getFromRequestList(info.name, "tpad");
+                            if (req == undefined) {
+                                throw "没有人向你发送请求";
+                            }
+                            //server.log(`tpad-------request${req.request} size:${requestlist.length}`);
+                            let source = info.name;
+                            if (req.request == "tpa") {
+                                //接受tpa
+                                this.invokeConsoleCommand("tpa", `tp "${req.source}" "${source}"`);
+                                this.invokeConsoleCommand("tpa", `tell "${req.source}" §c${source}拒绝了你的请求`);
+                            }
+                            else if (req.request == "tpahere") {
+                                this.invokeConsoleCommand("tpa", `tp "${source}" "${req.source}"`);
+                                this.invokeConsoleCommand("tpa", `tell "${req.source}" §c${source}拒绝了你的邀请`);
+                            }
+                        }
+                    }
+                ]
+            });
+            //尾巴
         };
         function onEntityDeath(eventData) {
             let entity = eventData.entity;
@@ -428,7 +577,6 @@
                 if (system_1.system.hasComponent(entity, "minecraft:position")) {
                     let position = getPositionofEntity(entity);
                     let name = getNameofEntity(entity);
-                    server.log(name + " " + position);
                     deathMap[name] = position;
                 }
             }
@@ -464,6 +612,67 @@
                 num = Math.floor(num);
             }
             return num;
+        }
+        //向消息队列添加消息
+        function addToRequestList(request) {
+            let length = requestlist.push(request);
+        }
+        //从消息队列寻找符合条件的消息并删掉已经不符合条件的
+        function getFromRequestList(source, request) {
+            var result = undefined;
+            //server.log(`requestlistsize ${requestlist.length}`);
+            for (const key in requestlist) {
+                var req = requestlist[key];
+                if (checkIfOut(req)) {
+                    //过期了删掉
+                    requestlist.splice(Number(key), 1);
+                }
+                else if (result == undefined) {
+                    server.log(`req.target= + ${req.target}`);
+                    if (request == "tpac" && req.target == source) {
+                        result = req;
+                        /*
+                        //玩家接受了请求
+                        if (req.request == "tpa") {
+                            
+                            //将请求者传送到接收者
+                            //this.invokeConsoleCommand("tpa",`tp "${req.source}" "${source}"`);
+                            //this.invokeConsoleCommand("tpa",`tell "${req.source}" ${source}接受了你的请求`);
+                        }
+                        else if(req.request == "tpahere"){
+                            //将接受者传送到请求者
+                            this.invokeConsoleCommand("tpa",`tp "${source}" "${req.source}"`);
+                            this.invokeConsoleCommand("tpa",`tell "${req.source}" ${source}接受了你的邀请`);
+                        }*/
+                        //执行完了删掉
+                        requestlist.splice(Number(key), 1);
+                    }
+                    else if (request == "tpad" && req.target == source) {
+                        result = req;
+                        /*
+                        if (req.request == "tpa") {
+                            this.invokeConsoleCommand("tpa",`tell "${req.source}" ${source}拒绝了你的请求`);
+                        }
+                        else if(req.request == "tpahere"){
+                            this.invokeConsoleCommand("tpa",`tell "${req.source}" ${source}拒绝了你的邀请`);
+                        }
+                        */
+                        //执行完了删掉
+                        requestlist.splice(Number(key), 1);
+                    }
+                }
+            }
+            return result;
+        }
+        //检查消息是否过期了
+        function checkIfOut(req) {
+            let now = new Date().getTime();
+            if (now >= req.outTime) {
+                return true;
+            }
+            else {
+                return false;
+            }
         }
     });
     
