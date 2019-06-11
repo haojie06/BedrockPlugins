@@ -12,11 +12,18 @@ plugins for stoneserver（Minecraft bedrock edition server）
 	- /warp 传送至传送点
 	- /delwarp 删除传送点
 	- /warps 显示所有传送点
- -home系列
+ - home系列
 	- /sethome homename 设置家(最多三个)
 	- /homelist 显示所有的家
 	- /delhome homename 删除家
 	- /home homename(可选) 回家
+	
+ - tpa系列(命令版)
+ 	- /tpa
+	- /tpahere
+	- /tpac 接受请求
+	- /tpad 拒绝请求
+  - spawn 返回主城
 2. logSystem日志插件（超级简化版coi）v1.1 *1.12继续更新*
 - /logs ax ay az bx by bz 显示范围内所有的破坏/放置/开箱记录
 - /logs ax ay az bx by bz action   action有break/place/open分别对应上面的几个记录，查询区域内的指定类型记录
