@@ -68,7 +68,7 @@
                             if (!original.entity)
                                 throw "Player required";
                             const info = this.actorInfo(original.entity);
-                            this.invokeConsoleCommand("kill", "kill " + '"' + '"' + info.name + '"' + '"');
+                            this.invokeConsoleCommand("kill", `kill ${info.name}`);
                         }
                     }]
             });

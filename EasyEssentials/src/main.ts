@@ -28,7 +28,7 @@ system.initialize = function () {
                 //来源不是实体
                 if (!original.entity) throw "Player required";
                 const info = this.actorInfo(original.entity);
-                this.invokeConsoleCommand("kill","kill " + '"' + '"' + info.name + '"' + '"');
+                this.invokeConsoleCommand("kill",`kill ${info.name}`);
             }
         }as CommandOverload<MySystem, []>]
     })
@@ -43,7 +43,7 @@ system.initialize = function () {
                 if (info.dim !== 0) throw "Cannot cross-dimension teleport";
                 if (deathMap[info.name] == undefined) throw "未记录死亡点";
                 //打开确认ui
-                this.ModalFormopen(
+                this.openModalForm(
                     original.entity,
                     JSON.stringify({
                       type: "modal",
