@@ -2,20 +2,13 @@ import { MySystem,system } from "./system";
 import { db, INSERT_WARP,SELECT_WARP_BY_NAME,SELECT_ALL_WARP,DELETE_WARP_BY_NAME } from "./database";
 //死亡坐标map
 var deathMap:{[key:string]:string} = {};
+
 // 初始化时调用
-type playerComponent = {
-    data:{
-    name:string;
-    x:number;
-    y:number;
-    z:number;
-    };
-};
 const showWarp = (entity)=>{
     server.log(`数据库记录： ${entity.name}--${entity.position}--${entity.owner}`);
 }
 system.initialize = function () {
-    server.log("ess plugin loaded");
+    server.log("EasyEssentials: plugin loaded");
     //添加自杀命令
     this.registerCommand("suicide",{
         description:"杀死你自己",
@@ -31,7 +24,8 @@ system.initialize = function () {
                 this.invokeConsoleCommand("kill",`kill ${info.name}`);
             }
         }as CommandOverload<MySystem, []>]
-    })
+    });
+
     this.registerCommand("back",{
         description:"返回上次死亡地点",
         permission:0,
@@ -207,21 +201,46 @@ this.registerCommand("delwarp",{
         }as CommandOverload<MySystem, []> ]
     });
 
+    //玩家死亡时记录
     system.listenForEvent("minecraft:entity_death",onEntityDeath);
-    function onEntityDeath(eventData){
-        let entity = eventData.entity;
-        //如果死亡的实体是玩家
-        if(entity.__identifier__ == "minecraft:player"){
-            //拥有坐标组件
-            if (system.hasComponent(entity, "minecraft:position")) {
-                let position:string = getPositionofEntity(entity);
-                let name:string = getNameofEntity(entity);
-                server.log(name + " " + position);
-                deathMap[name] = position;
+
+    //让玩家可以设置多个home
+
+    this.registerCommand("sethome",{
+        description:"设置家",
+        permission:0,
+        overloads:[{
+            parameters:[{
+                name:"home的名字",
+                type:"string"}],
+            handler(original,[homeName]){
+                if  (!original.entity) throw "只有玩家玩家可以设置home";
+                const info = this.actorInfo(original.entity);
+                //判断是否可以写入数据库
             }
+        }as CommandOverload<MySystem, ["string"]>]
+    });
+};
+
+
+
+
+
+
+function onEntityDeath(eventData){
+    let entity = eventData.entity;
+    //如果死亡的实体是玩家
+    if(entity.__identifier__ == "minecraft:player"){
+        //拥有坐标组件
+        if (system.hasComponent(entity, "minecraft:position")) {
+            let position:string = getPositionofEntity(entity);
+            let name:string = getNameofEntity(entity);
+            server.log(name + " " + position);
+            deathMap[name] = position;
         }
     }
-};
+}
+
 
 function getNameofEntity(entity: IEntity){
     let name;
@@ -234,6 +253,7 @@ function getNameofEntity(entity: IEntity){
     }
     return name;
 }
+
 
 function getPositionofEntity(entity: IEntity){
     let position;

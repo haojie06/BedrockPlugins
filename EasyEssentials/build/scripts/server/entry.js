@@ -36,8 +36,30 @@
         exports.SELECT_WARP_BY_NAME = fix `SELECT * FROM warp WHERE name=$name;`;
         exports.SELECT_ALL_WARP = fix `SELECT * FROM warp;`;
         exports.DELETE_WARP_BY_NAME = fix `DELETE FROM warp WHERE name=$name;`;
-        exports.db = new SQLite3("warp.db");
+        //创建一个储存home信息的表
+        exports.CREATE_HOME_TABLE = fix `
+      CREATE TABLE IF NOT EXISTS homes(
+        id,
+        homeName TEXT NOT NULL,
+        position TEXT NOT NULL,
+        owner TEXT NOT NULL
+      );`;
+        //查找一个owner的所有home
+        exports.SELECT_HOME_BY_OWNER = fix `SELECT * FROM homes WHERE owner=$owner;`;
+        //根据owner和home名字查找  !注意 一个owner之下不要出现重名的home
+        exports.SELECT_HOME_BY_NAME = fix `SELECT * FROM homes WHERE owner=$owner AND homeName=$homeName;`;
+        //添加home记录
+        exports.INSERT_HOME = fix `
+      INSERT INTO homes (
+        homeName, position, owner
+      ) values (
+        $name, $position, $owner
+      );`;
+        //删除一个home
+        exports.DELETE_HOME_NAME = fix `DELETE FROM homes WHERE homeName=$homeName AND owner=$owner;`;
+        exports.db = new SQLite3("ess.db");
         exports.db.exec(exports.CREATE_TABLE);
+        exports.db.exec(exports.CREATE_HOME_TABLE);
     });
     define("system", ["require", "exports"], function (require, exports) {
         "use strict";
@@ -50,11 +72,12 @@
         Object.defineProperty(exports, "__esModule", { value: true });
         //死亡坐标map
         var deathMap = {};
+        // 初始化时调用
         const showWarp = (entity) => {
             server.log(`数据库记录： ${entity.name}--${entity.position}--${entity.owner}`);
         };
         system_1.system.initialize = function () {
-            server.log("ess plugin loaded");
+            server.log("EasyEssentials: plugin loaded");
             //添加自杀命令
             this.registerCommand("suicide", {
                 description: "杀死你自己",
@@ -245,21 +268,39 @@
                         }
                     }]
             });
+            //玩家死亡时记录
             system_1.system.listenForEvent("minecraft:entity_death", onEntityDeath);
-            function onEntityDeath(eventData) {
-                let entity = eventData.entity;
-                //如果死亡的实体是玩家
-                if (entity.__identifier__ == "minecraft:player") {
-                    //拥有坐标组件
-                    if (system_1.system.hasComponent(entity, "minecraft:position")) {
-                        let position = getPositionofEntity(entity);
-                        let name = getNameofEntity(entity);
-                        server.log(name + " " + position);
-                        deathMap[name] = position;
-                    }
+            //让玩家可以设置多个home
+            this.registerCommand("sethome", {
+                description: "设置家",
+                permission: 0,
+                overloads: [{
+                        parameters: [{
+                                name: "home的名字",
+                                type: "string"
+                            }],
+                        handler(original, [homeName]) {
+                            if (!original.entity)
+                                throw "只有玩家玩家可以设置home";
+                            const info = this.actorInfo(original.entity);
+                            //判断是否可以写入数据库
+                        }
+                    }]
+            });
+        };
+        function onEntityDeath(eventData) {
+            let entity = eventData.entity;
+            //如果死亡的实体是玩家
+            if (entity.__identifier__ == "minecraft:player") {
+                //拥有坐标组件
+                if (system_1.system.hasComponent(entity, "minecraft:position")) {
+                    let position = getPositionofEntity(entity);
+                    let name = getNameofEntity(entity);
+                    server.log(name + " " + position);
+                    deathMap[name] = position;
                 }
             }
-        };
+        }
         function getNameofEntity(entity) {
             let name;
             if (system_1.system.hasComponent(entity, "minecraft:nameable")) {
