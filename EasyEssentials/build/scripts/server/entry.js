@@ -524,11 +524,13 @@
                             if (req.request == "tpa") {
                                 //接受tpa
                                 this.invokeConsoleCommand("tpa", `tp "${req.source}" "${source}"`);
+                                this.invokeConsoleCommand("tpa", `tell "${source}" §a接受请求`);
                                 this.invokeConsoleCommand("tpa", `tell "${req.source}" §a${source}接受了你的请求`);
                             }
                             else if (req.request == "tpahere") {
                                 this.invokeConsoleCommand("tpa", `tp "${source}" "${req.source}"`);
                                 this.invokeConsoleCommand("tpa", `tell "${req.source}" §a${source}接受了你的邀请`);
+                                this.invokeConsoleCommand("tpa", `tell "${source}" §a接受请求`);
                             }
                         }
                     }
@@ -556,12 +558,12 @@
                             let source = info.name;
                             if (req.request == "tpa") {
                                 //接受tpa
-                                this.invokeConsoleCommand("tpa", `tp "${req.source}" "${source}"`);
                                 this.invokeConsoleCommand("tpa", `tell "${req.source}" §c${source}拒绝了你的请求`);
+                                this.invokeConsoleCommand("tpa", `tell "${source}" §a拒绝请求`);
                             }
                             else if (req.request == "tpahere") {
-                                this.invokeConsoleCommand("tpa", `tp "${source}" "${req.source}"`);
                                 this.invokeConsoleCommand("tpa", `tell "${req.source}" §c${source}拒绝了你的邀请`);
+                                this.invokeConsoleCommand("tpa", `tell "${source}" §a拒绝邀请`);
                             }
                         }
                     }
@@ -623,7 +625,7 @@
             //server.log(`requestlistsize ${requestlist.length}`);
             for (const key in requestlist) {
                 var req = requestlist[key];
-                if (checkIfOut(req)) {
+                if (checkIfOut(req) == true) {
                     //过期了删掉
                     requestlist.splice(Number(key), 1);
                 }
@@ -631,32 +633,11 @@
                     server.log(`req.target= + ${req.target}`);
                     if (request == "tpac" && req.target == source) {
                         result = req;
-                        /*
-                        //玩家接受了请求
-                        if (req.request == "tpa") {
-                            
-                            //将请求者传送到接收者
-                            //this.invokeConsoleCommand("tpa",`tp "${req.source}" "${source}"`);
-                            //this.invokeConsoleCommand("tpa",`tell "${req.source}" ${source}接受了你的请求`);
-                        }
-                        else if(req.request == "tpahere"){
-                            //将接受者传送到请求者
-                            this.invokeConsoleCommand("tpa",`tp "${source}" "${req.source}"`);
-                            this.invokeConsoleCommand("tpa",`tell "${req.source}" ${source}接受了你的邀请`);
-                        }*/
                         //执行完了删掉
                         requestlist.splice(Number(key), 1);
                     }
                     else if (request == "tpad" && req.target == source) {
                         result = req;
-                        /*
-                        if (req.request == "tpa") {
-                            this.invokeConsoleCommand("tpa",`tell "${req.source}" ${source}拒绝了你的请求`);
-                        }
-                        else if(req.request == "tpahere"){
-                            this.invokeConsoleCommand("tpa",`tell "${req.source}" ${source}拒绝了你的邀请`);
-                        }
-                        */
                         //执行完了删掉
                         requestlist.splice(Number(key), 1);
                     }
@@ -667,7 +648,9 @@
         //检查消息是否过期了
         function checkIfOut(req) {
             let now = new Date().getTime();
+            //server.log(now + "------" + req.outTime);
             if (now >= req.outTime) {
+                //server.log("发现过期");
                 return true;
             }
             else {
