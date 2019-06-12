@@ -6,7 +6,7 @@ import { MySystem,system } from "./system";
 import { db,addRecord,readRecord } from "./database";
 import { getTime,checkIfBlock,stringToInt,checkIfContainer,transNum } from "./utils";
 system.initialize = function() {
-  server.log("日志系统v1.1 https://github.com/haojie06/BedrockPlugins");
+  server.log("日志系统v1.2 https://github.com/haojie06/BedrockPlugins");
   //检测记录破坏方块
   this.checkDestroy((player,info)=>{
       let playerInfo = this.actorInfo(player);
@@ -129,12 +129,22 @@ this.registerCommand("logs", {
         type:"position"
       },
       {//可选的行为名称 （破坏 放置 打开）
-        name:"action",
+        name:"行为名",
+        type:"string",
+        optional:true
+      },
+      {
+        name:"几小时内",
+        type:"int",
+        optional:true
+      },
+      {
+        name:"玩家名",
         type:"string",
         optional:true
       }
     ],
-      handler(origin,[start,end,action]) {
+      handler(origin,[start,end,action,hour,player]) {
         if (!origin.entity) throw "Player required";
         const info = this.actorInfo(origin.entity);
         let sX = transNum(start[0]);
@@ -147,22 +157,54 @@ this.registerCommand("logs", {
 
         let dim = info.dim;
         let records:string[];
+        if (hour < 0 ){
+          hour = 0;
+        }
         if(action == ""){
           //server.log(`全局查找 ${sX} ${sY} ${sZ}`);
-          records = readRecord(sX,sY,sZ,eX,eY,eZ,dim);
+          records = readRecord(sX,sY,sZ,eX,eY,eZ,dim,"all",hour,player);
         }
         else{
           //server.log("特定行为查找" + action);
-          records = readRecord(sX,sY,sZ,eX,eY,eZ,dim,action);
+          records = readRecord(sX,sY,sZ,eX,eY,eZ,dim,action,hour,player);
         }
         let say:string = `§a§l日志系统1.1 by haojie06 以下为查找到的记录：§f\n`;
+        if (hour == 0){
+          say += `§b所有时间 `;
+        }
+        else{
+          say += `§b${hour}小时内 `;
+        }
+
+        if (player == ""){
+          say += `§6所有玩家的`;
+        }
+        else{
+          say += `§6玩家${player}的§f`;
+        }
+
+        if (action == "break"){
+          say += `§c破坏行为记录§f:\n`;
+        }
+        else if (action == "place"){
+          say += `§9放置行为记录§f:\n`;
+        }
+        else if (action == "open"){
+          say += `§e开箱行为记录§f:\n`;
+        }
+        else{
+          say += `§a所有行为的记录:\n`;
+        }
+
         for(let line of records){
           say = say + line + "\n";
         }
+
+        
         //server.log(say);
         this.invokeConsoleCommand("§aLogSystem",`tell ${info.name} ${say}`);
       }
-    } as CommandOverload<MySystem, ["position","position","string"]>
+    } as CommandOverload<MySystem, ["position","position","string","int","string"]>
   ]
 });
 };

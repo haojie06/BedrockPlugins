@@ -36,14 +36,15 @@
         targetY INT NOT NULL,
         targetZ INT NOT NULL,
         dim TEXT NOT NULL,
-        desc TEXT
+        desc TEXT,
+        timestamp INT NOT NULL
       );`;
         //添加记录
         exports.INSERT_LOG = fix `
       INSERT INTO log (
-        time, name, playerX, playerY, playerZ, action, target, targetX, targetY, targetZ, dim, desc
+        time, name, playerX, playerY, playerZ, action, target, targetX, targetY, targetZ, dim, desc, timestamp
       ) values (
-        $time, $name, $pX, $pY, $pZ, $action, $target, $tX, $tY, $tZ, $dim, $desc
+        $time, $name, $pX, $pY, $pZ, $action, $target, $tX, $tY, $tZ, $dim, $desc, $timestamp
       );`;
         //获得一个玩家的所有行为
         exports.SELECT_LOG_BY_NAME = fix `SELECT * FROM log WHERE name=$name;`;
@@ -53,14 +54,20 @@
         //获得一个范围内（x y z）的所有记录
         exports.SELECT_ALL_IN_ZONE = fix `SELECT * FROM log WHERE targetX >= $minX AND targetY >= $minY AND targetZ >= $minZ AND targetX <= $maxX AND targetY <= $maxY AND targetZ <= $maxZ AND dim = $dim`;
         exports.SELECT_IN_ZONE_BYACTION = fix `SELECT * FROM log WHERE targetX >= $minX AND targetY >= $minY AND targetZ >= $minZ AND targetX <= $maxX AND targetY <= $maxY AND targetZ <= $maxZ AND dim = $dim AND action = $action`;
+        //新增一个约束条件 几小时之内
+        exports.SELECT_ALL_IN_ZONE_AFTERTIME = fix `SELECT * FROM log WHERE targetX >= $minX AND targetY >= $minY AND targetZ >= $minZ AND targetX <= $maxX AND targetY <= $maxY AND targetZ <= $maxZ AND dim = $dim AND timestamp > $timeline`;
+        exports.SELECT_IN_ZONE_BYACTION_AFTERTIME = fix `SELECT * FROM log WHERE targetX >= $minX AND targetY >= $minY AND targetZ >= $minZ AND targetX <= $maxX AND targetY <= $maxY AND targetZ <= $maxZ AND dim = $dim AND action = $action AND timestamp > $timeline`;
+        exports.SELECT_ALL_IN_ZONE_AFTERTIME_PNAME = fix `SELECT * FROM log WHERE targetX >= $minX AND targetY >= $minY AND targetZ >= $minZ AND targetX <= $maxX AND targetY <= $maxY AND targetZ <= $maxZ AND dim = $dim AND timestamp > $timeline AND name=$player`;
+        exports.SELECT_IN_ZONE_BYACTION_AFTERTIME_PNAME = fix `SELECT * FROM log WHERE targetX >= $minX AND targetY >= $minY AND targetZ >= $minZ AND targetX <= $maxX AND targetY <= $maxY AND targetZ <= $maxZ AND dim = $dim AND action = $action AND timestamp > $timeline AND name=$player`;
         exports.db = new SQLite3("logs.db");
         exports.db.exec(exports.CREATE_TABLE);
         //向数据库中添加记录
         function addRecord($time, $name, $pX, $pY, $pZ, $action, $target, $tX, $tY, $tZ, $dim, $desc = "") {
-            exports.db.update(exports.INSERT_LOG, { $time, $name, $pX, $pY, $pZ, $action, $target, $tX, $tY, $tZ, $dim, $desc });
+            let $timestamp = new Date().getTime();
+            exports.db.update(exports.INSERT_LOG, { $time, $name, $pX, $pY, $pZ, $action, $target, $tX, $tY, $tZ, $dim, $desc, $timestamp });
         }
         exports.addRecord = addRecord;
-        function readRecord($sX, $sY, $sZ, $eX, $eY, $eZ, $dim, $action = "all") {
+        function readRecord($sX, $sY, $sZ, $eX, $eY, $eZ, $dim, $action = "all", $hour = 0, $player = "") {
             let $minX = Math.min($sX, $eX);
             let $minY = Math.min($sY, $eY);
             let $minZ = Math.min($sZ, $eZ);
@@ -75,27 +82,58 @@
                 $action = "all";
             }
             var length = 0;
-            if ($action == "all") {
-                //读出范围内所有的记录 !!!注意 外面为minX 里面的变量也要同名
-                let logs = exports.db.query(exports.SELECT_ALL_IN_ZONE, { $minX, $minY, $minZ, $maxX, $maxY, $maxZ, $dim });
-                datas = Array.from(logs);
+            if ($hour == 0) {
+                if ($action == "all") {
+                    //读出范围内所有的记录 !!!注意 外面为minX 里面的变量也要同名
+                    let logs = exports.db.query(exports.SELECT_ALL_IN_ZONE, { $minX, $minY, $minZ, $maxX, $maxY, $maxZ, $dim });
+                    datas = Array.from(logs);
+                }
+                else {
+                    //读出范围内特定行为的所有记录
+                    let logs = exports.db.query(exports.SELECT_IN_ZONE_BYACTION, { $minX, $minY, $minZ, $maxX, $maxY, $maxZ, $dim, $action });
+                    datas = Array.from(logs);
+                }
             }
             else {
-                //读出范围内特定行为的所有记录
-                let logs = exports.db.query(exports.SELECT_IN_ZONE_BYACTION, { $minX, $minY, $minZ, $maxX, $maxY, $maxZ, $dim, $action });
-                datas = Array.from(logs);
+                //读取几个小时前
+                if ($hour <= 0)
+                    throw "hour 需要为正数";
+                let now = new Date().getTime();
+                var $timeline = now - $hour * 60 * 60 * 1000;
+                if ($action == "all") {
+                    var logs;
+                    //读出范围内所有的记录 !!!注意 外面为minX 里面的变量也要同名
+                    if ($player == "") {
+                        logs = exports.db.query(exports.SELECT_ALL_IN_ZONE_AFTERTIME, { $minX, $minY, $minZ, $maxX, $maxY, $maxZ, $dim, $timeline });
+                    }
+                    else {
+                        logs = exports.db.query(exports.SELECT_ALL_IN_ZONE_AFTERTIME_PNAME, { $minX, $minY, $minZ, $maxX, $maxY, $maxZ, $dim, $timeline, $player });
+                    }
+                    datas = Array.from(logs);
+                }
+                else {
+                    //读出范围内特定行为的所有记录
+                    var logs;
+                    if ($player == "") {
+                        logs = exports.db.query(exports.SELECT_IN_ZONE_BYACTION_AFTERTIME, { $minX, $minY, $minZ, $maxX, $maxY, $maxZ, $dim, $action, $timeline });
+                    }
+                    else {
+                        logs = exports.db.query(exports.SELECT_IN_ZONE_BYACTION_AFTERTIME_PNAME, { $minX, $minY, $minZ, $maxX, $maxY, $maxZ, $dim, $action, $timeline, $player });
+                    }
+                    datas = Array.from(logs);
+                }
             }
             for (let data of datas) {
                 var line;
                 switch (data.action) {
                     case "break":
-                        line = `${length + 1}:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §c破坏了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度${data.dim}`;
+                        line = `${length + 1}:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §c破坏了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度:${dimTran(data.dim)}`;
                         break;
                     case "place":
-                        line = `${length + 1}:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §a放置了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度${data.dim}`;
+                        line = `${length + 1}:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §a放置了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度:${dimTran(data.dim)}`;
                         break;
                     case "open":
-                        line = `${length + 1}:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §9打开了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度${data.dim}`;
+                        line = `${length + 1}:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §9打开了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度:${dimTran(data.dim)}`;
                         break;
                     default:
                         break;
@@ -105,6 +143,22 @@
             return result;
         }
         exports.readRecord = readRecord;
+        //转换维度名字
+        function dimTran(dim) {
+            let result = "§f未知";
+            switch (dim) {
+                case "0.0":
+                    result = "§2主世界§f";
+                case "1.0":
+                    result = "§4下界§f";
+                case "2.0":
+                    result = "§5末地§f";
+                    break;
+                default:
+                    break;
+            }
+            return result;
+        }
     });
     define("system", ["require", "exports"], function (require, exports) {
         "use strict";
@@ -166,7 +220,7 @@
         "use strict";
         Object.defineProperty(exports, "__esModule", { value: true });
         system_1.system.initialize = function () {
-            server.log("日志系统v1.1 https://github.com/haojie06/BedrockPlugins");
+            server.log("日志系统v1.2 https://github.com/haojie06/BedrockPlugins");
             //检测记录破坏方块
             this.checkDestroy((player, info) => {
                 let playerInfo = this.actorInfo(player);
@@ -288,12 +342,22 @@
                                 type: "position"
                             },
                             {
-                                name: "action",
+                                name: "行为名",
+                                type: "string",
+                                optional: true
+                            },
+                            {
+                                name: "几小时内",
+                                type: "int",
+                                optional: true
+                            },
+                            {
+                                name: "玩家名",
                                 type: "string",
                                 optional: true
                             }
                         ],
-                        handler(origin, [start, end, action]) {
+                        handler(origin, [start, end, action, hour, player]) {
                             if (!origin.entity)
                                 throw "Player required";
                             const info = this.actorInfo(origin.entity);
@@ -305,15 +369,42 @@
                             let eZ = utils_1.transNum(end[2]);
                             let dim = info.dim;
                             let records;
+                            if (hour < 0) {
+                                hour = 0;
+                            }
                             if (action == "") {
                                 //server.log(`全局查找 ${sX} ${sY} ${sZ}`);
-                                records = database_1.readRecord(sX, sY, sZ, eX, eY, eZ, dim);
+                                records = database_1.readRecord(sX, sY, sZ, eX, eY, eZ, dim, "all", hour, player);
                             }
                             else {
                                 //server.log("特定行为查找" + action);
-                                records = database_1.readRecord(sX, sY, sZ, eX, eY, eZ, dim, action);
+                                records = database_1.readRecord(sX, sY, sZ, eX, eY, eZ, dim, action, hour, player);
                             }
                             let say = `§a§l日志系统1.1 by haojie06 以下为查找到的记录：§f\n`;
+                            if (hour == 0) {
+                                say += `§b所有时间 `;
+                            }
+                            else {
+                                say += `§b${hour}小时内 `;
+                            }
+                            if (player == "") {
+                                say += `§6所有玩家的`;
+                            }
+                            else {
+                                say += `§6玩家${player}的§f`;
+                            }
+                            if (action == "break") {
+                                say += `§c破坏行为记录§f:\n`;
+                            }
+                            else if (action == "place") {
+                                say += `§9放置行为记录§f:\n`;
+                            }
+                            else if (action == "open") {
+                                say += `§e开箱行为记录§f:\n`;
+                            }
+                            else {
+                                say += `§a所有行为的记录:\n`;
+                            }
                             for (let line of records) {
                                 say = say + line + "\n";
                             }
