@@ -3,7 +3,7 @@ create by haojie06 2019/6/10
 用于记录玩家在游戏中的行为 （超简化版coi..）
 */
 import { MySystem,system } from "./system";
-import { db,addRecord,readRecord } from "./database";
+import { db,addRecord,readRecord, delRecord } from "./database";
 import { getTime,checkIfBlock,stringToInt,checkIfContainer,transNum } from "./utils";
 system.initialize = function() {
   server.log("日志系统v1.2 https://github.com/haojie06/BedrockPlugins");
@@ -168,7 +168,7 @@ this.registerCommand("logs", {
           //server.log("特定行为查找" + action);
           records = readRecord(sX,sY,sZ,eX,eY,eZ,dim,action,hour,player);
         }
-        let say:string = `§a§l日志系统1.1 by haojie06 以下为查找到的记录：§f\n`;
+        let say:string = `§a§l日志系统1.2 by haojie06 以下为查找到的记录：§f\n`;
         if (hour == 0){
           say += `§b所有时间 `;
         }
@@ -193,7 +193,7 @@ this.registerCommand("logs", {
           say += `§e开箱行为记录§f:\n`;
         }
         else{
-          say += `§a所有行为的记录:\n`;
+          say += `§a所有行为的记录§f:\n`;
         }
 
         for(let line of records){
@@ -202,9 +202,28 @@ this.registerCommand("logs", {
 
         
         //server.log(say);
-        this.invokeConsoleCommand("§aLogSystem",`tell ${info.name} ${say}`);
+        this.invokeConsoleCommand("§aLogSystem",`tell "${info.name}" ${say}`);
       }
     } as CommandOverload<MySystem, ["position","position","string","int","string"]>
   ]
 });
+
+this.registerCommand("dellogs",{
+  description:"删除几天以前的所有日志",
+  permission:1,
+  overloads:[{
+    parameters:[{
+      name:"几天以前",
+      type:"int"
+    }],
+    handler(origin,[day]){
+      if(!origin.entity) throw "只有玩家可以执行该命令";
+      const info = this.actorInfo(origin.entity);
+      let delNum = delRecord(day);
+      this.invokeConsoleCommand("§aLogSystem",`tell "${info.name}" §a已删除${day}天前共计:${delNum}条记录`);
+    }
+  } as CommandOverload<MySystem, ["int"]>
+]
+})
+
 };

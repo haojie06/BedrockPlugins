@@ -579,7 +579,7 @@ function getFromRequestList(source:string,request:string):Request{
             //过期了删掉
             requestlist.splice(Number(key),1);
         }else if(result == undefined){
-            server.log(`req.target= + ${req.target}`);
+            //server.log(`req.target= + ${req.target}`);
             if(request == "tpac" && req.target == source){
                 result = req;
                 //执行完了删掉

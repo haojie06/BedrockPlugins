@@ -39,6 +39,7 @@ function fix(arr: TemplateStringsArray) {
   export const SELECT_ALL_LOG = fix`SELECT * FROM log;`;
 
   //export const DELETE_WARP_BY_NAME = fix`DELETE FROM warp WHERE name=$name;`;
+  export const DELETE_LOG_BY_DAY = fix`DELETE FROM log WHERE timestamp<$timestamp;`;
 
 //获得一个范围内（x y z）的所有记录
  export const SELECT_ALL_IN_ZONE = fix`SELECT * FROM log WHERE targetX >= $minX AND targetY >= $minY AND targetZ >= $minZ AND targetX <= $maxX AND targetY <= $maxY AND targetZ <= $maxZ AND dim = $dim`;
@@ -57,6 +58,13 @@ db.exec(CREATE_TABLE);
 export function addRecord($time, $name, $pX, $pY, $pZ, $action, $target, $tX, $tY, $tZ, $dim, $desc=""):void{
     let $timestamp = new Date().getTime();
     db.update(INSERT_LOG,{$time, $name, $pX, $pY, $pZ, $action, $target, $tX, $tY, $tZ, $dim, $desc, $timestamp});
+}
+
+//删除几天以前的日志
+export function delRecord(day:number):number{
+  let $timestamp = new Date().getTime() - day * 24 * 60 * 60 * 1000;
+  let delNum =  db.update(DELETE_LOG_BY_DAY,{$timestamp});
+  return delNum;
 }
 
 export function readRecord($sX, $sY, $sZ, $eX, $eY, $eZ, $dim, $action="all", $hour=0,$player=""){
@@ -120,13 +128,13 @@ export function readRecord($sX, $sY, $sZ, $eX, $eY, $eZ, $dim, $action="all", $h
         var line;
         switch (data.action) {
             case "break":
-                line = `${length + 1}:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §c破坏了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度:${dimTran(data.dim)}`;
+                line = `<${length + 1}>:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §c破坏了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度:${dimTran(data.dim)}`;
                 break;
             case "place":
-                line = `${length + 1}:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §a放置了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度:${dimTran(data.dim)}`;
+                line = `<${length + 1}>:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §a放置了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度:${dimTran(data.dim)}`;
                 break;
                 case "open":
-                line = `${length + 1}:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §9打开了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度:${dimTran(data.dim)}`;
+                line = `<${length + 1}>:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §9打开了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度:${dimTran(data.dim)}`;
                 break;
             default:
                 break;
@@ -139,13 +147,15 @@ export function readRecord($sX, $sY, $sZ, $eX, $eY, $eZ, $dim, $action="all", $h
 //转换维度名字
   function dimTran(dim):string{
     let result:string = "§f未知";
-    switch (dim) {
-      case "0.0":
-        result = "§2主世界§f"
-      case "1.0":
-        result = "§4下界§f"
-      case "2.0":
-        result = "§5末地§f"  
+    switch (Number(dim)) {
+      case 0:
+        result = "§2主世界§f";
+        break;
+      case 1:
+        result = "§4下界§f";
+        break;
+      case 2:
+        result = "§5末地§f";
       break;
     default:
       break;

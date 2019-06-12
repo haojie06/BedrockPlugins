@@ -51,6 +51,7 @@
         //获得所有的日志
         exports.SELECT_ALL_LOG = fix `SELECT * FROM log;`;
         //export const DELETE_WARP_BY_NAME = fix`DELETE FROM warp WHERE name=$name;`;
+        exports.DELETE_LOG_BY_DAY = fix `DELETE FROM log WHERE timestamp<$timestamp;`;
         //获得一个范围内（x y z）的所有记录
         exports.SELECT_ALL_IN_ZONE = fix `SELECT * FROM log WHERE targetX >= $minX AND targetY >= $minY AND targetZ >= $minZ AND targetX <= $maxX AND targetY <= $maxY AND targetZ <= $maxZ AND dim = $dim`;
         exports.SELECT_IN_ZONE_BYACTION = fix `SELECT * FROM log WHERE targetX >= $minX AND targetY >= $minY AND targetZ >= $minZ AND targetX <= $maxX AND targetY <= $maxY AND targetZ <= $maxZ AND dim = $dim AND action = $action`;
@@ -67,6 +68,13 @@
             exports.db.update(exports.INSERT_LOG, { $time, $name, $pX, $pY, $pZ, $action, $target, $tX, $tY, $tZ, $dim, $desc, $timestamp });
         }
         exports.addRecord = addRecord;
+        //删除几天以前的日志
+        function delRecord(day) {
+            let $timestamp = new Date().getTime() - day * 24 * 60 * 60 * 1000;
+            let delNum = exports.db.update(exports.DELETE_LOG_BY_DAY, { $timestamp });
+            return delNum;
+        }
+        exports.delRecord = delRecord;
         function readRecord($sX, $sY, $sZ, $eX, $eY, $eZ, $dim, $action = "all", $hour = 0, $player = "") {
             let $minX = Math.min($sX, $eX);
             let $minY = Math.min($sY, $eY);
@@ -127,13 +135,13 @@
                 var line;
                 switch (data.action) {
                     case "break":
-                        line = `${length + 1}:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §c破坏了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度:${dimTran(data.dim)}`;
+                        line = `<${length + 1}>:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §c破坏了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度:${dimTran(data.dim)}`;
                         break;
                     case "place":
-                        line = `${length + 1}:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §a放置了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度:${dimTran(data.dim)}`;
+                        line = `<${length + 1}>:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §a放置了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度:${dimTran(data.dim)}`;
                         break;
                     case "open":
-                        line = `${length + 1}:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §9打开了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度:${dimTran(data.dim)}`;
+                        line = `<${length + 1}>:${data.time} ${data.name}(${data.playerX},${data.playerY},${data.playerZ}) §9打开了§f ${data.target}(${data.targetX},${data.targetY},${data.targetZ}) 维度:${dimTran(data.dim)}`;
                         break;
                     default:
                         break;
@@ -146,12 +154,14 @@
         //转换维度名字
         function dimTran(dim) {
             let result = "§f未知";
-            switch (dim) {
-                case "0.0":
+            switch (Number(dim)) {
+                case 0:
                     result = "§2主世界§f";
-                case "1.0":
+                    break;
+                case 1:
                     result = "§4下界§f";
-                case "2.0":
+                    break;
+                case 2:
                     result = "§5末地§f";
                     break;
                 default:
@@ -380,7 +390,7 @@
                                 //server.log("特定行为查找" + action);
                                 records = database_1.readRecord(sX, sY, sZ, eX, eY, eZ, dim, action, hour, player);
                             }
-                            let say = `§a§l日志系统1.1 by haojie06 以下为查找到的记录：§f\n`;
+                            let say = `§a§l日志系统1.2 by haojie06 以下为查找到的记录：§f\n`;
                             if (hour == 0) {
                                 say += `§b所有时间 `;
                             }
@@ -403,13 +413,31 @@
                                 say += `§e开箱行为记录§f:\n`;
                             }
                             else {
-                                say += `§a所有行为的记录:\n`;
+                                say += `§a所有行为的记录§f:\n`;
                             }
                             for (let line of records) {
                                 say = say + line + "\n";
                             }
                             //server.log(say);
-                            this.invokeConsoleCommand("§aLogSystem", `tell ${info.name} ${say}`);
+                            this.invokeConsoleCommand("§aLogSystem", `tell "${info.name}" ${say}`);
+                        }
+                    }
+                ]
+            });
+            this.registerCommand("dellogs", {
+                description: "删除几天以前的所有日志",
+                permission: 1,
+                overloads: [{
+                        parameters: [{
+                                name: "几天以前",
+                                type: "int"
+                            }],
+                        handler(origin, [day]) {
+                            if (!origin.entity)
+                                throw "只有玩家可以执行该命令";
+                            const info = this.actorInfo(origin.entity);
+                            let delNum = database_1.delRecord(day);
+                            this.invokeConsoleCommand("§aLogSystem", `tell "${info.name}" §a已删除${day}天前共计:${delNum}条记录`);
                         }
                     }
                 ]
