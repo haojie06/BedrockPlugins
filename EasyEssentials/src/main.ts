@@ -29,7 +29,7 @@ const showWarp = (entity)=>{
     //server.log(`数据库记录： ${entity.name}--${entity.position}--${entity.owner}`);
 }
 system.initialize = function () {
-    server.log("EasyEssentials v1.2: plugin loaded");
+    server.log("EasyEssentials v1.2: plugin loaded by haojie06");
     //添加自杀命令
     this.registerCommand("suicide",{
         description:"杀死你自己",
