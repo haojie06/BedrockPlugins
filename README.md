@@ -27,6 +27,9 @@ plugins for stoneserver（Minecraft bedrock edition server）
 2. logSystem日志插件（超级简化版coi）v1.1 *1.12继续更新*
 - /logs ax ay az bx by bz 显示范围内所有的破坏/放置/开箱记录
 - /logs ax ay az bx by bz action   action有break/place/open分别对应上面的几个记录，查询区域内的指定类型记录
+**v1.2新增**
+- /logs ax ay az bx by bz 行为名（break/place/open）几小时内(可选) 玩家名(可选) 筛选符合条件的记录
+- /dellogs 几天前 删除几天以前的所有记录
 ## 如何使用
 
 要使用插件请使用stoneserver，解压release中的压缩包到，把插件文件加移动到和启动脚本同名的游戏文件夹 比如 start/games/com.mojang/development_behavior_packs/ 里面，从插件文件夹的 manifest.json 复制出[header]下的两行
