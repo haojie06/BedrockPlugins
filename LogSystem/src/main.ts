@@ -28,44 +28,8 @@ system.initialize = function() {
       //server.log(`${time} ${playerName}(${pX},${pY},${pZ}) 破坏 ${blockName}(${bX},${bY},${bZ}) `);
       addRecord(time, playerName, pX, pY, pZ, "break", blockName, bX, bY, bZ, dim);
     });
-/*
-  this.checkBuild((player,info)=>{
-    let playerInfo = this.actorInfo(player);
-      let blockPos = info.blockpos;
 
-      let playerName = playerInfo.name;
-      let pX = playerInfo.pos[0].toFixed(0);
-      let pY = playerInfo.pos[1].toFixed(0);
-      let pZ = playerInfo.pos[2].toFixed(0);
 
-      let bX = blockPos[0].toFixed(0);
-      let bY = blockPos[1].toFixed(0);
-      let bZ = blockPos[2].toFixed(0);
-
-      let time = getTime();
-      server.log(`${time} ${playerName}(${pX},${pY},${pZ}) build 方块(${bX},${bY},${bZ}) `);
-  });
-*/
-//手中有物品 右键方块时调用
-/*
-  this.checkUse((player,info)=>{
-      let playerInfo = this.actorInfo(player);
-      let item:ItemInstance = info.item;
-      let playerName = playerInfo.name;
-      let itemName = item.name;
-      let itemNum = item.count;
-      let pX = playerInfo.pos[0].toFixed(0);
-      let pY = playerInfo.pos[1].toFixed(0);
-      let pZ = playerInfo.pos[2].toFixed(0);
-
-      let bX = blockPos[0].toFixed(0);
-      let bY = blockPos[1].toFixed(0);
-      let bZ = blockPos[2].toFixed(0);
-
-      let time = getTime();
-      server.log(`${time} ${playerName}(${pX},${pY},${pZ}) useItem ${itemName}`);
-  });
-*/
 //放置方块记录 1.12之后需要升级
   this.checkUseOn((player,info,result)=>{
       if (result == true) {
@@ -116,6 +80,8 @@ system.initialize = function() {
 //添加查询命令
 // /logs x y z x y z 可选：行为
 // /logsof playerName
+this.registerSoftEnum("action_enum", ["all","break", "place","open"]);
+
 this.registerCommand("logs", {
   description: "读取日志",
   permission: 1,
@@ -131,7 +97,8 @@ this.registerCommand("logs", {
       },
       {//可选的行为名称 （破坏 放置 打开）
         name:"行为名",
-        type:"string",
+        type:"soft-enum",
+        enum:"action_enum",
         optional:true
       },
       {
@@ -205,7 +172,7 @@ this.registerCommand("logs", {
         //server.log(say);
         this.invokeConsoleCommand("§aLogSystem",`tell "${info.name}" ${say}`);
       }
-    } as CommandOverload<MySystem, ["position","position","string","int","string"]>
+    } as CommandOverload<MySystem, ["position","position","soft-enum","int","string"]>
   ]
 });
 
