@@ -1,0 +1,18 @@
+{
+  "format_version": 1,
+  "header": {
+    "description": "live in the minecraft world",
+    "name": "Survive",
+    "uuid": "57400157-919e-4918-a97d-89ee770c93fa",
+    "version": [0, 0, 0],
+    "min_engine_version": [1, 9, 0]
+  },
+  "modules": [
+    {
+      "description": "data",
+      "type": "data",
+      "uuid": "b989106c-3044-47fa-a136-5a2c1e6916f5",
+      "version": [0, 0, 0]
+    }
+  ]
+}
