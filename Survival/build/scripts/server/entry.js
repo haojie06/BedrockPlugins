@@ -61,6 +61,12 @@
                         }
                     }]
             });
+            this.checkUse((player, info) => {
+                server.log(info.item.name);
+                if (info.item.name == "potion") {
+                    server.log("正在喝水");
+                }
+            });
             //注册查询命令
         };
         //每tick一次 0.05s
@@ -80,7 +86,6 @@
                     //server.log(JSON.stringify(player));
                     try {
                         let info = system.actorInfo(player);
-                        server.log(info.name);
                         let component = system.getComponent(player, "survival:player_state");
                         //测试 每秒口渴指数降低1
                         //server.log("当前口渴值--" + component.data.thirsty);
@@ -102,9 +107,7 @@
                     }
                 }
             }
-            else {
-                server.log("no player");
-            }
+            else { }
         }
         function onPlayerCreate(data) {
             var entity = data.entity;
