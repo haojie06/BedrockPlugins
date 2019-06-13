@@ -233,6 +233,7 @@
             server.log("日志系统v1.2 https://github.com/haojie06/BedrockPlugins");
             //检测记录破坏方块
             this.checkDestroy((player, info) => {
+                //system.log("破坏" + JSON.stringify(player));
                 let playerInfo = this.actorInfo(player);
                 let blockInfo = info.block;
                 let blockPos = info.blockpos;
