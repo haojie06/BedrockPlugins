@@ -7,7 +7,9 @@ interface ICustomComponent {
         //骨折 75 50 25  四个等级 造成缓慢/挖掘疲劳 每分钟恢复10 喝牛奶恢复?
         broken:number,
         //烧伤 造成虚弱
-        burn:number
+        burn:number,
+        //感染 虚弱 中毒 反胃
+        infect:number
 }
 
 //需要把所有的玩家都加进来
@@ -53,7 +55,15 @@ system.initialize = function() {
               buttons:[{
                 text:`口渴值: ${component.data.thirsty}`,
                 image: {type: "url", data: "https://s2.ax1x.com/2019/06/13/VfC7dA.png"}
-                      }]
+                      },
+                    {
+                text:`感染值: 0`,
+                image: {type: "url", data: "https://s2.ax1x.com/2019/06/18/VL58r4.png"}
+                      },
+                                        {
+                text:`饥渴值:我开玩笑的,不要举报我`,
+                image: {type: "url", data: "https://s2.ax1x.com/2019/06/18/VLIeyD.png"}
+                      }]//https://s2.ax1x.com/2019/06/18/VL5fRf.jpg
           })
       );
       }

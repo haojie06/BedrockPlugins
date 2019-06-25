@@ -56,13 +56,20 @@
                                 buttons: [{
                                         text: `口渴值: ${component.data.thirsty}`,
                                         image: { type: "url", data: "https://s2.ax1x.com/2019/06/13/VfC7dA.png" }
-                                    }]
+                                    },
+                                    {
+                                        text: `感染值: 0`,
+                                        image: { type: "url", data: "https://s2.ax1x.com/2019/06/18/VL58r4.png" }
+                                    },
+                                    {
+                                        text: `饥渴值:我开玩笑的,不要举报我`,
+                                        image: { type: "url", data: "https://s2.ax1x.com/2019/06/18/VLIeyD.png" }
+                                    }] //https://s2.ax1x.com/2019/06/18/VL5fRf.jpg
                             }));
                         }
                     }]
             });
             this.checkUse((player, info) => {
-                server.log(info.item.name);
                 if (info.item.name == "potion") {
                     server.log("正在喝水");
                 }

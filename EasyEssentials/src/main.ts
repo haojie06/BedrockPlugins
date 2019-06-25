@@ -3,6 +3,8 @@ import { db,DELETE_HOME_BY_NAME ,INSERT_HOME, INSERT_WARP,SELECT_WARP_BY_NAME,SE
 
 //死亡坐标map
 var deathMap:{[key:string]:string} = {};
+//是否禁止刷怪箱交互 开启后将无法右键改变刷怪箱
+var disableSpawnerInteract:boolean = true;
 //消息类
 class Request{
     source:string;
@@ -26,10 +28,11 @@ class Request{
 var requestlist:Request[] = [];
 // 初始化时调用
 const showWarp = (entity)=>{
-    //server.log(`数据库记录： ${entity.name}--${entity.position}--${entity.owner}`);
 }
 system.initialize = function () {
+
     server.log("EasyEssentials v1.2: plugin loaded by haojie06");
+    this.registerSoftEnum("trig_enum", ["enable","disable"]);
     //添加自杀命令
     this.registerCommand("suicide",{
         description:"杀死你自己",
@@ -183,7 +186,7 @@ this.registerCommand("delwarp",{
             const info = this.actorInfo(entity);
             if (info.dim != 0) throw "只能在主世界传送";
             const datas = Array.from(db.query(SELECT_ALL_WARP,{}));
-            let show:string;
+            let show:string = "";
             for(var data of datas){
                 show += `${data.name}:(${data.position} by ${data.owner})`;
             this.invokeConsoleCommand("warp",`tell "${info.name}" ${show}`)
@@ -507,6 +510,60 @@ this.registerCommand("tpad", {
 } as CommandOverload<MySystem, []>
     ]
 });
+
+this.registerCommand("spawner",{
+    description:"刷怪箱交互开/关",
+    permission:1,
+    overloads:[{
+        parameters:[{
+            type:"soft-enum",
+            enum:"trig_enum",
+            name:"交互开/交互关"
+        }],
+        handler(original,[trig]){
+            if(trig == "enable"){
+                disableSpawnerInteract = false;
+                system.broadcastMessage(`§2已开启刷怪箱交互`);
+            }
+            else{
+                disableSpawnerInteract = true;
+                system.broadcastMessage(`§4已关闭刷怪箱交互`);
+            }
+
+        }
+    } as CommandOverload<MySystem, ["soft-enum"]> ]
+});
+
+    //执行刷怪箱检测
+    this.checkUseOn((player,info,result)=>{
+        if (result == true) {
+            if (disableSpawnerInteract) {
+        try {
+            let playerInfo = this.actorInfo(player);
+            let blockName = info.block.value.name;
+            let dim = playerInfo.dim;
+            let item:ItemInstance = info.item;
+            let playerName = playerInfo.name;
+            let itemName = "minecraft:" + item.name;
+            let itemNum = item.count;
+            let vec3:Vec3 = info.position;
+            if(itemName == "minecraft:spawn_egg" && blockName == "minecraft:mob_spawner"){
+            let fx,fy,fz,cx,cy,cz;
+            fx = Math.floor(Number(vec3[0]));
+            fy = Math.floor(Number(vec3[1]));
+            fz = Math.floor(Number(vec3[2]));
+            cx = Math.ceil(Number(vec3[0]));
+            cy = Math.ceil(Number(vec3[1]));
+            cz = Math.ceil(Number(vec3[2]));
+            system.invokeConsoleCommand("spawner",`execute "${playerName}" ~ ~ ~ fill ${fx} ${fy} ${fz} ${cx} ${cy} ${cz} air 0 destroy`);
+            system.invokeConsoleCommand("ess",`tellraw ${playerName} {"rawtext":[{"text":"§4当前服务器关闭了刷怪笼交互"}]}`);
+        }
+            
+        } catch (error) {
+        }
+    }
+    }
+    });
 
 //尾巴
 };
