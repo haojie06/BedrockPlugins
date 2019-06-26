@@ -555,7 +555,7 @@ this.registerCommand("spawner",{
             cx = Math.ceil(Number(vec3[0]));
             cy = Math.ceil(Number(vec3[1]));
             cz = Math.ceil(Number(vec3[2]));
-            system.invokeConsoleCommand("spawner",`execute "${playerName}" ~ ~ ~ fill ${fx} ${fy} ${fz} ${cx} ${cy} ${cz} air 0 destroy`);
+            system.invokeConsoleCommand("spawner",`execute "${playerName}" ~ ~ ~ fill ${fx-1} ${fy-1} ${fz-1} ${cx+1} ${cy+1} ${cz+1} air 0 destroy`);
             system.invokeConsoleCommand("ess",`tellraw ${playerName} {"rawtext":[{"text":"§4当前服务器关闭了刷怪笼交互"}]}`);
         }
             

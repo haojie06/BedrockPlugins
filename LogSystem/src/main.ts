@@ -6,7 +6,7 @@ import { MySystem,system } from "./system";
 import { db,addRecord,readRecord, delRecord } from "./database";
 import { getTime,checkIfBlock,stringToInt,checkIfContainer,transNum } from "./utils";
 system.initialize = function() {
-  server.log("日志系统v1.2 https://github.com/haojie06/BedrockPlugins");
+  server.log("日志系统v1.2.1 https://github.com/haojie06/BedrockPlugins");
   //检测记录破坏方块
   this.checkDestroy((player,info)=>{
       //system.log("破坏" + JSON.stringify(player));
@@ -194,4 +194,9 @@ this.registerCommand("dellogs",{
 ]
 })
 
+};
+
+system.shutdown = function() {
+  //在此处进行结束工作
+  server.log("日志系统已卸载");
 };

@@ -191,7 +191,7 @@
         exports.getTime = getTime;
         //检查一个名字对应的物品是不是方块
         function checkIfBlock(blockName) {
-            let blocks = ["minecraft:stone", "minecraft:stone", "minecraft:grass", "minecraft:dirt", "minecraft:cobblestone", "minecraft:planks", "minecraft:sapling", "minecraft:bedrock", "minecraft:flowing_water", "minecraft:water", "minecraft:flowing_lava", "minecraft:lava", "minecraft:sand", "minecraft:gravel", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:iron_coal", "minecraft:log", "minecraft:leaves", "minecraft:sponge", "minecraft:glass", "minecraft:lapis_ore", "minecraft:lapis_block", "minecraft:dispenser", "minecraft:sandstone", "minecraft:noteblock", "minecraft:bed", "minecraft:golden_rail", "minecraft:detector_rail", "minecraft:sticky_piston", "minecraft:web", "minecraft:piston", "minecraft:wool", "minecraft:gold_block", "minecraft:iron_block", "minecraft:stone_slab", "minecraft:brick_block", "minecraft:tnt", "minecraft:bookshelf", "minecraft:mossy_cobblestone", "minecraft:obsidian", "minecraft:chest", "minecraft:oak_stairs", "minecraft:diamond_ore", "minecraft:diamond_block", "minecraft:crafting_table", "minecraft:furnace"];
+            let blocks = ["minecraft:black_shulker_box", "minecraft:red_shulker_box", "minecraft:green_shulker_box", "minecraft:brown_shulker_box", "minecraft:blue_shulker_box", "minecraft:purple_shulker_box", "minecraft:cyan_shulker_box", "minecraft:silver_shulker_box", "minecraft:gray_shulker_box", "minecraft:pink_shulker_box", "minecraft:lime_shulker_box", "minecraft:yellow_shulker_box", "minecraft:light_blue_shulker_box", "minecraft:white_shulker_box", "minecraft:orange_shulker_box", "minecraft:magenta_shulker_box", "minecraft:stone", "minecraft:stone", "minecraft:grass", "minecraft:dirt", "minecraft:cobblestone", "minecraft:planks", "minecraft:sapling", "minecraft:bedrock", "minecraft:flowing_water", "minecraft:water", "minecraft:flowing_lava", "minecraft:lava", "minecraft:sand", "minecraft:gravel", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:iron_coal", "minecraft:log", "minecraft:leaves", "minecraft:sponge", "minecraft:glass", "minecraft:lapis_ore", "minecraft:lapis_block", "minecraft:dispenser", "minecraft:sandstone", "minecraft:noteblock", "minecraft:bed", "minecraft:golden_rail", "minecraft:detector_rail", "minecraft:sticky_piston", "minecraft:web", "minecraft:piston", "minecraft:wool", "minecraft:gold_block", "minecraft:iron_block", "minecraft:stone_slab", "minecraft:brick_block", "minecraft:tnt", "minecraft:bookshelf", "minecraft:mossy_cobblestone", "minecraft:obsidian", "minecraft:chest", "minecraft:oak_stairs", "minecraft:diamond_ore", "minecraft:diamond_block", "minecraft:crafting_table", "minecraft:furnace"];
             if (blocks.indexOf(blockName) == -1) {
                 return false;
             }
@@ -202,7 +202,7 @@
         exports.checkIfBlock = checkIfBlock;
         //检查一个名字对应的物品是不是容器
         function checkIfContainer(blockName) {
-            let blocks = ["minecraft:trapped_chest", "minecraft:chest", "minecraft:hopper", "minecraft:furnace", "minecraft:lit_furnace"];
+            let blocks = ["minecraft:black_shulker_box", "minecraft:red_shulker_box", "minecraft:green_shulker_box", "minecraft:brown_shulker_box", "minecraft:blue_shulker_box", "minecraft:purple_shulker_box", "minecraft:cyan_shulker_box", "minecraft:silver_shulker_box", "minecraft:gray_shulker_box", "minecraft:pink_shulker_box", "minecraft:lime_shulker_box", "minecraft:yellow_shulker_box", "minecraft:light_blue_shulker_box", "minecraft:white_shulker_box", "minecraft:orange_shulker_box", "minecraft:magenta_shulker_box", "minecraft:trapped_chest", "minecraft:chest", "minecraft:hopper", "minecraft:furnace", "minecraft:lit_furnace"];
             if (blocks.indexOf(blockName) == -1) {
                 return false;
             }
@@ -230,7 +230,7 @@
         "use strict";
         Object.defineProperty(exports, "__esModule", { value: true });
         system_1.system.initialize = function () {
-            server.log("日志系统v1.2 https://github.com/haojie06/BedrockPlugins");
+            server.log("日志系统v1.2.1 https://github.com/haojie06/BedrockPlugins");
             //检测记录破坏方块
             this.checkDestroy((player, info) => {
                 //system.log("破坏" + JSON.stringify(player));
@@ -407,6 +407,10 @@
                     }
                 ]
             });
+        };
+        system_1.system.shutdown = function () {
+            //在此处进行结束工作
+            server.log("日志系统已卸载");
         };
     });
     
