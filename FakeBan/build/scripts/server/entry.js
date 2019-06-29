@@ -54,7 +54,7 @@
         var playerNotInWhitelist = [];
         var playerQuery;
         system.initialize = function () {
-            server.log("虚假的白/黑名单 loaded");
+            server.log("黑白名单 v2.0 loaded");
             system.listenForEvent("minecraft:entity_created", onPlayerJoin);
             this.registerSoftEnum("whitelist_enum", ["add", "remove"]);
             //注册自定义组件，用于标识玩家
@@ -80,7 +80,7 @@
                         handler(origin, [target, msg]) {
                             let $kind = "blacklist";
                             let $name = target;
-                            let $msg = "封禁";
+                            let $msg = " ";
                             if (msg != "") {
                                 $msg = msg;
                             }
@@ -92,7 +92,7 @@
                             playerBanedInfoList.push($name);
                             //system.invokeConsoleCommand("§3ban",`say 已将${$name}封禁 ${$msg}`);
                             //server.log(`已封禁${$name} ${$msg}`);
-                            system.broadcastMessage(`§c已封禁${$name}  ${$msg}`);
+                            system.broadcastMessage(`§c已封禁${$name} ${$msg}`);
                         }
                     }
                 ]
@@ -161,9 +161,6 @@
                                     $msg
                                 });
                                 playerNotInWhitelist.splice(playerNotInWhitelist.indexOf(target), 1);
-                                //system.invokeConsoleCommand("§3whitelist",`say 已为${$name}添加白名单 ${$msg}`);
-                                //server.log(`已为${$name}添加白名单 ${$msg}`);
-                                //system.invokeConsoleCommand("whitelist",`title ${$name} title §3你已经获得白名单了，玩得愉快`);
                                 system.broadcastMessage(`§a已为${$name}添加白名单 ${$msg}`);
                             }
                             else if (action == "remove") {
@@ -171,10 +168,24 @@
                                 let $kind = "whitelist";
                                 database_1.db.update(database_1.DELETE_NAME_IN_LIST, { $name, $kind });
                                 playerNotInWhitelist.push($name);
-                                //system.invokeConsoleCommand("§3whitelist",`say 已移除${$name}的白名单 ${msg}`);
-                                //server.log(`已移除${$name}的白名单 ${msg}`);
                                 system.broadcastMessage(`§a已为${$name}添加白名单 ${msg}`);
                             }
+                        }
+                    }
+                ]
+            });
+            this.registerCommand("fkick", {
+                description: "踢掉",
+                permission: 1,
+                overloads: [{
+                        parameters: [
+                            {
+                                type: "player-selector",
+                                name: "target"
+                            }
+                        ],
+                        handler(original, [target]) {
+                            system.destroyEntity(target[0]);
                         }
                     }
                 ]
@@ -194,16 +205,20 @@
                     //找到了名字对应的实体
                     if (playerBanedInfoList.indexOf(info.name) >= 0) {
                         try {
-                            system.invokeConsoleCommand("ban", `clear ${info.name}`);
-                            system.invokeConsoleCommand("ban", `effect ${info.name} slow_falling 100 10 false`);
-                            system.invokeConsoleCommand("ban", `effect ${info.name} blindness 1000 10 false`);
-                            let component = system.getComponent(enti, "minecraft:position" /* Position */);
-                            //修改组件
-                            component.data.x = 0;
-                            component.data.y = 250;
-                            component.data.z = 0;
-                            system.applyComponentChanges(enti, component);
-                            system.invokeConsoleCommand("ban", `title ${info.name} title §4你已被封禁`);
+                            //直接摧毁实体也会导致掉线
+                            /*
+                            system.invokeConsoleCommand("ban",`clear ${info.name}`);
+                            system.invokeConsoleCommand("ban",`effect ${info.name} slow_falling 100 10 false`);
+                            system.invokeConsoleCommand("ban",`effect ${info.name} blindness 1000 10 false`);
+                            let component = system.getComponent(enti, MinecraftComponent.Position);
+                          //修改组件
+                          component.data.x = 0;
+                          component.data.y = 250;
+                          component.data.z = 0;
+                          system.applyComponentChanges(enti, component);
+                          system.invokeConsoleCommand("ban",`title ${info.name} title §4你已被封禁`);
+                          */
+                            system.destroyEntity(enti);
                         }
                         catch (err) {
                             server.log("实体已不存在");
