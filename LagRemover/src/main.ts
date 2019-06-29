@@ -2,7 +2,7 @@ import { MySystem } from "./system";
 
 var itemWhitelist:string[] = ["minecraft:diamond","minecraft:gold_ore","minecraft:iron_ore","minecraft:diamond_ore","minecraft:diamond_block","minecraft:enchanting_table","minecraft:emerald_ore","minecraft:emerald_block","minecraft:beacon","minecraft:iron_shovel","minecraft:iron_pickaxe","minecraft:iron_axe","minecraft:bow","minecraft:diamond","minecraft:iron_ingot","minecraft:gold_ingot","minecraft:iron_sword","minecraft:diamond_sword","minecraft:diamond_shovel","minecraft:diamond_pickaxe","minecraft:diamond_axe"];
 //var entityWhitelist:string[] = ["minecraft:ocelot","minecraft:chicken","minecraft:wandering_trader","minecraft:snow_golem","minecraft:ender_dragon","minecraft:iron_golem","minecraft:mule","minecraft:iron_golem","minecraft:minecart","minecraft:elder_guardian","minecraft:slime","minecraft:ravager","minecraft:pillager","minecraft:player","minecraft:armor_stand","minecraft:villager","minecraft:villager_v2","minecraft:zombie_villager_v2","fine:oak_chair","fine:oak_desk","fine:oak_parkchair","minecraft:zombie_villager","minecraft:wither","minecraft:horse","minecraft:skeleton_horse","minecraft:zombie_horse","minecraft:pig","minecraft:sheep","minecraft:cow","minecraft:panda","minecraft:turtle","minecraft:parrot","minecraft:cat","minecraft:wolf","minecraft:donkey","jsa:jet1","jsa:jet2","jsa:jet3","jsa:jet4","jsa:jet5","jsa:jet6"]; 
-var entityBlacklist:string[] = ["minecraft:bat","minecraft:blaze","minecraft:cave_spider","minecraft:creeper","minecraft:drowned","minecraft:enderman","minecraft:ghast","minecraft:husk","minecraft:magma_cube","minecraft:skeleton","minecraft:squid","minecraft:stray","minecraft:wither_skeleton","minecraft:zombie","minecraft:zombie_pigman"];
+var entityBlacklist:string[] = ["minecraft:fireball","minecraft:arrow","fine:halfzombie","minecraft:bat","minecraft:blaze","minecraft:cave_spider","minecraft:creeper","minecraft:drowned","minecraft:enderman","minecraft:ghast","minecraft:husk","minecraft:magma_cube","minecraft:skeleton","minecraft:squid","minecraft:stray","minecraft:wither_skeleton","minecraft:zombie","minecraft:zombie_pigman"];
 var stackWhitelist:string[] = ["minecraft:ravager","minecraft:pillager","minecraft:player","minecraft:armor_stand","minecraft:villager","minecraft:villager_v2","minecraft:villager_v2"];
 var itemQuery,mobQuery,entityQuery,positionQuery;
 var tick = 0;
@@ -104,21 +104,18 @@ function onEntityCreate(data){
     }
   }
   else{
-    let nameComp = system.getComponent(entity,MinecraftComponent.Nameable);
     if(entityBlacklist.indexOf(entity.__identifier__) != -1){
       system.createComponent(entity,"lagremover:isEntity");
       }
-      else{
-        //server.log(entity.__identifier__ + entityWhitelist.indexOf(entity.__identifier__) + "实体在白名单内");
-      }
+
+        //生物出生的时候是否检查周围出现堆叠
       if(stackWhitelist.indexOf(entity.__identifier__) == -1){
-      //生物出生的时候检查周围是否出现堆叠
       let posComp = system.getComponent(entity,MinecraftComponent.Position);
       let x = Math.floor(posComp.data.x);
       let y = Math.floor(posComp.data.y);
       let z = Math.floor(posComp.data.z);
       let startTime = Date.now();
-      let entities = system.getEntitiesFromQuery(positionQuery,x-5,y-5,z-5,x+5,y+5,z+5);
+      let entities = system.getEntitiesFromQuery(positionQuery,x-10,y-20,z-10,x+10,y+20,z+10);
       if(entities == null){
         throw("无法获得周边实体信息");
       }
@@ -130,15 +127,17 @@ function onEntityCreate(data){
       }
       //server.log(`生成${entity.__identifier__}周围有同种实体${sameEntities.length}个`); 周围出现超过15个同类实体时清理
       if (sameEntities.length >=maxStackSize) {
+        let name = entity.__identifier__;
+        let pos = system.getComponent(entity,MinecraftComponent.Position);
+        let x = Math.floor(pos.data.x);
+        let y = Math.floor(pos.data.y);
+        let z = Math.floor(pos.data.z);
         for(let entity of sameEntities){
-          //let nameComp = system.getComponent(entity,MinecraftComponent.Nameable);
-          //if(nameComp.data.name == ""){
           system.destroyEntity(entity);
-          //}
         }
         let endTime = Date.now() - startTime;
-        system.broadcastMessage(`§a§l清道夫§r §c实体堆叠过多，触发清理 耗时${endTime}ms`);
-        server.log(`实体堆叠过多，触发清理 耗时${endTime}ms`)
+        system.broadcastMessage(`§a§l清道夫§r §c${name}堆叠过多，触发清理 耗时${endTime}ms`);
+        server.log(`实体${name}(${x},${y},${z})堆叠过多，触发清理 耗时${endTime}ms`);
       }
     }
   }
