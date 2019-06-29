@@ -1,0 +1,18 @@
+{
+  "format_version": 1,
+  "header": {
+    "description": "Remove L",
+    "name": "LagRemover",
+    "uuid": "d946e2ea-ae23-44e7-be88-33efb7d36e75",
+    "version": [0, 0, 0],
+    "min_engine_version": [1, 9, 0]
+  },
+  "modules": [
+    {
+      "description": "data",
+      "type": "data",
+      "uuid": "9c315bc4-b1cf-4bd9-a3ec-b80b7c4a2d06",
+      "version": [0, 0, 0]
+    }
+  ]
+}
