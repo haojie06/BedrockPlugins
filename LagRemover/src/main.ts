@@ -8,6 +8,7 @@ var itemQuery,mobQuery,entityQuery,positionQuery;
 var tick = 0;
 var maxStackSize = 20; //当一定范围内堆积生物超过这个数的时候清理其中所有生物
 var clearInterval = 10800; //清理间隔设置（这里是提醒的间隔） 上一次清理后间隔1200tick提醒，然后再等一分钟开始清理 一共两分钟
+var second=0,second=0,minute=0,hour=0;
 const system = server.registerSystem<MySystem>(0, 0);
 system.initialize = function() {
   server.log("LagRemover v1.2 Loaded");
@@ -30,7 +31,7 @@ system.initialize = function() {
         parameters:[],
         handler(origin) {
           let entities = system.getEntitiesFromQuery(itemQuery);
-          system.broadcastMessage(`§c当前待清除掉落物数量:${entities.length}`);
+          system.broadcastMessage(`§c服务器已运行${minute}分钟${second}秒\n§c当前待清除掉落物数量:${entities.length}`);
           server.log(`当前待清除掉落物数量:${entities.length}`);
           entities = system.getEntitiesFromQuery(mobQuery);
           system.broadcastMessage(`§c当前待清除生物数量:${entities.length}`);
@@ -47,6 +48,15 @@ system.initialize = function() {
 system.update = function() {
   //20tick = 1s
   tick++;
+  let mod = tick%20;
+  if(mod == 0){
+    second++;
+  }
+  if(second  == 60){
+    minute++;
+    second=0;
+  }
+
   if(tick == clearInterval){
     system.broadcastMessage(`§a§l一分钟后准备清理掉落物与生物，请做好准备`);
   }
@@ -91,6 +101,8 @@ system.update = function() {
     server.log(`已经清理${itemLength}个掉落物 ${mobLength}个生物,共耗时${useTime}ms`);
     tick = 0;
   }
+
+
   //if (tick == 12000){
     //
   //}

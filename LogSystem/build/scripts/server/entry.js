@@ -75,6 +75,10 @@
             return delNum;
         }
         exports.delRecord = delRecord;
+        function closeDB() {
+            exports.db = null;
+        }
+        exports.closeDB = closeDB;
         function readRecord($sX, $sY, $sZ, $eX, $eY, $eZ, $dim, $action = "all", $hour = 0, $player = "") {
             let $minX = Math.min($sX, $eX);
             let $minY = Math.min($sY, $eY);
@@ -410,6 +414,7 @@
         };
         system_1.system.shutdown = function () {
             //在此处进行结束工作
+            database_1.closeDB();
             server.log("日志系统已卸载");
         };
     });

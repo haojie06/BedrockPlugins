@@ -51,7 +51,7 @@ function fix(arr: TemplateStringsArray) {
  export const SELECT_ALL_IN_ZONE_AFTERTIME_PNAME = fix`SELECT * FROM log WHERE targetX >= $minX AND targetY >= $minY AND targetZ >= $minZ AND targetX <= $maxX AND targetY <= $maxY AND targetZ <= $maxZ AND dim = $dim AND timestamp > $timeline AND name=$player`;
  export const SELECT_IN_ZONE_BYACTION_AFTERTIME_PNAME = fix`SELECT * FROM log WHERE targetX >= $minX AND targetY >= $minY AND targetZ >= $minZ AND targetX <= $maxX AND targetY <= $maxY AND targetZ <= $maxZ AND dim = $dim AND action = $action AND timestamp > $timeline AND name=$player`;
 
-export const db = new SQLite3("logs.db");
+export var db = new SQLite3("logs.db");
 db.exec(CREATE_TABLE);
 
 //向数据库中添加记录
@@ -66,7 +66,9 @@ export function delRecord(day:number):number{
   let delNum =  db.update(DELETE_LOG_BY_DAY,{$timestamp});
   return delNum;
 }
-
+export function closeDB(){
+db = null;
+}
 export function readRecord($sX, $sY, $sZ, $eX, $eY, $eZ, $dim, $action="all", $hour=0,$player=""){
     let $minX = Math.min($sX,$eX);
     let $minY = Math.min($sY,$eY);

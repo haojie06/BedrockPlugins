@@ -3,7 +3,7 @@ create by haojie06 2019/6/10
 用于记录玩家在游戏中的行为 （超简化版coi..）
 */
 import { MySystem,system } from "./system";
-import { db,addRecord,readRecord, delRecord } from "./database";
+import { db,addRecord,readRecord, delRecord, closeDB } from "./database";
 import { getTime,checkIfBlock,stringToInt,checkIfContainer,transNum } from "./utils";
 system.initialize = function() {
   server.log("日志系统v1.2.1 https://github.com/haojie06/BedrockPlugins");
@@ -198,5 +198,6 @@ this.registerCommand("dellogs",{
 
 system.shutdown = function() {
   //在此处进行结束工作
+  closeDB();
   server.log("日志系统已卸载");
 };
