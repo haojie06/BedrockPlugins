@@ -148,7 +148,7 @@ function onEntityCreate(data){
           system.destroyEntity(entity);
         }
         let endTime = Date.now() - startTime;
-        system.broadcastMessage(`§a§l清道夫§r §c${name}堆叠过多，触发清理 耗时${endTime}ms`);
+        system.broadcastMessage(`§a§l清道夫§r §c${name}堆叠过多，触发清理 耗时${endTime}ms 请不要大量堆积生物(>20)`);
         server.log(`实体${name}(${x},${y},${z})堆叠过多，触发清理 耗时${endTime}ms`);
       }
     }
