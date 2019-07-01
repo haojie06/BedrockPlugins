@@ -24,6 +24,7 @@ function fix(arr: TemplateStringsArray) {
   export const SELECT_WARP_BY_NAME = fix`SELECT * FROM warp WHERE name=$name;`;
 
   export const SELECT_ALL_WARP = fix`SELECT * FROM warp;`;
+  export const SELECT_ALL_JAIL = fix`SELECT * FROM jails;`;
 
   export const DELETE_WARP_BY_NAME = fix`DELETE FROM warp WHERE name=$name;`;
 
@@ -51,9 +52,52 @@ function fix(arr: TemplateStringsArray) {
     $homeName, $position, $owner
   );`;
 
+  export const CREATE_JAIL_TABLE = fix`
+  CREATE TABLE IF NOT EXISTS jails(
+    id,
+    jailName TEXT NOT NULL UNIQUE,
+    sposition TEXT NOT NULL,
+    eposition TEXT NOT NULL,
+    spawnposition TEXT NOT NULL,
+    minx INT NOT NULL,
+    miny INT NOT NULL,
+    minz INT NOT NULL,
+    maxx INT NOT NULL,
+    maxy INT NOT NULL,
+    maxz INT NOT NULL
+  );`;
+//创建一个jail
+  export const INSERT_JAIL = fix`
+  INSERT INTO jails (
+    jailName, sposition, eposition, spawnposition, minx, miny, minz, maxx, maxy, maxz
+  ) values (
+    $jailName, $sposition, $eposition, $spawnposition, $minx, $miny, $minz, $maxx, $maxy, $maxz
+  );`;
+
+  export const CREATE_PRISONER_TABLE = fix`
+  CREATE TABLE IF NOT EXISTS prisoners(
+    id,
+    jailName TEXT NOT NULL,
+    playerName TEXT NOT NULL,
+    time TEXT NOT NULL,
+    reason TEXT NOT NULL
+  );`;
+//入狱
+  export const INSERT_PRISONER = fix`
+  INSERT INTO prisoners (
+    jailName, playerName, time, reason
+  ) values (
+    $jailName, $playerName, $time, $reason
+  );`;
+
+  export const DELETE_PRISONER_BY_NAME = fix`DELETE FROM prisoners WHERE playerName=$playerName`;
+  export const DELETE_JAIL_BY_NAME = fix`DELETE FROM jails WHERE jailName=$jailName`;
+
   //删除一个home
   export const DELETE_HOME_BY_NAME = fix`DELETE FROM homes WHERE homeName=$homeName AND owner=$owner;`;
 
   export const db = new SQLite3("ess.db");
   db.exec(CREATE_TABLE);
   db.exec(CREATE_HOME_TABLE);
+  db.exec(CREATE_JAIL_TABLE);
+  db.exec(CREATE_PRISONER_TABLE);

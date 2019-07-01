@@ -35,6 +35,7 @@
       );`;
         exports.SELECT_WARP_BY_NAME = fix `SELECT * FROM warp WHERE name=$name;`;
         exports.SELECT_ALL_WARP = fix `SELECT * FROM warp;`;
+        exports.SELECT_ALL_JAIL = fix `SELECT * FROM jails;`;
         exports.DELETE_WARP_BY_NAME = fix `DELETE FROM warp WHERE name=$name;`;
         //创建一个储存home信息的表
         exports.CREATE_HOME_TABLE = fix `
@@ -55,11 +56,51 @@
       ) values (
         $homeName, $position, $owner
       );`;
+        exports.CREATE_JAIL_TABLE = fix `
+      CREATE TABLE IF NOT EXISTS jails(
+        id,
+        jailName TEXT NOT NULL UNIQUE,
+        sposition TEXT NOT NULL,
+        eposition TEXT NOT NULL,
+        spawnposition TEXT NOT NULL,
+        minx INT NOT NULL,
+        miny INT NOT NULL,
+        minz INT NOT NULL,
+        maxx INT NOT NULL,
+        maxy INT NOT NULL,
+        maxz INT NOT NULL
+      );`;
+        //创建一个jail
+        exports.INSERT_JAIL = fix `
+      INSERT INTO jails (
+        jailName, sposition, eposition, spawnposition, minx, miny, minz, maxx, maxy, maxz
+      ) values (
+        $jailName, $sposition, $eposition, $spawnposition, $minx, $miny, $minz, $maxx, $maxy, $maxz
+      );`;
+        exports.CREATE_PRISONER_TABLE = fix `
+      CREATE TABLE IF NOT EXISTS prisoners(
+        id,
+        jailName TEXT NOT NULL,
+        playerName TEXT NOT NULL,
+        time TEXT NOT NULL,
+        reason TEXT NOT NULL
+      );`;
+        //入狱
+        exports.INSERT_PRISONER = fix `
+      INSERT INTO prisoners (
+        jailName, playerName, time, reason
+      ) values (
+        $jailName, $playerName, $time, $reason
+      );`;
+        exports.DELETE_PRISONER_BY_NAME = fix `DELETE FROM prisoners WHERE playerName=$playerName`;
+        exports.DELETE_JAIL_BY_NAME = fix `DELETE FROM jails WHERE jailName=$jailName`;
         //删除一个home
         exports.DELETE_HOME_BY_NAME = fix `DELETE FROM homes WHERE homeName=$homeName AND owner=$owner;`;
         exports.db = new SQLite3("ess.db");
         exports.db.exec(exports.CREATE_TABLE);
         exports.db.exec(exports.CREATE_HOME_TABLE);
+        exports.db.exec(exports.CREATE_JAIL_TABLE);
+        exports.db.exec(exports.CREATE_PRISONER_TABLE);
     });
     define("system", ["require", "exports"], function (require, exports) {
         "use strict";
@@ -90,7 +131,7 @@
         const showWarp = (entity) => {
         };
         system_1.system.initialize = function () {
-            server.log("EasyEssentials v1.2: plugin loaded by haojie06");
+            server.log("EasyEssentials v1.2.2: plugin loaded by haojie06");
             this.registerSoftEnum("trig_enum", ["enable", "disable"]);
             //添加自杀命令
             this.registerCommand("suicide", {
@@ -232,7 +273,8 @@
                             let position = datas[0].position;
                             let owner = datas[0].owner;
                             this.invokeConsoleCommand("warp", `tp "${info.name}" ${position}`);
-                            this.invokeConsoleCommand("warp", `tell "${info.name}" 已为你传送`);
+                            //this.invokeConsoleCommand("warp",`tell "${info.name}" 已为你传送`);
+                            system_1.system.invokeConsoleCommand("warp", `tellraw ${info.name} {"rawtext":[{"text":"§a已为你传送"}]}`);
                         }
                     }]
             });
@@ -252,7 +294,8 @@
                             let show = "";
                             for (var data of datas) {
                                 show += `${data.name}:(${data.position} by ${data.owner})`;
-                                this.invokeConsoleCommand("warp", `tell "${info.name}" ${show}`);
+                                //this.invokeConsoleCommand("warp",`tell "${info.name}" ${show}`)
+                                system_1.system.invokeConsoleCommand("warp", `tellraw ${info.name} {"rawtext":[{"text":"${show}"}]}`);
                             }
                         }
                     }]
@@ -290,7 +333,8 @@
                                 let $position = getPositionofEntity(original.entity);
                                 //可以执行添加
                                 database_1.db.update(database_1.INSERT_HOME, { $homeName, $position, $owner });
-                                this.invokeConsoleCommand("home", `tell "${$owner}" 已为你设置名为${$homeName}的家`);
+                                //this.invokeConsoleCommand("home",`tell "${$owner}" 已为你设置名为${$homeName}的家`);
+                                system_1.system.invokeConsoleCommand("home", `tellraw ${$owner} {"rawtext":[{"text":"§a已为你设置名为${$homeName}的家"}]}`);
                             }
                             else {
                                 throw "设置的home数量超过上限";
@@ -318,7 +362,8 @@
                             for (let index in datas) {
                                 say += `§a<${Number(index) + 1}>.home:${datas[index].homeName} position: ${datas[index].position}\n`;
                             }
-                            this.invokeConsoleCommand("home", `tell "${$owner}" ${say}`);
+                            //this.invokeConsoleCommand("home",`tell "${$owner}" ${say}`);
+                            system_1.system.invokeConsoleCommand("home", `tellraw ${$owner} {"rawtext":[{"text":"${say}"}]}`);
                         }
                     }]
             });
@@ -352,10 +397,12 @@
                                     }
                                 }
                                 if (flag) {
-                                    this.invokeConsoleCommand("home", `tell "${$owner}" §a已删除${$homeName}`);
+                                    //this.invokeConsoleCommand("home",`tell "${$owner}" §a已删除${$homeName}`);
+                                    system_1.system.invokeConsoleCommand("home", `tellraw ${$owner} {"rawtext":[{"text":"已删除${$homeName}"}]}`);
                                 }
                                 else {
-                                    this.invokeConsoleCommand("home", `tell "${$owner}" §c删除${$homeName}失败`);
+                                    //this.invokeConsoleCommand("home",`tell "${$owner}" §c删除${$homeName}失败`);
+                                    system_1.system.invokeConsoleCommand("home", `tellraw ${$owner} {"rawtext":[{"text":"§c删除${$homeName}失败"}]}`);
                                 }
                             }
                             else {
@@ -387,7 +434,8 @@
                             if (datas.length != 0) {
                                 if ($homeName == "") {
                                     this.invokeConsoleCommand("home", `tp "${$owner}" ${datas[0].position}`);
-                                    this.invokeConsoleCommand("home", `tell "${$owner}" 已传送至${datas[0].homeName}`);
+                                    //this.invokeConsoleCommand("home",`tell "${$owner}" 已传送至${datas[0].homeName}`)
+                                    system_1.system.invokeConsoleCommand("home", `tellraw ${$owner} {"rawtext":[{"text":"§a已传送至${datas[0].homeName}"}]}`);
                                 }
                                 else {
                                     //判断是否有重名的home
@@ -395,7 +443,8 @@
                                         if (data.homeName == $homeName) {
                                             //可以执行传送
                                             this.invokeConsoleCommand("home", `tp "${$owner}" ${data.position}`);
-                                            this.invokeConsoleCommand("home", `tell "${$owner}" 已传送至${data.homeName}`);
+                                            //this.invokeConsoleCommand("home",`tell "${$owner}" 已传送至${data.homeName}`);
+                                            system_1.system.invokeConsoleCommand("home", `tellraw ${$owner} {"rawtext":[{"text":"§a已传送至${data.homeName}"}]}`);
                                         }
                                     }
                                 }
@@ -422,7 +471,8 @@
                             if (y === 32767)
                                 throw "无法找到世界出生点，请/setworldpoint";
                             this.invokeConsoleCommand("§a§lspawn", `tp "${info.name}" ${x} ${y} ${z}`);
-                            this.invokeConsoleCommand("§a§lspawn", `tell "${info.name}" 已传送至主城`);
+                            //this.invokeConsoleCommand("§a§lspawn",`tell "${info.name}" 已传送至主城`);
+                            system_1.system.invokeConsoleCommand("spawn", `tellraw ${info.name} {"rawtext":[{"text":"§a已传送至主城"}]}`);
                         }
                     }]
             });
@@ -456,8 +506,10 @@
                             const targetinfo = this.actorInfo(target);
                             if (targetinfo.dim != info.dim)
                                 throw "无法在不同维度之间tpa";
-                            this.invokeConsoleCommand("§ateleport", `tell "${info.name}" §a已发送请求`);
-                            this.invokeConsoleCommand("§ateleport", `tell "${targetinfo.name}" §b${info.name} 想要传送到你这里：${msg}，1分钟内有效，输入/tpac接受 /tpad 拒绝`);
+                            //this.invokeConsoleCommand("§ateleport",`tell "${info.name}" §a已发送请求`);
+                            system_1.system.invokeConsoleCommand("tp", `tellraw ${info.name} {"rawtext":[{"text":"§a已发送请求"}]}`);
+                            system_1.system.invokeConsoleCommand("tp", `tellraw ${targetinfo.name} {"rawtext":[{"text":"§b${info.name} 想要传送到你这里：${msg}，1分钟内有效，输入/tpac接受 /tpad 拒绝"}]}`);
+                            //this.invokeConsoleCommand("§ateleport",`tell "${targetinfo.name}" §b${info.name} 想要传送到你这里：${msg}，1分钟内有效，输入/tpac接受 /tpad 拒绝`);
                             //向消息队列增加消息
                             let req = new Request("tpa", info.name, targetinfo.name, 60);
                             addToRequestList(req);
@@ -494,8 +546,10 @@
                             const targetinfo = this.actorInfo(target);
                             if (targetinfo.dim != info.dim)
                                 throw "无法在不同维度之间tpahere";
-                            this.invokeConsoleCommand("§ateleport", `tell "${info.name}" §a已发送邀请`);
-                            this.invokeConsoleCommand("§ateleport", `tell "${targetinfo.name}" §b${info.name} 邀请你传送到ta那：${msg}，1分钟内有效，输入/tpac接受 /tpad 拒绝`);
+                            //this.invokeConsoleCommand("§ateleport",`tell "${info.name}" §a已发送邀请`);
+                            system_1.system.invokeConsoleCommand("tp", `tellraw ${info.name} {"rawtext":[{"text":"§a已发送邀请"}]}`);
+                            //this.invokeConsoleCommand("§ateleport",`tell "${targetinfo.name}" §b${info.name} 邀请你传送到ta那：${msg}，1分钟内有效，输入/tpac接受 /tpad 拒绝`);
+                            system_1.system.invokeConsoleCommand("tp", `tellraw ${targetinfo.name} {"rawtext":[{"text":"§b${info.name} 邀请你传送到ta那：${msg}，1分钟内有效，输入/tpac接受 /tpad 拒绝"}]}`);
                             //向消息队列增加消息
                             let req = new Request("tpahere", info.name, targetinfo.name, 60);
                             addToRequestList(req);
@@ -527,13 +581,17 @@
                             if (req.request == "tpa") {
                                 //接受tpa
                                 this.invokeConsoleCommand("tpa", `tp "${req.source}" "${source}"`);
-                                this.invokeConsoleCommand("tpa", `tell "${source}" §a接受请求`);
-                                this.invokeConsoleCommand("tpa", `tell "${req.source}" §a${source}接受了你的请求`);
+                                // this.invokeConsoleCommand("tpa",`tell "${source}" §a接受请求`);
+                                system_1.system.invokeConsoleCommand("tp", `tellraw ${source} {"rawtext":[{"text":"§a接受请求"}]}`);
+                                //this.invokeConsoleCommand("tpa",`tell "${req.source}" §a${source}接受了你的请求`);
+                                system_1.system.invokeConsoleCommand("tp", `tellraw ${req.source} {"rawtext":[{"text":"§a${source}接受了你的请求"}]}`);
                             }
                             else if (req.request == "tpahere") {
                                 this.invokeConsoleCommand("tpa", `tp "${source}" "${req.source}"`);
-                                this.invokeConsoleCommand("tpa", `tell "${req.source}" §a${source}接受了你的邀请`);
-                                this.invokeConsoleCommand("tpa", `tell "${source}" §a接受请求`);
+                                //this.invokeConsoleCommand("tpa",`tell "${req.source}" §a${source}接受了你的邀请`);
+                                system_1.system.invokeConsoleCommand("tp", `tellraw ${req.source} {"rawtext":[{"text":"§a${source}接受了你的请求"}]}`);
+                                system_1.system.invokeConsoleCommand("tp", `tellraw ${source} {"rawtext":[{"text":"§a接受请求"}]}`);
+                                //this.invokeConsoleCommand("tpa",`tell "${source}" §a接受请求`);
                             }
                         }
                     }
@@ -561,12 +619,16 @@
                             let source = info.name;
                             if (req.request == "tpa") {
                                 //接受tpa
-                                this.invokeConsoleCommand("tpa", `tell "${req.source}" §c${source}拒绝了你的请求`);
-                                this.invokeConsoleCommand("tpa", `tell "${source}" §a拒绝请求`);
+                                //this.invokeConsoleCommand("tpa",`tell "${req.source}" §c${source}拒绝了你的请求`);
+                                system_1.system.invokeConsoleCommand("tp", `tellraw ${req.source} {"rawtext":[{"text":"§c${source}拒绝了你的请求"}]}`);
+                                //this.invokeConsoleCommand("tpa",`tell "${source}" §a拒绝请求`);
+                                system_1.system.invokeConsoleCommand("tp", `tellraw ${source} {"rawtext":[{"text":"§c拒绝请求"}]}`);
                             }
                             else if (req.request == "tpahere") {
-                                this.invokeConsoleCommand("tpa", `tell "${req.source}" §c${source}拒绝了你的邀请`);
-                                this.invokeConsoleCommand("tpa", `tell "${source}" §a拒绝邀请`);
+                                //this.invokeConsoleCommand("tpa",`tell "${req.source}" §c${source}拒绝了你的邀请`);
+                                system_1.system.invokeConsoleCommand("tp", `tellraw ${req.source} {"rawtext":[{"text":"§c${source}拒绝了你的邀请"}]}`);
+                                //this.invokeConsoleCommand("tpa",`tell "${source}" §a拒绝邀请`);
+                                system_1.system.invokeConsoleCommand("tp", `tellraw ${source} {"rawtext":[{"text":"§c接受邀请"}]}`);
                             }
                         }
                     }
@@ -593,6 +655,84 @@
                         }
                     }]
             });
+            this.registerCommand("setjail", {
+                description: "设置监狱",
+                permission: 1,
+                overloads: [{
+                        parameters: [
+                            {
+                                type: "string",
+                                name: "监狱名"
+                            },
+                            {
+                                type: "position",
+                                name: "起始点"
+                            },
+                            {
+                                type: "position",
+                                name: "中止点"
+                            },
+                            {
+                                type: "position",
+                                name: "出生点"
+                            }
+                        ],
+                        handler(original, [$jailName, start, end, spawn]) {
+                            let result = database_1.db.update(database_1.INSERT_JAIL, {
+                                $jailName,
+                                $sposition: Math.floor(start[0]) + " " + Math.floor(start[1]) + " " + Math.floor(start[2]),
+                                $eposition: Math.floor(end[0]) + " " + Math.floor(end[1]) + " " + Math.floor(end[2]),
+                                $spawnposition: Math.floor(spawn[0]) + " " + Math.floor(spawn[1]) + " " + Math.floor(spawn[2]),
+                                $minx: Math.floor(Math.min(start[0], end[0])),
+                                $miny: Math.floor(Math.min(start[1], end[1])),
+                                $minz: Math.floor(Math.min(start[2], end[2])),
+                                $maxx: Math.floor(Math.max(start[0], end[0])),
+                                $maxy: Math.floor(Math.max(start[1], end[1])),
+                                $maxz: Math.floor(Math.max(start[2], end[2])),
+                            });
+                            if (result == 0)
+                                throw "设立监狱失败，请查看监狱名是否唯一";
+                            system_1.system.broadcastMessage(`已设立${$jailName}`);
+                        }
+                    }]
+            });
+            this.registerCommand("deljail", {
+                description: "移除监狱",
+                permission: 1,
+                overloads: [{
+                        parameters: [{
+                                type: "string",
+                                name: "监狱名"
+                            }],
+                        handler(original, [$jailName]) {
+                            let result = database_1.db.update(database_1.DELETE_JAIL_BY_NAME, {
+                                $jailName
+                            });
+                            if (result == 0)
+                                throw "移除监狱失败，请确认监狱是否存在";
+                            system_1.system.broadcastMessage(`已移除监狱: ${$jailName}`);
+                        }
+                    }]
+            });
+            this.registerCommand("jaillist", {
+                description: "查看已有监狱",
+                permission: 1,
+                overloads: [{
+                        parameters: [],
+                        handler(original, []) {
+                            let info = system_1.system.actorInfo(original.entity);
+                            let playerName = info.name;
+                            let datas = Array.from(database_1.db.query(database_1.SELECT_ALL_JAIL, {}));
+                            if (datas.length == 0)
+                                throw "你还未设置任何监狱";
+                            let message = "§4当前已有监狱\n";
+                            for (let index in datas) {
+                                message += `${index}.${datas[index].jailName}\n`;
+                            }
+                            system_1.system.invokeConsoleCommand("jail", `tellraw ${playerName} {"rawtext":[{"text":"${message}"}]}`);
+                        }
+                    }]
+            });
             //执行刷怪箱检测
             this.checkUseOn((player, info, result) => {
                 if (result == true) {
@@ -614,7 +754,7 @@
                                 cx = Math.ceil(Number(vec3[0]));
                                 cy = Math.ceil(Number(vec3[1]));
                                 cz = Math.ceil(Number(vec3[2]));
-                                system_1.system.invokeConsoleCommand("spawner", `execute "${playerName}" ~ ~ ~ fill ${fx} ${fy} ${fz} ${cx} ${cy} ${cz} air 0 destroy`);
+                                system_1.system.invokeConsoleCommand("spawner", `execute "${playerName}" ~ ~ ~ fill ${fx - 1} ${fy - 1} ${fz - 1} ${cx + 1} ${cy + 1} ${cz + 1} air 0 destroy`);
                                 system_1.system.invokeConsoleCommand("ess", `tellraw ${playerName} {"rawtext":[{"text":"§4当前服务器关闭了刷怪笼交互"}]}`);
                             }
                         }
