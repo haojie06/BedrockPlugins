@@ -274,7 +274,7 @@
                             let owner = datas[0].owner;
                             this.invokeConsoleCommand("warp", `tp "${info.name}" ${position}`);
                             //this.invokeConsoleCommand("warp",`tell "${info.name}" 已为你传送`);
-                            system_1.system.invokeConsoleCommand("warp", `tellraw ${info.name} {"rawtext":[{"text":"§a已为你传送"}]}`);
+                            system_1.system.invokeConsoleCommand("warp", `tellraw "${info.name}" {"rawtext":[{"text":"§a已为你传送"}]}`);
                         }
                     }]
             });
@@ -295,7 +295,7 @@
                             for (var data of datas) {
                                 show += `${data.name}:(${data.position} by ${data.owner})`;
                                 //this.invokeConsoleCommand("warp",`tell "${info.name}" ${show}`)
-                                system_1.system.invokeConsoleCommand("warp", `tellraw ${info.name} {"rawtext":[{"text":"${show}"}]}`);
+                                system_1.system.invokeConsoleCommand("warp", `tellraw "${info.name}" {"rawtext":[{"text":"${show}"}]}`);
                             }
                         }
                     }]
@@ -334,7 +334,7 @@
                                 //可以执行添加
                                 database_1.db.update(database_1.INSERT_HOME, { $homeName, $position, $owner });
                                 //this.invokeConsoleCommand("home",`tell "${$owner}" 已为你设置名为${$homeName}的家`);
-                                system_1.system.invokeConsoleCommand("home", `tellraw ${$owner} {"rawtext":[{"text":"§a已为你设置名为${$homeName}的家"}]}`);
+                                system_1.system.invokeConsoleCommand("home", `tellraw "${$owner}" {"rawtext":[{"text":"§a已为你设置名为${$homeName}的家"}]}`);
                             }
                             else {
                                 throw "设置的home数量超过上限";
@@ -363,7 +363,7 @@
                                 say += `§a<${Number(index) + 1}>.home:${datas[index].homeName} position: ${datas[index].position}\n`;
                             }
                             //this.invokeConsoleCommand("home",`tell "${$owner}" ${say}`);
-                            system_1.system.invokeConsoleCommand("home", `tellraw ${$owner} {"rawtext":[{"text":"${say}"}]}`);
+                            system_1.system.invokeConsoleCommand("home", `tellraw "${$owner}" {"rawtext":[{"text":"${say}"}]}`);
                         }
                     }]
             });
@@ -398,11 +398,11 @@
                                 }
                                 if (flag) {
                                     //this.invokeConsoleCommand("home",`tell "${$owner}" §a已删除${$homeName}`);
-                                    system_1.system.invokeConsoleCommand("home", `tellraw ${$owner} {"rawtext":[{"text":"已删除${$homeName}"}]}`);
+                                    system_1.system.invokeConsoleCommand("home", `tellraw "${$owner}" {"rawtext":[{"text":"已删除${$homeName}"}]}`);
                                 }
                                 else {
                                     //this.invokeConsoleCommand("home",`tell "${$owner}" §c删除${$homeName}失败`);
-                                    system_1.system.invokeConsoleCommand("home", `tellraw ${$owner} {"rawtext":[{"text":"§c删除${$homeName}失败"}]}`);
+                                    system_1.system.invokeConsoleCommand("home", `tellraw "${$owner}" {"rawtext":[{"text":"§c删除${$homeName}失败"}]}`);
                                 }
                             }
                             else {
@@ -435,7 +435,7 @@
                                 if ($homeName == "") {
                                     this.invokeConsoleCommand("home", `tp "${$owner}" ${datas[0].position}`);
                                     //this.invokeConsoleCommand("home",`tell "${$owner}" 已传送至${datas[0].homeName}`)
-                                    system_1.system.invokeConsoleCommand("home", `tellraw ${$owner} {"rawtext":[{"text":"§a已传送至${datas[0].homeName}"}]}`);
+                                    system_1.system.invokeConsoleCommand("home", `tellraw "${$owner}" {"rawtext":[{"text":"§a已传送至${datas[0].homeName}"}]}`);
                                 }
                                 else {
                                     //判断是否有重名的home
@@ -444,7 +444,7 @@
                                             //可以执行传送
                                             this.invokeConsoleCommand("home", `tp "${$owner}" ${data.position}`);
                                             //this.invokeConsoleCommand("home",`tell "${$owner}" 已传送至${data.homeName}`);
-                                            system_1.system.invokeConsoleCommand("home", `tellraw ${$owner} {"rawtext":[{"text":"§a已传送至${data.homeName}"}]}`);
+                                            system_1.system.invokeConsoleCommand("home", `tellraw "${$owner}" {"rawtext":[{"text":"§a已传送至${data.homeName}"}]}`);
                                         }
                                     }
                                 }
@@ -472,7 +472,7 @@
                                 throw "无法找到世界出生点，请/setworldpoint";
                             this.invokeConsoleCommand("§a§lspawn", `tp "${info.name}" ${x} ${y} ${z}`);
                             //this.invokeConsoleCommand("§a§lspawn",`tell "${info.name}" 已传送至主城`);
-                            system_1.system.invokeConsoleCommand("spawn", `tellraw ${info.name} {"rawtext":[{"text":"§a已传送至主城"}]}`);
+                            system_1.system.invokeConsoleCommand("spawn", `tellraw "${info.name}" {"rawtext":[{"text":"§a已传送至主城"}]}`);
                         }
                     }]
             });
@@ -507,8 +507,8 @@
                             if (targetinfo.dim != info.dim)
                                 throw "无法在不同维度之间tpa";
                             //this.invokeConsoleCommand("§ateleport",`tell "${info.name}" §a已发送请求`);
-                            system_1.system.invokeConsoleCommand("tp", `tellraw ${info.name} {"rawtext":[{"text":"§a已发送请求"}]}`);
-                            system_1.system.invokeConsoleCommand("tp", `tellraw ${targetinfo.name} {"rawtext":[{"text":"§b${info.name} 想要传送到你这里：${msg}，1分钟内有效，输入/tpac接受 /tpad 拒绝"}]}`);
+                            system_1.system.invokeConsoleCommand("tp", `tellraw "${info.name}" {"rawtext":[{"text":"§a已发送请求"}]}`);
+                            system_1.system.invokeConsoleCommand("tp", `tellraw "${targetinfo.name}" {"rawtext":[{"text":"§b${info.name} 想要传送到你这里：${msg}，1分钟内有效，输入/tpac接受 /tpad 拒绝"}]}`);
                             //this.invokeConsoleCommand("§ateleport",`tell "${targetinfo.name}" §b${info.name} 想要传送到你这里：${msg}，1分钟内有效，输入/tpac接受 /tpad 拒绝`);
                             //向消息队列增加消息
                             let req = new Request("tpa", info.name, targetinfo.name, 60);
@@ -547,9 +547,9 @@
                             if (targetinfo.dim != info.dim)
                                 throw "无法在不同维度之间tpahere";
                             //this.invokeConsoleCommand("§ateleport",`tell "${info.name}" §a已发送邀请`);
-                            system_1.system.invokeConsoleCommand("tp", `tellraw ${info.name} {"rawtext":[{"text":"§a已发送邀请"}]}`);
+                            system_1.system.invokeConsoleCommand("tp", `tellraw "${info.name}" {"rawtext":[{"text":"§a已发送邀请"}]}`);
                             //this.invokeConsoleCommand("§ateleport",`tell "${targetinfo.name}" §b${info.name} 邀请你传送到ta那：${msg}，1分钟内有效，输入/tpac接受 /tpad 拒绝`);
-                            system_1.system.invokeConsoleCommand("tp", `tellraw ${targetinfo.name} {"rawtext":[{"text":"§b${info.name} 邀请你传送到ta那：${msg}，1分钟内有效，输入/tpac接受 /tpad 拒绝"}]}`);
+                            system_1.system.invokeConsoleCommand("tp", `tellraw "${targetinfo.name}" {"rawtext":[{"text":"§b${info.name} 邀请你传送到ta那：${msg}，1分钟内有效，输入/tpac接受 /tpad 拒绝"}]}`);
                             //向消息队列增加消息
                             let req = new Request("tpahere", info.name, targetinfo.name, 60);
                             addToRequestList(req);
@@ -582,15 +582,15 @@
                                 //接受tpa
                                 this.invokeConsoleCommand("tpa", `tp "${req.source}" "${source}"`);
                                 // this.invokeConsoleCommand("tpa",`tell "${source}" §a接受请求`);
-                                system_1.system.invokeConsoleCommand("tp", `tellraw ${source} {"rawtext":[{"text":"§a接受请求"}]}`);
+                                system_1.system.invokeConsoleCommand("tp", `tellraw "${source}" {"rawtext":[{"text":"§a接受请求"}]}`);
                                 //this.invokeConsoleCommand("tpa",`tell "${req.source}" §a${source}接受了你的请求`);
-                                system_1.system.invokeConsoleCommand("tp", `tellraw ${req.source} {"rawtext":[{"text":"§a${source}接受了你的请求"}]}`);
+                                system_1.system.invokeConsoleCommand("tp", `tellraw "${req.source}" {"rawtext":[{"text":"§a${source}接受了你的请求"}]}`);
                             }
                             else if (req.request == "tpahere") {
                                 this.invokeConsoleCommand("tpa", `tp "${source}" "${req.source}"`);
                                 //this.invokeConsoleCommand("tpa",`tell "${req.source}" §a${source}接受了你的邀请`);
-                                system_1.system.invokeConsoleCommand("tp", `tellraw ${req.source} {"rawtext":[{"text":"§a${source}接受了你的请求"}]}`);
-                                system_1.system.invokeConsoleCommand("tp", `tellraw ${source} {"rawtext":[{"text":"§a接受请求"}]}`);
+                                system_1.system.invokeConsoleCommand("tp", `tellraw "${req.source}" {"rawtext":[{"text":"§a${source}接受了你的请求"}]}`);
+                                system_1.system.invokeConsoleCommand("tp", `tellraw "${source}" {"rawtext":[{"text":"§a接受请求"}]}`);
                                 //this.invokeConsoleCommand("tpa",`tell "${source}" §a接受请求`);
                             }
                         }
@@ -620,15 +620,15 @@
                             if (req.request == "tpa") {
                                 //接受tpa
                                 //this.invokeConsoleCommand("tpa",`tell "${req.source}" §c${source}拒绝了你的请求`);
-                                system_1.system.invokeConsoleCommand("tp", `tellraw ${req.source} {"rawtext":[{"text":"§c${source}拒绝了你的请求"}]}`);
+                                system_1.system.invokeConsoleCommand("tp", `tellraw "${req.source}" {"rawtext":[{"text":"§c${source}拒绝了你的请求"}]}`);
                                 //this.invokeConsoleCommand("tpa",`tell "${source}" §a拒绝请求`);
-                                system_1.system.invokeConsoleCommand("tp", `tellraw ${source} {"rawtext":[{"text":"§c拒绝请求"}]}`);
+                                system_1.system.invokeConsoleCommand("tp", `tellraw "${source}" {"rawtext":[{"text":"§c拒绝请求"}]}`);
                             }
                             else if (req.request == "tpahere") {
                                 //this.invokeConsoleCommand("tpa",`tell "${req.source}" §c${source}拒绝了你的邀请`);
-                                system_1.system.invokeConsoleCommand("tp", `tellraw ${req.source} {"rawtext":[{"text":"§c${source}拒绝了你的邀请"}]}`);
+                                system_1.system.invokeConsoleCommand("tp", `tellraw "${req.source}" {"rawtext":[{"text":"§c${source}拒绝了你的邀请"}]}`);
                                 //this.invokeConsoleCommand("tpa",`tell "${source}" §a拒绝邀请`);
-                                system_1.system.invokeConsoleCommand("tp", `tellraw ${source} {"rawtext":[{"text":"§c接受邀请"}]}`);
+                                system_1.system.invokeConsoleCommand("tp", `tellraw "${source}" {"rawtext":[{"text":"§c接受邀请"}]}`);
                             }
                         }
                     }
@@ -729,7 +729,7 @@
                             for (let index in datas) {
                                 message += `${index}.${datas[index].jailName}\n`;
                             }
-                            system_1.system.invokeConsoleCommand("jail", `tellraw ${playerName} {"rawtext":[{"text":"${message}"}]}`);
+                            system_1.system.invokeConsoleCommand("jail", `tellraw "${playerName}" {"rawtext":[{"text":"${message}"}]}`);
                         }
                     }]
             });
@@ -755,7 +755,7 @@
                                 cy = Math.ceil(Number(vec3[1]));
                                 cz = Math.ceil(Number(vec3[2]));
                                 system_1.system.invokeConsoleCommand("spawner", `execute "${playerName}" ~ ~ ~ fill ${fx - 1} ${fy - 1} ${fz - 1} ${cx + 1} ${cy + 1} ${cz + 1} air 0 destroy`);
-                                system_1.system.invokeConsoleCommand("ess", `tellraw ${playerName} {"rawtext":[{"text":"§4当前服务器关闭了刷怪笼交互"}]}`);
+                                system_1.system.invokeConsoleCommand("ess", `tellraw "${playerName}" {"rawtext":[{"text":"§4当前服务器关闭了刷怪笼交互"}]}`);
                             }
                         }
                         catch (error) {
