@@ -1,0 +1,18 @@
+{
+  "format_version": 1,
+  "header": {
+    "description": "$name",
+    "name": "$desc",
+    "uuid": "$uuid1",
+    "version": [0, 0, 0],
+    "min_engine_version": [1, 9, 0]
+  },
+  "modules": [
+    {
+      "description": "data",
+      "type": "data",
+      "uuid": "$uuid2",
+      "version": [0, 0, 0]
+    }
+  ]
+}

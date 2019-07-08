@@ -189,7 +189,7 @@ this.registerCommand("delwarp",{
             if (info.dim != 0) throw "只能在主世界传送";
             const datas = Array.from(db.query(SELECT_ALL_WARP,{}));
             let show:string = "";
-            for(var data of datas){
+            for(let data of datas){
                 show += `${data.name}:(${data.position} by ${data.owner})`;
             //this.invokeConsoleCommand("warp",`tell "${info.name}" ${show}`)
             system.invokeConsoleCommand("warp",`tellraw "${info.name}" {"rawtext":[{"text":"${show}"}]}`);

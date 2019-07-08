@@ -3,7 +3,7 @@ import { MySystem } from "./system";
 var itemWhitelist:string[] = ["minecraft:diamond","minecraft:gold_ore","minecraft:iron_ore","minecraft:diamond_ore","minecraft:diamond_block","minecraft:enchanting_table","minecraft:emerald_ore","minecraft:emerald_block","minecraft:beacon","minecraft:iron_shovel","minecraft:iron_pickaxe","minecraft:iron_axe","minecraft:bow","minecraft:diamond","minecraft:iron_ingot","minecraft:gold_ingot","minecraft:iron_sword","minecraft:diamond_sword","minecraft:diamond_shovel","minecraft:diamond_pickaxe","minecraft:diamond_axe"];
 //var entityWhitelist:string[] = ["minecraft:ocelot","minecraft:chicken","minecraft:wandering_trader","minecraft:snow_golem","minecraft:ender_dragon","minecraft:iron_golem","minecraft:mule","minecraft:iron_golem","minecraft:minecart","minecraft:elder_guardian","minecraft:slime","minecraft:ravager","minecraft:pillager","minecraft:player","minecraft:armor_stand","minecraft:villager","minecraft:villager_v2","minecraft:zombie_villager_v2","fine:oak_chair","fine:oak_desk","fine:oak_parkchair","minecraft:zombie_villager","minecraft:wither","minecraft:horse","minecraft:skeleton_horse","minecraft:zombie_horse","minecraft:pig","minecraft:sheep","minecraft:cow","minecraft:panda","minecraft:turtle","minecraft:parrot","minecraft:cat","minecraft:wolf","minecraft:donkey","jsa:jet1","jsa:jet2","jsa:jet3","jsa:jet4","jsa:jet5","jsa:jet6"]; 
 var entityBlacklist:string[] = ["minecraft:fireball","minecraft:arrow","fine:halfzombie","minecraft:bat","minecraft:blaze","minecraft:cave_spider","minecraft:creeper","minecraft:drowned","minecraft:enderman","minecraft:ghast","minecraft:husk","minecraft:magma_cube","minecraft:skeleton","minecraft:squid","minecraft:stray","minecraft:wither_skeleton","minecraft:zombie","minecraft:zombie_pigman"];
-var stackWhitelist:string[] = ["minecraft:falling_block","minecraft:ravager","minecraft:pillager","minecraft:player","minecraft:armor_stand","minecraft:villager","minecraft:villager_v2","minecraft:villager_v2"];
+var stackWhitelist:string[] = ["minecraft:xp_orb","minecraft:falling_block","minecraft:ravager","minecraft:pillager","minecraft:player","minecraft:armor_stand","minecraft:villager","minecraft:villager_v2","minecraft:villager_v2"];
 var itemQuery,mobQuery,entityQuery,positionQuery;
 var tick = 0;
 var maxStackSize = 20; //当一定范围内堆积生物超过这个数的时候清理其中所有生物
@@ -127,7 +127,7 @@ function onEntityCreate(data){
       let y = Math.floor(posComp.data.y);
       let z = Math.floor(posComp.data.z);
       let startTime = Date.now();
-      let entities = system.getEntitiesFromQuery(positionQuery,x-10,y-20,z-10,x+10,y+20,z+10);
+      let entities = system.getEntitiesFromQuery(positionQuery,x-10,y-5,z-10,x+10,y+5,z+10);
       if(entities == null){
         throw("无法获得周边实体信息");
       }
@@ -144,8 +144,9 @@ function onEntityCreate(data){
         let x = Math.floor(pos.data.x);
         let y = Math.floor(pos.data.y);
         let z = Math.floor(pos.data.z);
-        for(let entity of sameEntities){
-          system.destroyEntity(entity);
+        let halfSize = maxStackSize / 2;
+        for(let i=0;i<halfSize;i++){
+          system.destroyEntity(entities[i]);
         }
         let endTime = Date.now() - startTime;
         system.broadcastMessage(`§a§l清道夫§r §c${name}堆叠过多，触发清理 耗时${endTime}ms 请不要大量堆积生物(>20)`);
