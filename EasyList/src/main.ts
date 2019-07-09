@@ -1,15 +1,15 @@
 import { MySystem } from "./system";
-import {db,SELECT_WHITELIST_BY_MSG,SELECT_NAME_IN_LIST, DELETE_NAME_IN_LIST, SELECT_ALL_IN_LIST, INSERT_LIST} from "./database"
+import {db,SELECT_ALLINBLACKLIST_BYNAME,SELECT_ALLINBLACKLIST_BYMSG,SELECT_ALLNAME_BYMSG,SELECT_WHITELIST_MSG_BYNAME,SELECT_WHITELIST_BY_MSG,SELECT_NAME_IN_LIST, DELETE_NAME_IN_LIST, SELECT_ALL_IN_LIST, INSERT_LIST} from "./database"
 const system = server.registerSystem<MySystem>(0, 0);
 var tick = 0,tick2 = 0;
 var playerBanedInfoList:string[] = [];
 var playerNotInWhitelist:string[] = [];
 var playerQuery;
 system.initialize = function() {
-  server.log("黑白名单 v3.0 loaded");
+  server.log("黑白名单 v3.2 loaded");
   system.listenForEvent("minecraft:entity_created",onPlayerJoin);
 
-  this.registerSoftEnum("whitelist_enum", ["add","remove"]);
+  this.registerSoftEnum("whitelist_enum", ["add","remove","list"]);
   //注册自定义组件，用于标识玩家
   system.registerComponent("fakeban:isplayer", {});
 
@@ -27,27 +27,48 @@ system.initialize = function() {
         },
         {
             type: "message",
-            name: "message",
+            name: "reason",
             optional: true
         }
         ],
-        handler(origin, [target, msg]) {
+        handler(origin, [target, reason]) {
         let $kind = "blacklist";
         let $name = target;
-        let $msg = " ";
-        if(msg != ""){
-        $msg = msg;
-        }
+        let datas = Array.from(db.query(SELECT_WHITELIST_MSG_BYNAME,{$name}));
+        if (datas.length == 0) throw "此人还没有添加过白名单";
+        let $msg = datas[0].msg;
+        let blacklistDatas = Array.from(db.query(SELECT_ALLINBLACKLIST_BYNAME,{$name}));
+        if (blacklistDatas.length != 0) throw "此人已被封禁";
         db.update(INSERT_LIST,{
           $name,
           $kind,
           $msg
       });
-      //查询一下他是否有多个id
-      let datas = Array.from(db.query(SELECT_WHITELIST_BY_MSG,{$msg}));
-      playerBanedInfoList.push($name);
-      system.broadcastMessage(`§c已封禁${$name} ${$msg}`);
+      //查询一下他是否有多个id,一起都封了
+      playerBanedInfoList.push(target);
+      if($msg != "未知qq"){
+        //记录了qq的时候可以把同一个qq的id都封了
+      datas = Array.from(db.query(SELECT_WHITELIST_BY_MSG,{$msg}));
+      let allmessage = `该账号还添加了${datas.length}个白名单,一并进行封禁:\n`;
+      for(let index in datas){
+        let data = datas[index];
+        playerBanedInfoList.push(data.name);
+        allmessage += `${index}.${data.name}\n`;
+        $name = data.name;
+        $kind = "blacklist";
+        db.update(INSERT_LIST,{
+          $name,
+          $kind,
+          $msg
+      });
+
       }
+      system.broadcastMessage(`§c已封禁${$name} reason:${reason} msg:${$msg}\n${allmessage}`);
+      }
+      else{
+        system.broadcastMessage(`§c已封禁${$name} reason:${reason} msg:${$msg}`);
+      }
+    }
     } as CommandOverload<MySystem, ["string", "message"]>
     ]
 });
@@ -101,7 +122,7 @@ this.registerCommand("fwhitelist", {
       },
       {
         type: "message",
-        name: "message",
+        name: "qqnumber",
         optional: true
       }
       ],
@@ -111,15 +132,25 @@ this.registerCommand("fwhitelist", {
       let $msg = "未知qq";
       let $kind = "whitelist";
       if(msg != ""){
-      $msg = msg;
-      }
+        $msg = msg;
+        }
+      let datas;
+      //先判断此人是否在黑名单内
+      if($msg != "未知qq"){
+      datas = Array.from(db.query(SELECT_ALLINBLACKLIST_BYMSG,{$msg}));
+      if (datas.length != 0) throw "此人msg已在黑名单内";
+    }
+      //防止重复添加
+      datas = Array.from(db.query(SELECT_WHITELIST_MSG_BYNAME,{$name}));
+      if(datas.length != 0) throw `已经有人使用过这个名字了 ${datas[0].msg}`;
+
       db.update(INSERT_LIST,{
         $name,
         $kind,
         $msg
     });
     playerNotInWhitelist.splice(playerNotInWhitelist.indexOf(target),1);
-    let datas = Array.from(db.query(SELECT_WHITELIST_BY_MSG,{$msg}));
+    datas = Array.from(db.query(SELECT_WHITELIST_BY_MSG,{$msg}));
     if(datas.length != 0){
       //玩家这个qq已经注册过白名单了
       system.broadcastMessage(`§a已为${$name}添加白名单 ${$msg}`);
@@ -133,6 +164,8 @@ this.registerCommand("fwhitelist", {
       }
     }
       system.broadcastMessage(`§e玩家已有账号：§r\n${namelist}`);
+      system.invokeConsoleCommand("whitelist",`title "${$name}" clear`);
+      system.invokeConsoleCommand("whitelist",`title "${$name}" title §3你已获得白名单`);
     }
     else{
     system.broadcastMessage(`§a已为${$name}添加白名单 ${$msg}`);
@@ -145,6 +178,25 @@ this.registerCommand("fwhitelist", {
     playerNotInWhitelist.push($name);
 
     system.broadcastMessage(`§a已移除${$name}的白名单 ${msg}`);
+  }
+  else if (action == "list"){
+    //查找该玩家添加的其他白名单
+    let $name = target;
+    let datas = Array.from(db.query(SELECT_WHITELIST_MSG_BYNAME,{$name}));
+    let $msg = datas['0'].msg;
+    datas = Array.from(db.query(SELECT_ALLNAME_BYMSG,{$msg}));
+    let message = "§a----------------§r\n";
+    for(let index in datas){
+        let data = datas[index];
+        if(data.kind == "whitelist"){
+          message = message + `${index}.§a[白名单]§r ${data.name}`;
+        }
+        else{
+          message = message + `${index}.§c[黑名单]§r ${data.name}`;
+        }
+        message += "\n";
+    }
+    system.broadcastMessage(`§eID:${target} msg:${$msg} 已有的账号有:§r\n${message}`);
   }
     }
   } as CommandOverload<MySystem, ["soft-enum","string", "message"]>
@@ -185,19 +237,6 @@ system.update = function(){
         //找到了名字对应的实体
         if(playerBanedInfoList.indexOf(info.name) >= 0){
           try{
-            //直接摧毁实体也会导致掉线
-            /*
-            system.invokeConsoleCommand("ban",`clear ${info.name}`);
-            system.invokeConsoleCommand("ban",`effect ${info.name} slow_falling 100 10 false`);
-            system.invokeConsoleCommand("ban",`effect ${info.name} blindness 1000 10 false`);
-            let component = system.getComponent(enti, MinecraftComponent.Position);
-          //修改组件
-          component.data.x = 0;
-          component.data.y = 250;
-          component.data.z = 0;
-          system.applyComponentChanges(enti, component);
-          system.invokeConsoleCommand("ban",`title ${info.name} title §4你已被封禁`);
-          */
           system.destroyEntity(enti);
         }catch(err){server.log("实体已不存在");}
       }
@@ -211,7 +250,7 @@ system.update = function(){
         component.data.y = y;
         component.data.z = z;
         system.applyComponentChanges(enti, component);
-        system.invokeConsoleCommand("whitelist",`title ${info.name} title §3你还没有获得白名单哦，在qq群内获得`);
+        system.invokeConsoleCommand("whitelist",`title "${info.name}" title §3你还没有获得白名单哦，在qq群内获得`);
       }catch(err){server.log("实体已不存在");}
     }
     }      
@@ -270,7 +309,7 @@ function onPlayerJoin(data){
     if(datas.length > 0){
       server.log("玩家在白名单内");
       //welcome
-      system.invokeConsoleCommand("ban",`title ${info.name} title §e你拥有白名单，游戏愉快`);
+      system.invokeConsoleCommand("ban",`title "${info.name}" title §e你拥有白名单，游戏愉快`);
       //playerBanedInfoList.push(info.name);
     }
     else{
