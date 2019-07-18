@@ -292,11 +292,11 @@
                                 throw "只能在主世界传送";
                             const datas = Array.from(database_1.db.query(database_1.SELECT_ALL_WARP, {}));
                             let show = "";
-                            for (var data of datas) {
+                            for (let data of datas) {
                                 show += `${data.name}:(${data.position} by ${data.owner})`;
                                 //this.invokeConsoleCommand("warp",`tell "${info.name}" ${show}`)
-                                system_1.system.invokeConsoleCommand("warp", `tellraw "${info.name}" {"rawtext":[{"text":"${show}"}]}`);
                             }
+                            system_1.system.invokeConsoleCommand("warp", `tellraw "${info.name}" {"rawtext":[{"text":"${show}"}]}`);
                         }
                     }]
             });

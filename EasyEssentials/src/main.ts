@@ -192,8 +192,8 @@ this.registerCommand("delwarp",{
             for(let data of datas){
                 show += `${data.name}:(${data.position} by ${data.owner})`;
             //this.invokeConsoleCommand("warp",`tell "${info.name}" ${show}`)
-            system.invokeConsoleCommand("warp",`tellraw "${info.name}" {"rawtext":[{"text":"${show}"}]}`);
-            } 
+            }
+            system.invokeConsoleCommand("warp",`tellraw "${info.name}" {"rawtext":[{"text":"${show}"}]}`); 
             }
         }as CommandOverload<MySystem, []> ]
     });
