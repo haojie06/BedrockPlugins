@@ -29,7 +29,7 @@ function fix(arr: TemplateStringsArray) {
 export const DELETE_WARP_BY_NAME = fix`DELETE FROM warp WHERE name=$name;`;
 //---------------------------------------------------------------------------------
   //创建一个储存home信息的表
-  export const CREATE_HOME_TABLE = fix`
+  const CREATE_HOME_TABLE = fix`
   CREATE TABLE IF NOT EXISTS homes(
     id,
     homeName TEXT NOT NULL,
@@ -75,7 +75,39 @@ CREATE TABLE IF NOT EXISTS death(
   //获得死亡记录
   export const SELECT_DEATH = fix`SELECT * FROM death WHERE player=$player;`;
 //------------------------------------------
+//双人有时限命令 例如/tpa等
+const CREATE_COMMAND_TABLE = fix`
+CREATE TABLE IF NOT EXISTS command(
+  id,
+  command TEXT NOT NULL,
+  source TEXT NOT NULL,
+  target TEXT NOT NULL,
+  timestamp BIGINT NOT NULL,
+  message TEXT
+);`;
+
+export const INSERT_COMMAND = fix`
+INSERT INTO command (
+  command, source, target, timestamp
+) values (
+  $command, $source, $target, $timestamp
+);
+`;
+//拒绝后删除请求
+export const DELETE_COMMAND_DENY = fix`
+DELETE FROM command WHERE command=$command AND source=$source AND target=$target;
+`;
+//同意后删除请求
+export const DELETE_COMMAND_ACEP = fix`
+DELETE FROM command WHERE command=$command AND source=$source AND target=$target;
+`;
+//删除过期请求
+export const DELETE_OUTDATED_COMMAND = fix`DELETE FROM command WHERE timestamp<$endTime AND command=$command;`;
+//查询命令请求
+export const GET_REQ = fix`SELECT * FROM command WHERE command=$command AND target=$target;`;
+//------------------------------------------
   export const db = new SQLite3("ess.db");
   db.exec(CREATE_TABLE);
   db.exec(CREATE_HOME_TABLE);
   db.exec(CREATE_DEATH_TABLE);
+  db.exec(CREATE_COMMAND_TABLE);

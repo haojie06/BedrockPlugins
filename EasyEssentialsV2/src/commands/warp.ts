@@ -1,5 +1,5 @@
 //warp 设置传送点系列
-import {getName,getPositionofEntity} from "../utils";
+import {getName,getPositionofEntity,getDimensionOfEntity} from "../utils";
 import {db,INSERT_WARP,SELECT_WARP_BY_NAME,SELECT_ALL_WARP,DELETE_WARP_BY_NAME} from "../database";
 let system;
 export function warpReg(sys) {
@@ -17,6 +17,7 @@ export function warpReg(sys) {
         handler([$name]){
             const entity = this.entity;
             if (!entity) throw "Designed for player usage";
+            if (getDimensionOfEntity(entity) != 0) throw "目前只支持在主世界设置传送点";
             let comp = system.getComponent(entity,MinecraftComponent.Position);
             let $position:string = comp.data.x.toFixed(0) + " " + comp.data.y.toFixed(0) + " " + comp.data.z.toFixed(0);
             let $owner:string = getName(entity);
@@ -72,6 +73,7 @@ export function warpReg(sys) {
             handler([$name]){
                 const entity = this.entity;
                 if (!entity) throw "Designed for player usage";
+                if (getDimensionOfEntity(entity) != 0) throw "目前只支持主世界使用";
                 const datas = Array.from(db.query(SELECT_WARP_BY_NAME,{$name}));
                 if (datas.length != 1) throw "无效的传送点";
                 let position = datas[0].position;

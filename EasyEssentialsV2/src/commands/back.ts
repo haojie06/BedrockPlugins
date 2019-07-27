@@ -1,5 +1,5 @@
 //玩家的back 返回死亡地点
-import {getName,getPositionofEntity} from "../utils";
+import {getName,getPositionofEntity,getDimensionOfEntity} from "../utils";
 import {db,INSERT_DEATH,SELECT_DEATH,DELETE_DEATH} from "../database";
 let system;
 export function backReg(sys) {
@@ -14,6 +14,8 @@ export function backReg(sys) {
                 parameters: [],
                 handler(){
                     if (!this.entity || this.entity.__identifier__ != "minecraft:player") throw `Can only be used by player`;
+                    const entity = this.entity;
+                    if (getDimensionOfEntity(entity) != 0) throw "目前只支持主世界使用/back";                
                     let $player = this.name;
                     const data = Array.from(db.query(SELECT_DEATH,{$player}));
                     if(data.length == 0) throw "你还没有记录的死亡点哦";
@@ -42,7 +44,12 @@ function onEntityDeath(eventData){
             });
             server.log(`玩家${$player}的死亡点${$position}已经记录`);
             //system.executeCommand(`tell @a[name=${$player}] §a死了?不用担心，输入/back返回死亡点`,data=>{});
+            if (getDimensionOfEntity(entity) == 0){            
             system.executeCommand(`tellraw @a[name=${$player}] {"rawtext":[{"text":"§a死了?不用担心，输入/back返回死亡点"}]}`,data=>{server.log(JSON.stringify(data));});
+            }
+            else{
+            system.executeCommand(`tellraw @a[name=${$player}] {"rawtext":[{"text":"§c你死在主世界之外了，无法/back了 position:(${$position})"}]}`,data=>{server.log(JSON.stringify(data));});
+            }
         }
     }
 }

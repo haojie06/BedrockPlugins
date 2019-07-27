@@ -19,6 +19,18 @@ export function getPositionofEntity(entity: IEntity){
   return position;
 }
 
+export function getDimensionOfEntity(entity: IEntity){
+  let dimension;
+  if (system.hasComponent(entity, "stone:dimension")) {
+    let comp = system.getComponent(entity,MinecraftComponent.Dimension);
+    dimension = comp.data;
+}
+  else{
+    dimension = "无法获得维度";
+  }
+  return dimension;
+}
+
 function transNum(num:number):number{
   if (num >= 0){
       num = Math.floor(num);

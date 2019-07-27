@@ -1,5 +1,7 @@
 import {backReg} from "./commands/back";
 import {warpReg} from "./commands/warp";
+import {homeReg} from "./commands/home";
+import {tpReg} from "./commands/tp"
 import {utilsReg,getName} from "./utils";
 const system = server.registerSystem(0, 0);
 
@@ -10,6 +12,8 @@ system.initialize = function() {
     utilsReg(this);
     backReg(this);
     warpReg(this);
+    homeReg(this);
+    tpReg(this);
 }
 
 
