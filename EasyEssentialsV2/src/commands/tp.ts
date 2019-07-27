@@ -233,5 +233,4 @@ export function tpReg(sys) {
             }
         }as CommandOverload<[]>]
     });
-
 }
