@@ -1,0 +1,18 @@
+{
+  "format_version": 1,
+  "header": {
+    "name": "EasyEssentials 2.0",
+    "description": "for stoneserver created by haojie06",
+    "uuid": "3289a580-6d2f-46fe-bc37-6dd121800f42",
+    "version": [0, 0, 0],
+    "min_engine_version": [1, 12, 0]
+  },
+  "modules": [
+    {
+      "description": "data",
+      "type": "data",
+      "uuid": "21cfd061-9e23-4875-8a08-68169b225de9",
+      "version": [0, 0, 0]
+    }
+  ]
+}

@@ -1,0 +1,443 @@
+0 info it worked if it ends with ok
+1 verbose cli [ '/usr/bin/node', '/usr/bin/npm', 'update' ]
+2 info using npm@3.5.2
+3 info using node@v8.10.0
+4 silly mapToRegistry name @types/node
+5 silly mapToRegistry scope (from package name) @types
+6 verbose mapToRegistry no registry URL found in name for scope @types
+7 silly mapToRegistry using default registry
+8 silly mapToRegistry registry https://registry.npmjs.org/
+9 silly mapToRegistry uri https://registry.npmjs.org/@types%2fnode
+10 silly mapToRegistry name cobblestone-addons
+11 silly mapToRegistry using default registry
+12 silly mapToRegistry registry https://registry.npmjs.org/
+13 silly mapToRegistry uri https://registry.npmjs.org/cobblestone-addons
+14 silly mapToRegistry name minecraft-scripting-types-server
+15 silly mapToRegistry using default registry
+16 silly mapToRegistry registry https://registry.npmjs.org/
+17 silly mapToRegistry uri https://registry.npmjs.org/minecraft-scripting-types-server
+18 silly mapToRegistry name rollup
+19 silly mapToRegistry using default registry
+20 silly mapToRegistry registry https://registry.npmjs.org/
+21 silly mapToRegistry uri https://registry.npmjs.org/rollup
+22 silly mapToRegistry name rollup-plugin-commonjs
+23 silly mapToRegistry using default registry
+24 silly mapToRegistry registry https://registry.npmjs.org/
+25 silly mapToRegistry uri https://registry.npmjs.org/rollup-plugin-commonjs
+26 silly mapToRegistry name rollup-plugin-json
+27 silly mapToRegistry using default registry
+28 silly mapToRegistry registry https://registry.npmjs.org/
+29 silly mapToRegistry uri https://registry.npmjs.org/rollup-plugin-json
+30 silly mapToRegistry name rollup-plugin-node-resolve
+31 silly mapToRegistry using default registry
+32 silly mapToRegistry registry https://registry.npmjs.org/
+33 silly mapToRegistry uri https://registry.npmjs.org/rollup-plugin-node-resolve
+34 silly mapToRegistry name rollup-plugin-typescript2
+35 silly mapToRegistry using default registry
+36 silly mapToRegistry registry https://registry.npmjs.org/
+37 silly mapToRegistry uri https://registry.npmjs.org/rollup-plugin-typescript2
+38 silly mapToRegistry name tslib
+39 silly mapToRegistry using default registry
+40 silly mapToRegistry registry https://registry.npmjs.org/
+41 silly mapToRegistry uri https://registry.npmjs.org/tslib
+42 silly mapToRegistry name typescript
+43 silly mapToRegistry using default registry
+44 silly mapToRegistry registry https://registry.npmjs.org/
+45 silly mapToRegistry uri https://registry.npmjs.org/typescript
+46 verbose request uri https://registry.npmjs.org/cobblestone-addons
+47 verbose request no auth needed
+48 info attempt registry request try #1 at 下午1:39:10
+49 verbose request id 44e3ab381d2cef8c
+50 http request GET https://registry.npmjs.org/cobblestone-addons
+51 verbose request uri https://registry.npmjs.org/rollup-plugin-json
+52 verbose request no auth needed
+53 info attempt registry request try #1 at 下午1:39:10
+54 verbose etag W/"b68268cb7c5ffa4f6542ecabffbfec4e"
+55 verbose lastModified Mon, 18 Mar 2019 16:40:57 GMT
+56 http request GET https://registry.npmjs.org/rollup-plugin-json
+57 verbose request uri https://registry.npmjs.org/minecraft-scripting-types-server
+58 verbose request no auth needed
+59 info attempt registry request try #1 at 下午1:39:10
+60 verbose etag W/"5790e6d8cf64978d431f06f70271e6d1"
+61 verbose lastModified Wed, 05 Jun 2019 14:10:18 GMT
+62 http request GET https://registry.npmjs.org/minecraft-scripting-types-server
+63 verbose request uri https://registry.npmjs.org/rollup-plugin-node-resolve
+64 verbose request no auth needed
+65 info attempt registry request try #1 at 下午1:39:10
+66 verbose etag W/"7d61b31512c487ccb65cf0bc356c7d02"
+67 verbose lastModified Sat, 29 Jun 2019 07:19:08 GMT
+68 http request GET https://registry.npmjs.org/rollup-plugin-node-resolve
+69 verbose request uri https://registry.npmjs.org/rollup-plugin-commonjs
+70 verbose request no auth needed
+71 info attempt registry request try #1 at 下午1:39:10
+72 verbose etag W/"db1cecd15ec8c4e3f6e6816111cd18d4"
+73 verbose lastModified Thu, 27 Jun 2019 05:14:25 GMT
+74 http request GET https://registry.npmjs.org/rollup-plugin-commonjs
+75 verbose request uri https://registry.npmjs.org/tslib
+76 verbose request no auth needed
+77 info attempt registry request try #1 at 下午1:39:10
+78 verbose etag W/"db24a8f040409a4d63e843718ab0d2b8"
+79 verbose lastModified Mon, 10 Jun 2019 22:29:50 GMT
+80 http request GET https://registry.npmjs.org/tslib
+81 verbose request uri https://registry.npmjs.org/rollup-plugin-typescript2
+82 verbose request no auth needed
+83 info attempt registry request try #1 at 下午1:39:10
+84 verbose etag W/"00cfe97dbfb508b5a55ce65ae994677b"
+85 verbose lastModified Fri, 26 Jul 2019 17:52:07 GMT
+86 http request GET https://registry.npmjs.org/rollup-plugin-typescript2
+87 verbose request uri https://registry.npmjs.org/@types%2fnode
+88 verbose request no auth needed
+89 info attempt registry request try #1 at 下午1:39:10
+90 verbose etag W/"76290f731f4711a0eed8716227d16b70"
+91 verbose lastModified Wed, 17 Jul 2019 19:16:06 GMT
+92 http request GET https://registry.npmjs.org/@types%2fnode
+93 verbose request uri https://registry.npmjs.org/rollup
+94 verbose request no auth needed
+95 info attempt registry request try #1 at 下午1:39:10
+96 verbose etag W/"004d079f0dbf5dfb13f800067f74492b"
+97 verbose lastModified Mon, 15 Jul 2019 04:32:46 GMT
+98 http request GET https://registry.npmjs.org/rollup
+99 verbose request uri https://registry.npmjs.org/typescript
+100 verbose request no auth needed
+101 info attempt registry request try #1 at 下午1:39:10
+102 verbose etag W/"6508ad3dd7e17e3a49f9ee0233a1b25b"
+103 verbose lastModified Fri, 26 Jul 2019 06:06:04 GMT
+104 http request GET https://registry.npmjs.org/typescript
+105 http 304 https://registry.npmjs.org/rollup-plugin-json
+106 verbose headers { date: 'Sat, 27 Jul 2019 05:39:11 GMT',
+106 verbose headers   connection: 'keep-alive',
+106 verbose headers   'set-cookie':
+106 verbose headers    [ '__cfduid=dde36b9b1342063d9d67efce2321b03091564205951; expires=Sun, 26-Jul-20 05:39:11 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+106 verbose headers   'cf-cache-status': 'HIT',
+106 verbose headers   'cache-control': 'max-age=300',
+106 verbose headers   'cf-ray': '4fcc457c5f2d98ff-LAX',
+106 verbose headers   age: '2768',
+106 verbose headers   etag: '"b68268cb7c5ffa4f6542ecabffbfec4e"',
+106 verbose headers   'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+106 verbose headers   'last-modified': 'Mon, 18 Mar 2019 16:40:57 GMT',
+106 verbose headers   vary: 'accept-encoding, accept',
+106 verbose headers   'x-amz-meta-rev': '15-d45525fa75d67eeba07f5a818cb68611',
+106 verbose headers   server: 'cloudflare' }
+107 silly get cb [ 304,
+107 silly get   { date: 'Sat, 27 Jul 2019 05:39:11 GMT',
+107 silly get     connection: 'keep-alive',
+107 silly get     'set-cookie':
+107 silly get      [ '__cfduid=dde36b9b1342063d9d67efce2321b03091564205951; expires=Sun, 26-Jul-20 05:39:11 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+107 silly get     'cf-cache-status': 'HIT',
+107 silly get     'cache-control': 'max-age=300',
+107 silly get     'cf-ray': '4fcc457c5f2d98ff-LAX',
+107 silly get     age: '2768',
+107 silly get     etag: '"b68268cb7c5ffa4f6542ecabffbfec4e"',
+107 silly get     'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+107 silly get     'last-modified': 'Mon, 18 Mar 2019 16:40:57 GMT',
+107 silly get     vary: 'accept-encoding, accept',
+107 silly get     'x-amz-meta-rev': '15-d45525fa75d67eeba07f5a818cb68611',
+107 silly get     server: 'cloudflare' } ]
+108 verbose etag https://registry.npmjs.org/rollup-plugin-json from cache
+109 verbose get saving rollup-plugin-json to /root/.npm/registry.npmjs.org/rollup-plugin-json/.cache.json
+110 http 304 https://registry.npmjs.org/@types%2fnode
+111 verbose headers { date: 'Sat, 27 Jul 2019 05:39:11 GMT',
+111 verbose headers   connection: 'keep-alive',
+111 verbose headers   'set-cookie':
+111 verbose headers    [ '__cfduid=d6f80eb732251e548cc11238675e0a81e1564205951; expires=Sun, 26-Jul-20 05:39:11 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+111 verbose headers   'cf-cache-status': 'HIT',
+111 verbose headers   'cache-control': 'public, max-age=300',
+111 verbose headers   'cf-ray': '4fcc457cdb9476ce-LAX',
+111 verbose headers   age: '2602',
+111 verbose headers   etag: '"76290f731f4711a0eed8716227d16b70"',
+111 verbose headers   'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+111 verbose headers   'last-modified': 'Wed, 17 Jul 2019 19:16:06 GMT',
+111 verbose headers   vary: 'Accept-Encoding',
+111 verbose headers   'x-amz-meta-rev': '3728-01bd6fa9f5d3bd7d553c72ee0286e1d8',
+111 verbose headers   server: 'cloudflare' }
+112 silly get cb [ 304,
+112 silly get   { date: 'Sat, 27 Jul 2019 05:39:11 GMT',
+112 silly get     connection: 'keep-alive',
+112 silly get     'set-cookie':
+112 silly get      [ '__cfduid=d6f80eb732251e548cc11238675e0a81e1564205951; expires=Sun, 26-Jul-20 05:39:11 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+112 silly get     'cf-cache-status': 'HIT',
+112 silly get     'cache-control': 'public, max-age=300',
+112 silly get     'cf-ray': '4fcc457cdb9476ce-LAX',
+112 silly get     age: '2602',
+112 silly get     etag: '"76290f731f4711a0eed8716227d16b70"',
+112 silly get     'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+112 silly get     'last-modified': 'Wed, 17 Jul 2019 19:16:06 GMT',
+112 silly get     vary: 'Accept-Encoding',
+112 silly get     'x-amz-meta-rev': '3728-01bd6fa9f5d3bd7d553c72ee0286e1d8',
+112 silly get     server: 'cloudflare' } ]
+113 verbose etag https://registry.npmjs.org/@types%2fnode from cache
+114 verbose get saving @types/node to /root/.npm/registry.npmjs.org/_40types_252fnode/.cache.json
+115 http 404 https://registry.npmjs.org/cobblestone-addons
+116 verbose headers { date: 'Sat, 27 Jul 2019 05:39:11 GMT',
+116 verbose headers   'content-type': 'application/json',
+116 verbose headers   'content-length': '21',
+116 verbose headers   connection: 'keep-alive',
+116 verbose headers   'set-cookie':
+116 verbose headers    [ '__cfduid=dc7f24f75939c22f102a306220d5c80cf1564205951; expires=Sun, 26-Jul-20 05:39:11 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+116 verbose headers   'cf-cache-status': 'MISS',
+116 verbose headers   'cache-control': 'max-age=300',
+116 verbose headers   'cf-ray': '4fcc457c39c7d396-LAX',
+116 verbose headers   'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+116 verbose headers   vary: 'accept-encoding, accept',
+116 verbose headers   server: 'cloudflare' }
+117 silly get cb [ 404,
+117 silly get   { date: 'Sat, 27 Jul 2019 05:39:11 GMT',
+117 silly get     'content-type': 'application/json',
+117 silly get     'content-length': '21',
+117 silly get     connection: 'keep-alive',
+117 silly get     'set-cookie':
+117 silly get      [ '__cfduid=dc7f24f75939c22f102a306220d5c80cf1564205951; expires=Sun, 26-Jul-20 05:39:11 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+117 silly get     'cf-cache-status': 'MISS',
+117 silly get     'cache-control': 'max-age=300',
+117 silly get     'cf-ray': '4fcc457c39c7d396-LAX',
+117 silly get     'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+117 silly get     vary: 'accept-encoding, accept',
+117 silly get     server: 'cloudflare' } ]
+118 http 304 https://registry.npmjs.org/tslib
+119 verbose headers { date: 'Sat, 27 Jul 2019 05:39:11 GMT',
+119 verbose headers   connection: 'keep-alive',
+119 verbose headers   'set-cookie':
+119 verbose headers    [ '__cfduid=d21f7efa729a6b79b36ecae272c4534921564205951; expires=Sun, 26-Jul-20 05:39:11 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+119 verbose headers   'cf-cache-status': 'HIT',
+119 verbose headers   'cache-control': 'max-age=300',
+119 verbose headers   'cf-ray': '4fcc457cfe1220ca-LAX',
+119 verbose headers   age: '1963',
+119 verbose headers   etag: '"db24a8f040409a4d63e843718ab0d2b8"',
+119 verbose headers   'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+119 verbose headers   'last-modified': 'Mon, 10 Jun 2019 22:29:50 GMT',
+119 verbose headers   vary: 'accept-encoding, accept',
+119 verbose headers   'x-amz-meta-rev': '47-276922efec9efbef5e90164bdf59ee3d',
+119 verbose headers   server: 'cloudflare' }
+120 silly get cb [ 304,
+120 silly get   { date: 'Sat, 27 Jul 2019 05:39:11 GMT',
+120 silly get     connection: 'keep-alive',
+120 silly get     'set-cookie':
+120 silly get      [ '__cfduid=d21f7efa729a6b79b36ecae272c4534921564205951; expires=Sun, 26-Jul-20 05:39:11 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+120 silly get     'cf-cache-status': 'HIT',
+120 silly get     'cache-control': 'max-age=300',
+120 silly get     'cf-ray': '4fcc457cfe1220ca-LAX',
+120 silly get     age: '1963',
+120 silly get     etag: '"db24a8f040409a4d63e843718ab0d2b8"',
+120 silly get     'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+120 silly get     'last-modified': 'Mon, 10 Jun 2019 22:29:50 GMT',
+120 silly get     vary: 'accept-encoding, accept',
+120 silly get     'x-amz-meta-rev': '47-276922efec9efbef5e90164bdf59ee3d',
+120 silly get     server: 'cloudflare' } ]
+121 verbose etag https://registry.npmjs.org/tslib from cache
+122 verbose get saving tslib to /root/.npm/registry.npmjs.org/tslib/.cache.json
+123 http 304 https://registry.npmjs.org/typescript
+124 verbose headers { date: 'Sat, 27 Jul 2019 05:39:11 GMT',
+124 verbose headers   connection: 'keep-alive',
+124 verbose headers   'set-cookie':
+124 verbose headers    [ '__cfduid=d91d807d7970f7388b6d9270d24ef4bec1564205951; expires=Sun, 26-Jul-20 05:39:11 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+124 verbose headers   'cf-cache-status': 'HIT',
+124 verbose headers   'cache-control': 'max-age=300',
+124 verbose headers   'cf-ray': '4fcc457d09f79965-LAX',
+124 verbose headers   age: '5088',
+124 verbose headers   etag: '"6508ad3dd7e17e3a49f9ee0233a1b25b"',
+124 verbose headers   'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+124 verbose headers   'last-modified': 'Fri, 26 Jul 2019 06:06:04 GMT',
+124 verbose headers   vary: 'accept-encoding, accept',
+124 verbose headers   'x-amz-meta-rev': '1688-dd5cfa749fe330801955275b2ca40cf1',
+124 verbose headers   server: 'cloudflare' }
+125 silly get cb [ 304,
+125 silly get   { date: 'Sat, 27 Jul 2019 05:39:11 GMT',
+125 silly get     connection: 'keep-alive',
+125 silly get     'set-cookie':
+125 silly get      [ '__cfduid=d91d807d7970f7388b6d9270d24ef4bec1564205951; expires=Sun, 26-Jul-20 05:39:11 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+125 silly get     'cf-cache-status': 'HIT',
+125 silly get     'cache-control': 'max-age=300',
+125 silly get     'cf-ray': '4fcc457d09f79965-LAX',
+125 silly get     age: '5088',
+125 silly get     etag: '"6508ad3dd7e17e3a49f9ee0233a1b25b"',
+125 silly get     'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+125 silly get     'last-modified': 'Fri, 26 Jul 2019 06:06:04 GMT',
+125 silly get     vary: 'accept-encoding, accept',
+125 silly get     'x-amz-meta-rev': '1688-dd5cfa749fe330801955275b2ca40cf1',
+125 silly get     server: 'cloudflare' } ]
+126 verbose etag https://registry.npmjs.org/typescript from cache
+127 verbose get saving typescript to /root/.npm/registry.npmjs.org/typescript/.cache.json
+128 http 304 https://registry.npmjs.org/rollup
+129 verbose headers { date: 'Sat, 27 Jul 2019 05:39:11 GMT',
+129 verbose headers   connection: 'keep-alive',
+129 verbose headers   'set-cookie':
+129 verbose headers    [ '__cfduid=d66510ce0d0c4134242e6f3240c5bde9a1564205951; expires=Sun, 26-Jul-20 05:39:11 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+129 verbose headers   'cf-cache-status': 'HIT',
+129 verbose headers   'cache-control': 'max-age=300',
+129 verbose headers   'cf-ray': '4fcc457ebbf020be-LAX',
+129 verbose headers   age: '547',
+129 verbose headers   etag: '"004d079f0dbf5dfb13f800067f74492b"',
+129 verbose headers   'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+129 verbose headers   'last-modified': 'Mon, 15 Jul 2019 04:32:46 GMT',
+129 verbose headers   vary: 'accept-encoding, accept',
+129 verbose headers   'x-amz-meta-rev': '450-08a21c84d38015e203a7fd39a2afbec9',
+129 verbose headers   server: 'cloudflare' }
+130 silly get cb [ 304,
+130 silly get   { date: 'Sat, 27 Jul 2019 05:39:11 GMT',
+130 silly get     connection: 'keep-alive',
+130 silly get     'set-cookie':
+130 silly get      [ '__cfduid=d66510ce0d0c4134242e6f3240c5bde9a1564205951; expires=Sun, 26-Jul-20 05:39:11 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+130 silly get     'cf-cache-status': 'HIT',
+130 silly get     'cache-control': 'max-age=300',
+130 silly get     'cf-ray': '4fcc457ebbf020be-LAX',
+130 silly get     age: '547',
+130 silly get     etag: '"004d079f0dbf5dfb13f800067f74492b"',
+130 silly get     'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+130 silly get     'last-modified': 'Mon, 15 Jul 2019 04:32:46 GMT',
+130 silly get     vary: 'accept-encoding, accept',
+130 silly get     'x-amz-meta-rev': '450-08a21c84d38015e203a7fd39a2afbec9',
+130 silly get     server: 'cloudflare' } ]
+131 verbose etag https://registry.npmjs.org/rollup from cache
+132 verbose get saving rollup to /root/.npm/registry.npmjs.org/rollup/.cache.json
+133 http 304 https://registry.npmjs.org/rollup-plugin-node-resolve
+134 verbose headers { date: 'Sat, 27 Jul 2019 05:39:12 GMT',
+134 verbose headers   connection: 'keep-alive',
+134 verbose headers   'set-cookie':
+134 verbose headers    [ '__cfduid=dbba4639444e812b385870e8c09d78d931564205952; expires=Sun, 26-Jul-20 05:39:12 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+134 verbose headers   'cf-cache-status': 'HIT',
+134 verbose headers   'cache-control': 'max-age=300',
+134 verbose headers   'cf-ray': '4fcc458248afd326-LAX',
+134 verbose headers   age: '548',
+134 verbose headers   etag: '"7d61b31512c487ccb65cf0bc356c7d02"',
+134 verbose headers   'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+134 verbose headers   'last-modified': 'Sat, 29 Jun 2019 07:19:08 GMT',
+134 verbose headers   vary: 'accept-encoding, accept',
+134 verbose headers   'x-amz-meta-rev': '45-b81bb453b731c158855b86d466c4f922',
+134 verbose headers   server: 'cloudflare' }
+135 silly get cb [ 304,
+135 silly get   { date: 'Sat, 27 Jul 2019 05:39:12 GMT',
+135 silly get     connection: 'keep-alive',
+135 silly get     'set-cookie':
+135 silly get      [ '__cfduid=dbba4639444e812b385870e8c09d78d931564205952; expires=Sun, 26-Jul-20 05:39:12 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+135 silly get     'cf-cache-status': 'HIT',
+135 silly get     'cache-control': 'max-age=300',
+135 silly get     'cf-ray': '4fcc458248afd326-LAX',
+135 silly get     age: '548',
+135 silly get     etag: '"7d61b31512c487ccb65cf0bc356c7d02"',
+135 silly get     'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+135 silly get     'last-modified': 'Sat, 29 Jun 2019 07:19:08 GMT',
+135 silly get     vary: 'accept-encoding, accept',
+135 silly get     'x-amz-meta-rev': '45-b81bb453b731c158855b86d466c4f922',
+135 silly get     server: 'cloudflare' } ]
+136 verbose etag https://registry.npmjs.org/rollup-plugin-node-resolve from cache
+137 verbose get saving rollup-plugin-node-resolve to /root/.npm/registry.npmjs.org/rollup-plugin-node-resolve/.cache.json
+138 http 304 https://registry.npmjs.org/rollup-plugin-typescript2
+139 verbose headers { date: 'Sat, 27 Jul 2019 05:39:12 GMT',
+139 verbose headers   connection: 'keep-alive',
+139 verbose headers   'set-cookie':
+139 verbose headers    [ '__cfduid=d91bb4ad42f26fb1cf3fba76e39b58d041564205952; expires=Sun, 26-Jul-20 05:39:12 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+139 verbose headers   'cf-cache-status': 'HIT',
+139 verbose headers   'cache-control': 'max-age=300',
+139 verbose headers   'cf-ray': '4fcc4582d91422a4-LAX',
+139 verbose headers   age: '2983',
+139 verbose headers   etag: '"00cfe97dbfb508b5a55ce65ae994677b"',
+139 verbose headers   'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+139 verbose headers   'last-modified': 'Fri, 26 Jul 2019 17:52:07 GMT',
+139 verbose headers   vary: 'accept-encoding, accept',
+139 verbose headers   'x-amz-meta-rev': '55-dc249107f0b765dc368952cb29b07ece',
+139 verbose headers   server: 'cloudflare' }
+140 silly get cb [ 304,
+140 silly get   { date: 'Sat, 27 Jul 2019 05:39:12 GMT',
+140 silly get     connection: 'keep-alive',
+140 silly get     'set-cookie':
+140 silly get      [ '__cfduid=d91bb4ad42f26fb1cf3fba76e39b58d041564205952; expires=Sun, 26-Jul-20 05:39:12 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+140 silly get     'cf-cache-status': 'HIT',
+140 silly get     'cache-control': 'max-age=300',
+140 silly get     'cf-ray': '4fcc4582d91422a4-LAX',
+140 silly get     age: '2983',
+140 silly get     etag: '"00cfe97dbfb508b5a55ce65ae994677b"',
+140 silly get     'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+140 silly get     'last-modified': 'Fri, 26 Jul 2019 17:52:07 GMT',
+140 silly get     vary: 'accept-encoding, accept',
+140 silly get     'x-amz-meta-rev': '55-dc249107f0b765dc368952cb29b07ece',
+140 silly get     server: 'cloudflare' } ]
+141 verbose etag https://registry.npmjs.org/rollup-plugin-typescript2 from cache
+142 verbose get saving rollup-plugin-typescript2 to /root/.npm/registry.npmjs.org/rollup-plugin-typescript2/.cache.json
+143 http 304 https://registry.npmjs.org/rollup-plugin-commonjs
+144 verbose headers { date: 'Sat, 27 Jul 2019 05:39:12 GMT',
+144 verbose headers   connection: 'keep-alive',
+144 verbose headers   'set-cookie':
+144 verbose headers    [ '__cfduid=dacd7046fe7774bb9fbd175a787b130b81564205952; expires=Sun, 26-Jul-20 05:39:12 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+144 verbose headers   'cf-cache-status': 'HIT',
+144 verbose headers   'cache-control': 'max-age=300',
+144 verbose headers   'cf-ray': '4fcc45830f1120d0-LAX',
+144 verbose headers   age: '550',
+144 verbose headers   etag: '"db1cecd15ec8c4e3f6e6816111cd18d4"',
+144 verbose headers   'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+144 verbose headers   'last-modified': 'Thu, 27 Jun 2019 05:14:25 GMT',
+144 verbose headers   vary: 'accept-encoding, accept',
+144 verbose headers   'x-amz-meta-rev': '79-234b59371e11383828c26dd42df49237',
+144 verbose headers   server: 'cloudflare' }
+145 silly get cb [ 304,
+145 silly get   { date: 'Sat, 27 Jul 2019 05:39:12 GMT',
+145 silly get     connection: 'keep-alive',
+145 silly get     'set-cookie':
+145 silly get      [ '__cfduid=dacd7046fe7774bb9fbd175a787b130b81564205952; expires=Sun, 26-Jul-20 05:39:12 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+145 silly get     'cf-cache-status': 'HIT',
+145 silly get     'cache-control': 'max-age=300',
+145 silly get     'cf-ray': '4fcc45830f1120d0-LAX',
+145 silly get     age: '550',
+145 silly get     etag: '"db1cecd15ec8c4e3f6e6816111cd18d4"',
+145 silly get     'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+145 silly get     'last-modified': 'Thu, 27 Jun 2019 05:14:25 GMT',
+145 silly get     vary: 'accept-encoding, accept',
+145 silly get     'x-amz-meta-rev': '79-234b59371e11383828c26dd42df49237',
+145 silly get     server: 'cloudflare' } ]
+146 verbose etag https://registry.npmjs.org/rollup-plugin-commonjs from cache
+147 verbose get saving rollup-plugin-commonjs to /root/.npm/registry.npmjs.org/rollup-plugin-commonjs/.cache.json
+148 http 304 https://registry.npmjs.org/minecraft-scripting-types-server
+149 verbose headers { date: 'Sat, 27 Jul 2019 05:39:12 GMT',
+149 verbose headers   connection: 'keep-alive',
+149 verbose headers   'set-cookie':
+149 verbose headers    [ '__cfduid=dcb1b1c087cd1dcb1111182b0cb1444711564205952; expires=Sun, 26-Jul-20 05:39:12 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+149 verbose headers   'cf-cache-status': 'REVALIDATED',
+149 verbose headers   'cache-control': 'max-age=300',
+149 verbose headers   'cf-ray': '4fcc458359987776-LAX',
+149 verbose headers   etag: '"5790e6d8cf64978d431f06f70271e6d1"',
+149 verbose headers   'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+149 verbose headers   'last-modified': 'Wed, 05 Jun 2019 14:10:18 GMT',
+149 verbose headers   vary: 'accept-encoding, accept',
+149 verbose headers   'x-amz-meta-rev': '10-81fb6a73f2b74a4893d64485021ca083',
+149 verbose headers   server: 'cloudflare' }
+150 silly get cb [ 304,
+150 silly get   { date: 'Sat, 27 Jul 2019 05:39:12 GMT',
+150 silly get     connection: 'keep-alive',
+150 silly get     'set-cookie':
+150 silly get      [ '__cfduid=dcb1b1c087cd1dcb1111182b0cb1444711564205952; expires=Sun, 26-Jul-20 05:39:12 GMT; path=/; domain=.npmjs.org; HttpOnly' ],
+150 silly get     'cf-cache-status': 'REVALIDATED',
+150 silly get     'cache-control': 'max-age=300',
+150 silly get     'cf-ray': '4fcc458359987776-LAX',
+150 silly get     etag: '"5790e6d8cf64978d431f06f70271e6d1"',
+150 silly get     'expect-ct': 'max-age=604800, report-uri="https://report-uri.cloudflare.com/cdn-cgi/beacon/expect-ct"',
+150 silly get     'last-modified': 'Wed, 05 Jun 2019 14:10:18 GMT',
+150 silly get     vary: 'accept-encoding, accept',
+150 silly get     'x-amz-meta-rev': '10-81fb6a73f2b74a4893d64485021ca083',
+150 silly get     server: 'cloudflare' } ]
+151 verbose etag https://registry.npmjs.org/minecraft-scripting-types-server from cache
+152 verbose get saving minecraft-scripting-types-server to /root/.npm/registry.npmjs.org/minecraft-scripting-types-server/.cache.json
+153 verbose stack Error: Not found : cobblestone-addons
+153 verbose stack     at makeError (/usr/share/npm/node_modules/npm-registry-client/lib/request.js:264:12)
+153 verbose stack     at CachingRegistryClient.<anonymous> (/usr/share/npm/node_modules/npm-registry-client/lib/request.js:252:14)
+153 verbose stack     at Request._callback (/usr/share/npm/node_modules/npm-registry-client/lib/request.js:172:14)
+153 verbose stack     at Request.self.callback (/usr/share/npm/node_modules/request/request.js:198:22)
+153 verbose stack     at emitTwo (events.js:126:13)
+153 verbose stack     at Request.emit (events.js:214:7)
+153 verbose stack     at Request.<anonymous> (/usr/share/npm/node_modules/request/request.js:1082:10)
+153 verbose stack     at emitOne (events.js:121:20)
+153 verbose stack     at Request.emit (events.js:211:7)
+153 verbose stack     at IncomingMessage.<anonymous> (/usr/share/npm/node_modules/request/request.js:1009:12)
+154 verbose statusCode 404
+155 verbose pkgid cobblestone-addons
+156 verbose cwd /home/minecraft/cobble/start/development_behavior_packs/BedrockPlugins/scaffold
+157 error Linux 5.0.0-21-generic
+158 error argv "/usr/bin/node" "/usr/bin/npm" "update"
+159 error node v8.10.0
+160 error npm  v3.5.2
+161 error code E404
+162 error 404 Not found : cobblestone-addons
+163 error 404
+164 error 404 'cobblestone-addons' is not in the npm registry.
+165 error 404 You should bug the author to publish it (or use the name yourself!)
+166 error 404 Note that you can also install from a
+167 error 404 tarball, folder, http url, or git url.
+168 verbose exit [ 1, true ]

@@ -1,0 +1,25 @@
+import {backReg} from "./commands/back";
+import {utilsReg} from "./utils";
+const system = server.registerSystem(0, 0);
+
+
+system.initialize = function() {
+    server.log("EasyEssentials 2.0 loaded");
+    system.listenForEvent("minecraft:entity_created",onPlayerCreated);
+    utilsReg(this);
+    backReg(this);
+}
+
+
+
+function onPlayerCreated(data){
+    var entity = data.entity;
+    if (!entity) throw "not entity";
+    if (entity.__identifier__ == "minecraft:player") {
+        server.log("玩家加入游戏");
+        let ecmp = system.getComponent(entity,MinecraftComponent.ExtraData);
+        server.log(ecmp.data.value.Variant.toString());
+        //let out = ecmp.data.toString();
+        //system.executeCommand("tell @a §e服务器已使用EasyEssentials 2.0",(data)=>{});
+    }
+}
