@@ -13,13 +13,13 @@ export function backReg(sys) {
             {
                 parameters: [],
                 handler(){
-                    //if (!this.entity || this.entity.__identifier__ != "minecraft:player") throw `Can only be used by player`;
+                    if (!this.entity || this.entity.__identifier__ != "minecraft:player") throw `Can only be used by player`;
                     let $player = this.name;
                     const data = Array.from(db.query(SELECT_DEATH,{$player}));
                     if(data.length == 0) throw "你还没有记录的死亡点哦";
-                    system.executeCommand(`tellraw @a[name=${$player}] {"rawtext":[{"text":"§e准备将你传送至死亡点"}]}`,data=>{});
                     let position = data[0].position;
                     system.executeCommand(`tp @a[name=${$player}] ${position}`,data=>{});
+                    system.executeCommand(`tellraw @a[name=${$player}] {"rawtext":[{"text":"§e已传送至上一死亡点"}]}`,data=>{});
                     db.update(DELETE_DEATH,{$player});
                 }
             } as CommandOverload<[]>

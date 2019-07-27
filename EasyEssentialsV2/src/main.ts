@@ -1,5 +1,6 @@
 import {backReg} from "./commands/back";
-import {utilsReg} from "./utils";
+import {warpReg} from "./commands/warp";
+import {utilsReg,getName} from "./utils";
 const system = server.registerSystem(0, 0);
 
 
@@ -8,6 +9,7 @@ system.initialize = function() {
     system.listenForEvent("minecraft:entity_created",onPlayerCreated);
     utilsReg(this);
     backReg(this);
+    warpReg(this);
 }
 
 
@@ -18,8 +20,9 @@ function onPlayerCreated(data){
     if (entity.__identifier__ == "minecraft:player") {
         server.log("玩家加入游戏");
         let ecmp = system.getComponent(entity,MinecraftComponent.ExtraData);
-        server.log(ecmp.data.value.Variant.toString());
+        //server.log(ecmp.data.value.Variant.toString());
+        let name = getName(entity);
         //let out = ecmp.data.toString();
-        //system.executeCommand("tell @a §e服务器已使用EasyEssentials 2.0",(data)=>{});
+        system.executeCommand(`tell @a[name=${name}] §e服务器已使用EasyEssentials 2.0`,(data)=>{});
     }
 }

@@ -6,7 +6,7 @@ function fix(arr: TemplateStringsArray) {
       .replace(/\s+/g, " ");
   }
   //创建一个储存warp坐标的表
-  export const CREATE_TABLE = fix`
+  const CREATE_TABLE = fix`
   CREATE TABLE IF NOT EXISTS warp(
     id,
     name TEXT NOT NULL UNIQUE,
