@@ -76,7 +76,7 @@ system.initialize = function() {
     let blockName = block.__identifier__;
     if(checkIfContainer(blockName)){
     blockName = blockName.split(":")[1];
-    system.sendText(player,`${time} ${playerName}(${pX},${pY},${pZ}) 容器交互 ${blockName}(${bX},${bY},${bZ}) dim:${dim}`);
+    //system.sendText(player,`${time} ${playerName}(${pX},${pY},${pZ}) 容器交互 ${blockName}(${bX},${bY},${bZ}) dim:${dim}`);
     addRecord(time, playerName, pX, pY, pZ, "open", blockName, bX, bY, bZ, dim);  
     }
   });
