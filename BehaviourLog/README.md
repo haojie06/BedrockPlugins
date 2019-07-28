@@ -4,11 +4,15 @@
 **请使用最新版stoneserver*（可以先运行一次bash install.sh重新下载来更新）***
 1. 在游戏中输入 /logs 即会出现命令提示
    
-   命令结构如下[![eloCKs.md.png](https://s2.ax1x.com/2019/07/28/eloCKs.md.png)](https://imgchr.com/i/eloCKs)
+   命令结构如下
+   
+   [![eloCKs.md.png](https://s2.ax1x.com/2019/07/28/eloCKs.md.png)](https://imgchr.com/i/eloCKs)
+   
    /logs 起点坐标 终点坐标 *行为名*（all/break/place/open/use） *几小时内* *玩家名*   
    **斜体皆为可选参数**
    
    查询效果如下:
+   
    [![eloMrR.md.png](https://s2.ax1x.com/2019/07/28/eloMrR.md.png)](https://imgchr.com/i/eloMrR)
    [![elo3a6.md.png](https://s2.ax1x.com/2019/07/28/elo3a6.md.png)](https://imgchr.com/i/elo3a6)
 
