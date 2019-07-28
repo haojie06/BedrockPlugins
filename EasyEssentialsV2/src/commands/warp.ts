@@ -4,7 +4,7 @@ import {db,INSERT_WARP,SELECT_WARP_BY_NAME,SELECT_ALL_WARP,DELETE_WARP_BY_NAME} 
 let system;
 export function warpReg(sys) {
     system = sys;
-    server.log("/warp模块已加载");
+    server.log("warp模块已加载");
     //设置传送点 op命令
     system.registerCommand("setwarp",{
         description:"设置传送点",

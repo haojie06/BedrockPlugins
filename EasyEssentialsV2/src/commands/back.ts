@@ -4,7 +4,7 @@ import {db,INSERT_DEATH,SELECT_DEATH,DELETE_DEATH} from "../database";
 let system;
 export function backReg(sys) {
     system = sys;
-    server.log("/back模块已加载");
+    server.log("back模块已加载");
     system.listenForEvent("minecraft:entity_death",onEntityDeath);
     system.registerCommand("back",{
         description: "返回死亡地点",
