@@ -1,7 +1,7 @@
 # BehaviourLogs 玩家行为日志插件
 此插件旨在记录玩家在游戏中诸如破坏/放置/打开容器等行为，在遭到他人恶意破坏之后能查到“凶手”。目前支持版本 StoneServer 1.12.
 ## 使用方法
-**请使用最新版stoneserver*（可以先运行一次bash install.sh重新下载来更新）***
+**请使用最新版stoneserver（可以先运行一次bash install.sh重新下载来更新） 插件文件为BehaviourLog.tgz**
 1. 在游戏中输入 /logs 即会出现命令提示
    
    命令结构如下
