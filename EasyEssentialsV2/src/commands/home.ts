@@ -126,6 +126,7 @@ export function homeReg(sys) {
                     if ($homeName == ""){
                         system.executeCommand(`tp @a[name="${$owner}"] ${datas[0].position}`,data=>{});
                         system.executeCommand(`tellraw @a[name="${$owner}"] {"rawtext":[{"text":"§a已传送至${datas[0].homeName}"}]}`,data=>{});
+                        system.executeCommand(`playsound mob.endermen.portal @a[name="${$owner}"] ${datas[0].position} 1 1`,data=>{});
                     }
                     else{
                     //判断是否有重名的home
@@ -135,6 +136,7 @@ export function homeReg(sys) {
                             //可以执行传送
                             system.executeCommand(`tp @a[name="${$owner}"] ${data.position}`,data=>{});
                             system.executeCommand(`tellraw @a[name="${$owner}"] {"rawtext":[{"text":"§a已传送至${data.homeName}"}]}`,data=>{});
+                            system.executeCommand(`playsound mob.endermen.portal @a[name="${$owner}"] ${data.position} 1 1`,data=>{});
                             flag = true;
                         }
                         }

@@ -55,10 +55,11 @@ export function toolReg(sys) {
                         if(curBlock != "minecraft:air" && nextBlock == "minecraft:air"){
                             system.sendText(this.entity,`已找到落脚点${x} ${y+i+1} ${z}`)
                             system.executeCommand(`tp @a[name="${this.name}"] ${x} ${y+i+1} ${z}`,data=>{});
+                            system.executeCommand(`playsound mob.endermen.portal @a[name="${this.name}"] ${x} ${y+i+1} ${z} 1 1.2`,data=>{});
                             i = testBlockNum+1;
                         }
-                        if(i == testBlockNum){
-                            throw "未找到可落脚的地方";
+                        if(i == testBlockNum-1){
+                            throw `向上${testBlockNum}格未找到可落脚的地方`;
                         }
                     }                    
                 }

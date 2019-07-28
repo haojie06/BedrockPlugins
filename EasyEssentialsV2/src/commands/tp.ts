@@ -39,7 +39,7 @@ export function tpReg(sys) {
                     $timestamp
                 });
                 system.executeCommand(`tellraw @a[name="${$source}"] {"rawtext":[{"text":"§a已向玩家${$target}发送传送请求"}]}`,data=>{});
-                system.executeCommand(`tellraw @a[name="${$target}"] {"rawtext":[{"text":"§a玩家${$source}想要传送到你这里,输入/tpac接收传送,/tpad拒绝传送,有效期${tpOutTime}秒"}]}`,data=>{});
+                system.executeCommand(`tellraw @a[name="${$target}"] {"rawtext":[{"text":"§a玩家${$source}想要传送到你这里,输入/tpac接受传送,/tpad拒绝传送,有效期${tpOutTime}秒"}]}`,data=>{});
             }
         }as CommandOverload<["player"]>]
     });
@@ -76,7 +76,7 @@ export function tpReg(sys) {
                     $timestamp
                 });
                 system.executeCommand(`tellraw @a[name="${$source}"] {"rawtext":[{"text":"§a已向玩家${$target}发送传送邀请"}]}`,data=>{});
-                system.executeCommand(`tellraw @a[name="${$target}"] {"rawtext":[{"text":"§a玩家${$source}邀请你传送到ta那里,输入/tpahc接收邀请,/tpahd拒绝邀请,有效期${tpOutTime}秒"}]}`,data=>{});
+                system.executeCommand(`tellraw @a[name="${$target}"] {"rawtext":[{"text":"§a玩家${$source}邀请你传送到ta那里,输入/tpahc接受邀请,/tpahd拒绝邀请,有效期${tpOutTime}秒"}]}`,data=>{});
             }
         }as CommandOverload<["player"]>]
     });
@@ -108,8 +108,10 @@ export function tpReg(sys) {
                 //只传送最早的那个请求
                 let data = datas[0];
                 system.executeCommand(`tellraw @a[name="${data.source}"] {"rawtext":[{"text":"§a玩家${$target}接受了你的传送请求"}]}`,data=>{});
-                system.executeCommand(`tellraw @a[name="${$target}"] {"rawtext":[{"text":"§a接受了${data.source}的传送请求"}]}`,data=>{});
+                system.executeCommand(`tellraw @a[name="${$target}"] {"rawtext":[{"text":"§a接受了${data.source}的传送请求"}]}`,data=>{});                
                 system.executeCommand(`tp @a[name="${data.source}"] @a[name="${$target}"]`,data=>{});
+                let pos = getPositionofEntity(this.entity);
+                system.executeCommand(`playsound mob.endermen.portal @a[name="${data.source}"] ${pos} 1 1`,data=>{});                
                 let $source = data.source;
                 delNum = db.update(DELETE_COMMAND_DENY,{
                     $command,
@@ -186,6 +188,8 @@ export function tpReg(sys) {
                 system.executeCommand(`tellraw @a[name="${data.source}"] {"rawtext":[{"text":"§a玩家${$target}接受了你的传送邀请"}]}`,data=>{});
                 system.executeCommand(`tellraw @a[name="${$target}"] {"rawtext":[{"text":"§a接受了${data.source}的传送邀请"}]}`,data=>{});
                 system.executeCommand(`tp @a[name="${data.target}"] @a[name="${data.source}"]`,data=>{});
+                let pos = getPositionofEntity(this.entity);
+                system.executeCommand(`playsound mob.endermen.portal @a[name="${data.target}"] ${pos} 1 1`,data=>{});
                 //传送后删除
                 let $source = data.source;
                 delNum = db.update(DELETE_COMMAND_DENY,{

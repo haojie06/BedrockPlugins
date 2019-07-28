@@ -81,7 +81,8 @@ export function warpReg(sys) {
                 let name = getName(entity);
                 system.executeCommand(`tp @a[name="${name}"] ${position}`,data=>{});
                 system.executeCommand(`tellraw @a[name="${name}"] {"rawtext":[{"text":"§a已为你传送"}]}`,data=>{});
-                }
+                system.executeCommand(`playsound mob.endermen.portal @a[name="${name}"] ${position} 1 0.8`,data=>{});    
+            }
             }as CommandOverload<["string"]> ]
         });
 

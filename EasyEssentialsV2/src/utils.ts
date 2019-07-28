@@ -31,6 +31,7 @@ export function getDimensionOfEntity(entity: IEntity){
   return dimension;
 }
 
+
 export function transNum(num:number):number{
   if (num >= 0){
       num = Math.floor(num);
