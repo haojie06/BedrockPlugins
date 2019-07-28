@@ -24,6 +24,7 @@
    2. /stepping 在脚底下生成一个垫脚石（op命令
    3. /setlore 给物品设置lore标签 （来自示例代码
    4. /top 传送至顶部方块
+   5. /vanish 隐形
 6. 更多功能还在开发...
 
 *Created by haojie06*

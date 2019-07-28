@@ -67,6 +67,35 @@ export function toolReg(sys) {
         ]
     });
 
+        //示例代码 setlore
+        system.registerCommand("vanish", {
+            description: "隐形",
+            permission: 1,
+            overloads: [
+            {
+                parameters: [
+                {
+                    type: "string",
+                    name: "on/off"
+                }
+                ],
+                handler([str]) {
+                    if (!this.entity)
+                    throw `只有实体可以使用`;
+                    if(str == "on"){
+                        system.executeCommand(`effect @a[name="${this.name}"] invisibility 1000000 1 true`,data=>{});
+                        return "开启隐形";
+                    }
+                    else{
+                        system.executeCommand(`effect @a[name="${this.name}"] clear`,data=>{});
+                        return "关闭隐形";
+                    }
+                }
+            } as CommandOverload<["string"]>
+            ]
+        });
+    
+
     //示例代码 setlore
     system.registerCommand("setlore", {
         description: "为当前物品设置lore标签",

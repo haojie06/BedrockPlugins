@@ -21,14 +21,14 @@ system.initialize = function() {
 
 
 function onPlayerCreated(data){
-    var entity = data.entity;
+    var entity = data.data.entity;
     if (!entity) throw "not entity";
     if (entity.__identifier__ == "minecraft:player") {
         server.log("玩家加入游戏");
-        let ecmp = system.getComponent(entity,MinecraftComponent.ExtraData);
+        //let ecmp = system.getComponent(entity,MinecraftComponent.ExtraData);
         //server.log(ecmp.data.value.Variant.toString());
-        let name = getName(entity);
+        //let name = getName(entity);
         //let out = ecmp.data.toString();
-        system.executeCommand(`tell @a[name=${name}] §e服务器已使用EasyEssentials 2.0`,(data)=>{});
+        //system.executeCommand(`tell @a[name=${name}] §e服务器已使用EasyEssentials 2.0`,(data)=>{});
     }
 }

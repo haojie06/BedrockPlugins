@@ -20,6 +20,8 @@ export function backReg(sys) {
                     const data = Array.from(db.query(SELECT_DEATH,{$player}));
                     if(data.length == 0) throw "你还没有记录的死亡点哦";
                     let position = data[0].position;
+                    let pos = getPositionofEntity(entity);
+                    system.executeCommand(`playsound mob.endermen.portal @a[name="${$player}"] ${pos} 1 0.8`,data=>{});
                     system.executeCommand(`tp @a[name="${$player}"] ${position}`,data=>{});
                     system.executeCommand(`tellraw @a[name="${$player}"] {"rawtext":[{"text":"§e已传送至上一死亡点"}]}`,data=>{});
                     //system.executeCommand(`playsound mob.endermen.portal @a[name="${$player}"] ${position} 1.0 1.0 0.8`,data=>{});
@@ -32,11 +34,11 @@ export function backReg(sys) {
 }
 
 function onEntityDeath(eventData){
-    let entity = eventData.entity;
+    let entity = eventData.data.entity;
     //如果死亡的实体是玩家
     if(entity.__identifier__ == "minecraft:player"){
         //拥有坐标组件
-        if (system.hasComponent(entity, "minecraft:position")) {
+        if (system.hasComponent(entity,MinecraftComponent.Position)) {
             let $position:string = getPositionofEntity(entity);
             let $player:string = getName(entity);
             let result = db.update(DELETE_DEATH,{$player});
@@ -46,11 +48,13 @@ function onEntityDeath(eventData){
             });
             server.log(`玩家${$player}的死亡点${$position}已经记录`);
             //system.executeCommand(`tell @a[name=${$player}] §a死了?不用担心，输入/back返回死亡点`,data=>{});
-            if (getDimensionOfEntity(entity) == 0){            
-            system.executeCommand(`tellraw @a[name=${$player}] {"rawtext":[{"text":"§a死了?不用担心，输入/back返回死亡点"}]}`,data=>{server.log(JSON.stringify(data));});
+            if (getDimensionOfEntity(entity) == 0){     
+            system.sendText(entity,"§a死了?不用担心，输入/back返回死亡点");  
+            //system.executeCommand(`tellraw @a[name=${$player}] {"rawtext":[{"text":"§a死了?不用担心，输入/back返回死亡点"}]}`,data=>{});
             }
             else{
-            system.executeCommand(`tellraw @a[name=${$player}] {"rawtext":[{"text":"§c你死在主世界之外了，无法/back了 position:(${$position})"}]}`,data=>{server.log(JSON.stringify(data));});
+            system.sendText(entity,`§c你死在主世界之外了，无法/back了 position:(${$position})`);
+            //system.executeCommand(`tellraw @a[name=${$player}] {"rawtext":[{"text":"§c你死在主世界之外了，无法/back了 position:(${$position})"}]}`,data=>{});
             }
         }
     }

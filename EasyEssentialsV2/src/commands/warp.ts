@@ -79,6 +79,8 @@ export function warpReg(sys) {
                 let position = datas[0].position;
                 let owner = datas[0].owner;
                 let name = getName(entity);
+                system.executeCommand(`playsound mob.endermen.portal @a[name="${name}"] ${position} 1 0.8`,data=>{});
+
                 system.executeCommand(`tp @a[name="${name}"] ${position}`,data=>{});
                 system.executeCommand(`tellraw @a[name="${name}"] {"rawtext":[{"text":"§a已为你传送"}]}`,data=>{});
                 system.executeCommand(`playsound mob.endermen.portal @a[name="${name}"] ${position} 1 0.8`,data=>{});    
