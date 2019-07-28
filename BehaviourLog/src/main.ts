@@ -8,7 +8,7 @@ import { getTime,stringToInt,transNum,checkIfContainer} from "./utils";
 
 const system = server.registerSystem(0, 0);
 system.initialize = function() {
-  server.log("日志系统v2.0 loaded https://github.com/haojie06/BedrockPlugins");
+  server.log("日志系统v2.0 loaded https://github.com/haojie06/BedrockPlugins/tree/master/BehaviourLog");
   //方块破坏记录
   system.listenForEvent("minecraft:player_destroyed_block", (data) => {
     let player = data.data.player;
