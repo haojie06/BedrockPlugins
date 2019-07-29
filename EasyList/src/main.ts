@@ -1,9 +1,8 @@
 import {db,DELETE_BY_BIND_KIND,SELECT_BIND_INBLACKLIST_BYNAME,SELECT_ALLINBLACKLIST_BYNAME,SELECT_ALLINBLACKLIST_BYBIND,SELECT_ALLNAME_BYBIND,SELECT_WHITELIST_BIND_BYNAME,SELECT_WHITELIST_BY_BIND,SELECT_NAME_IN_LIST, DELETE_NAME_IN_LIST, SELECT_ALL_IN_LIST, INSERT_LIST} from "./database"
 const system = server.registerSystem(0, 0);
 let tick = 0,tick2 = 0;
-let playerBanedInfoList:string[] = [];
-
-let playerNotInWhitelist:string[] = [];
+let playerBanedNameList:string[] = [];
+let playerNotInWhiteNamelist:string[] = [];
 let playerEntityNotInWhitelist:IEntity[] = [];
 let playerQuery;
 system.initialize = function() {
@@ -11,9 +10,9 @@ system.initialize = function() {
     system.listenForEvent("minecraft:entity_created",onPlayerJoin);
 
     //注册自定义组件，用于标识玩家
-    system.registerComponent("easylist:notwhite", {});
+    system.registerComponent("easylist:isplayer", {});
     playerQuery = system.registerQuery();
-    system.addFilterToQuery(playerQuery,"minecraft:player.level");
+    system.addFilterToQuery(playerQuery,"easylist:isplayer");
 
     system.registerCommand("fkick",{
       description: "踢掉",
@@ -28,6 +27,7 @@ system.initialize = function() {
         handler([target]){
           system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c服务器已踢出${getName(target[0])}"}]}`,data=>{});
           system.destroyEntity(target[0]);
+          server.log(`服务器已踢出${getName(target[0])}`);
         }
       }as CommandOverload<["player"]>
       ]
@@ -79,11 +79,17 @@ system.initialize = function() {
           if($bind != "未知qq")
           {
           datas = Array.from(db.query(SELECT_ALLINBLACKLIST_BYBIND,{$bind}));
-          if (datas.length != 0) throw "此人绑定号码已在黑名单内，拒绝添加";
+          if (datas.length != 0){
+            server.log(`此人${$name}绑定号码${$bind}已在黑名单内，拒绝添加`);
+            throw "此人绑定号码已在黑名单内，拒绝添加";
+          }
           }
           //防止重复添加
           datas = Array.from(db.query(SELECT_WHITELIST_BIND_BYNAME,{$name}));
-          if(datas.length != 0) throw `已经有人使用过这个名字了 ${datas[0].bind}`;
+          if(datas.length != 0){
+            server.log(`已经有人使用过这个名字了 ${datas[0].bind}`);
+            throw `已经有人使用过这个名字了 ${datas[0].bind}`;
+          }
           //可以进行添加
           db.update(INSERT_LIST,{
             $name,
@@ -91,15 +97,13 @@ system.initialize = function() {
             $bind,
             $msg
           });
-        //从未加入白名单的在线玩家列表中移除
-        let delIndex = playerNotInWhitelist.indexOf(target);
-        playerNotInWhitelist.splice(delIndex,1);
         //添加白名单标签
         system.executeCommand(`tag @a[name="${$name}"] add whitelist`,data=>{});
         datas = Array.from(db.query(SELECT_WHITELIST_BY_BIND,{$bind}));
         if(datas.length != 0){
           //玩家这个qq已经注册过白名单了
           system.executeCommand(`tellraw @a {"rawtext":[{"text":"§a已为${$name}添加白名单 绑定:${$bind} 备注:${$msg}"}]}`,data=>{});
+          server.log(`已为${$name}添加白名单 绑定:${$bind} 备注:${$msg}`);
           let namelist;
           for(let index in datas){
             if(index == '0'){
@@ -110,19 +114,22 @@ system.initialize = function() {
             }
         }
           system.executeCommand(`tellraw @a {"rawtext":[{"text":"§e玩家已有账号：§r\n${namelist}"}]}`,data=>{});
+          server.log(`玩家已有账号：§r\n${namelist}`);
           system.executeCommand(`title @a[name="${$name}"] clear`,data=>{});
           system.executeCommand(`title @a[name="${$name}"] title §3你已获得白名单`,data=>{});
         }
         else{
         system.executeCommand(`tellraw @a {"rawtext":[{"text":"§a已为${$name}添加白名单 ${$msg}"}]}`,data=>{});
-        }
+        server.log(`已为${$name}添加白名单 绑定:${$bind} 备注:${$msg}`);
+      }
       }
       else if (action == "remove"){
         let $name = target;
         let $kind = "whitelist";
         db.update(DELETE_NAME_IN_LIST,{$name,$kind});
-        playerNotInWhitelist.push($name);
+        playerNotInWhiteNamelist.push($name);
         system.executeCommand(`tellraw @a {"rawtext":[{"text":"§a已移除${$name}的白名单 ${msg}"}]}`,data=>{});
+        server.log(`已移除${$name}的白名单 ${msg}`);
       }
       else if (action == "list"){
         //查找该玩家添加的其他白名单
@@ -173,6 +180,7 @@ system.initialize = function() {
         let $msg = reason;
         let $bind = datas[0].bind;
         let blacklistDatas = Array.from(db.query(SELECT_ALLINBLACKLIST_BYNAME,{$name}));
+        playerBanedNameList.push($name);
         if (blacklistDatas.length != 0) throw "此人已被封禁";
         //添加至黑名单
         db.update(INSERT_LIST,{
@@ -183,16 +191,14 @@ system.initialize = function() {
         });
 
         //查询一下他是否有多个id,一起都封了
-        playerBanedInfoList.push(target);
-        system.executeCommand(`kick "${$name}" 你已被封禁`,data=>{});
+        playerBanedNameList.push(target);
         if($bind != "未知qq"){
         //记录了qq的时候可以把同一个qq的id都封了
         datas = Array.from(db.query(SELECT_WHITELIST_BY_BIND,{$bind}));
         let allmessage = `该账号还添加了${datas.length}个白名单,一并进行封禁:\n`;
         for(let index in datas){
         let data = datas[index];
-        playerBanedInfoList.push(String(data.name));
-        system.executeCommand(`kick "${data.name}" 你已被封禁`,data=>{});
+        playerBanedNameList.push(String(data.name));
         allmessage += `${index}.${data.name}\n`;
         $name = String(data.name);
         $kind = "blacklist";
@@ -205,10 +211,12 @@ system.initialize = function() {
         }
 
         system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c已封禁${$name} reason:${$msg}\n${allmessage}"}]}`,data=>{});
-    }
+        server.log(`已封禁${$name} reason:${$msg}\n${allmessage}`);
+      }
         else{
         system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c已封禁${$name} reason:${$msg}"}]}`,data=>{});
-        }
+        server.log(`已封禁${$name} reason:${$msg}`);
+      }
     }
     } as CommandOverload<["string", "message"]>
     ]
@@ -242,6 +250,7 @@ system.registerCommand("funban", {
         });
       }
     system.executeCommand(`tellraw @a {"rawtext":[{"text":"§a已解封${$name}"}]}`,data=>{});
+    server.log(`已解封${$name}`);
   }
   } as CommandOverload<["string"]>
 ]});
@@ -253,16 +262,29 @@ system.update = function(){
   if(tick == 20){
     tick = 0;
     //获得所有不在白名单中的玩家实体 似乎是有bug
-    //let entities = system.getEntitiesFromQuery(playerQuery);
+    let entities = system.getEntitiesFromQuery(playerQuery);
     //server.log("执行白名单处理 目前未在名单中实体数量:" + entities.length);
-    for(let playerName of playerNotInWhitelist){
-      system.executeCommand(`title @a[name="${playerName}"] title §e你还没有获得白名单噢，请在QQ群内获得`,data=>{});
-      system.executeCommand(`kick "${playerName}" 你还没有白名单哦`,data=>{server.log(JSON.stringify(data));});
-      //system.sendText(entity,`你还没有获得白名单哦，请在QQ群内获得`);
-      //直接摧毁
-      //system.destroyComponent()
+    for(let entity of entities){
+      let name = getName(entity);
+      //玩家在封禁待处理名单中的话
+      if(playerBanedNameList.indexOf(name) != -1){
+        system.executeCommand(`title @a[name="${name}"] title §e你已被服务器封禁`,data=>{});
+        server.log(`玩家${name}已被封禁，踢出`);
+        let re = system.destroyEntity(entity);
+        if(re == true){
+        playerBanedNameList.splice(playerBanedNameList.indexOf(name),1);
+      }
+      }
+      else if (playerNotInWhiteNamelist.indexOf(name) != -1){
+        system.executeCommand(`title @a[name="${name}"] title §e你还没有白名单噢，请在群里获得`,data=>{});
+        server.log(`玩家${name}没有白名单，踢出`);
+        let re = system.destroyEntity(entity);
+        if(re == true){
+        playerNotInWhiteNamelist.splice(playerNotInWhiteNamelist.indexOf(name),1);
+      }
     }
   }
+}
 }
 
 
@@ -271,7 +293,7 @@ function onPlayerJoin(data){
     if (!entity) throw "not entity";
     if (entity.__identifier__ == "minecraft:player") {
     server.log(`玩家${getName(entity)}加入游戏`);
-
+    system.createComponent(entity,"easylist:isplayer");
     //先检查黑名单 后检检查白名单
     let $name = getName(entity);
     let $kind = "blacklist";
@@ -283,7 +305,7 @@ function onPlayerJoin(data){
     }
     if(datas.length != 0){
         server.log("玩家在黑名单内");
-        system.executeCommand(`kick "${$name}" 你已被封禁`,data=>{});
+        playerBanedNameList.push($name);
     }
     else{
       server.log("玩家不在黑名单内");
@@ -297,11 +319,7 @@ function onPlayerJoin(data){
     }
     else{
         server.log("玩家不在白名单内");
-        //给玩家加上标识组件
-        system.createComponent(entity,"easylist:notwhite");
-        server.log("添加标识组件" + entity.__identifier__);
-        playerNotInWhitelist.push($name);
-        system.executeCommand(`kick "${$name}" 你还没有白名单哦`,data=>{server.log(JSON.stringify(data));});
+        playerNotInWhiteNamelist.push($name);
     }
 }
     }
