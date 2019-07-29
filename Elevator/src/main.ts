@@ -24,7 +24,7 @@ system.initialize = function() {
         if(blockName == eBlockName && pX == bX && pZ == bZ){
             //server.log("玩家触发电梯方块");
             for (let i = 1; i <= maxUpDis; i++) {
-                let tblock = system.getBlock(tickingArea,bX,bY+i,bZ);
+                let tblock = system.getBlock(tickingArea,bX,bY-i,bZ);
                 let testBlockName = tblock.__identifier__;
                 //server.log(`找到的方块名${testBlockName}`);
                 if(testBlockName == blockName){
@@ -63,7 +63,7 @@ system.initialize = function() {
         if(blockName == eBlockName && pX == bX && pZ == bZ){
             //server.log("玩家触发电梯方块");
             for (let i = 1; i <= maxUpDis; i++) {
-                let tblock = system.getBlock(tickingArea,bX,bY-i,bZ);
+                let tblock = system.getBlock(tickingArea,bX,bY+i,bZ);
                 let testBlockName = tblock.__identifier__;
                 //server.log(`找到的方块名${testBlockName}`);
                 if(testBlockName == blockName){
