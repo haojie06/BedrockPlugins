@@ -100,7 +100,7 @@ export function warpReg(sys) {
                 const datas = Array.from(db.query(SELECT_ALL_WARP,{}));
                 let show:string = "";
                 for(let data of datas){
-                    show += `${data.name}:(${data.position}) by ${data.owner}`;
+                    show += `${data.name}:(${data.position}) by ${data.owner}\n`;
                 }
                 let name = getName(entity);
                 system.executeCommand(`tellraw @a[name="${name}"] {"rawtext":[{"text":"${show}"}]}`,data=>{});
