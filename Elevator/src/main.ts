@@ -4,7 +4,7 @@ let eBlockName = "minecraft:iron_block";
 //方块之间最大上升距离 这里是15格
 let maxUpDis = 15;
 system.initialize = function() {
-    server.log("Elevetor Plugin Loaded");
+    server.log("Elevator Plugin Loaded");
     system.listenForEvent("minecraft:block_interacted_with",(data)=>{
         let player = data.data.player;
         let bPosition = data.data.block_position;
@@ -20,6 +20,7 @@ system.initialize = function() {
         let ifFind = false;
         let block = system.getBlock(tickingArea,bX,bY,bZ);
         let blockName = block.__identifier__;
+        //system.sendText(player,`与方块交互 ${blockName} (${pX},${pY},${pZ}) (${bX},${bY},${bZ})`);
         if(blockName == eBlockName && pX == bX && pZ == bZ){
             //server.log("玩家触发电梯方块");
             for (let i = 1; i <= maxUpDis; i++) {
@@ -58,6 +59,7 @@ system.initialize = function() {
         let ifFind = false;
         let block = system.getBlock(tickingArea,bX,bY,bZ);
         let blockName = block.__identifier__;
+        //system.sendText(player,`点击方块 ${blockName} (${pX},${pY},${pZ}) (${bX},${bY},${bZ})`);
         if(blockName == eBlockName && pX == bX && pZ == bZ){
             //server.log("玩家触发电梯方块");
             for (let i = 1; i <= maxUpDis; i++) {
@@ -86,7 +88,7 @@ function transNum(n:number):number{
     if(n >= 0){
         return Math.floor(n);
     }else{
-        return Math.ceil(n);
+        return Math.floor(n);
     }
 }
 
