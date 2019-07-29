@@ -20,26 +20,27 @@ system.initialize = function() {
         let ifFind = false;
         let block = system.getBlock(tickingArea,bX,bY,bZ);
         let blockName = block.__identifier__;
-        //system.sendText(player,`与方块交互 ${blockName} (${pX},${pY},${pZ}) (${bX},${bY},${bZ})`);
+        //system.sendText(player,`与方块交互 ${blockName} (${pX},${pY},${pZ}) (${bX},${bY},${bZ})`); 
+        //安卓单击 win10右键
         if(blockName == eBlockName && pX == bX && pZ == bZ){
             //server.log("玩家触发电梯方块");
             for (let i = 1; i <= maxUpDis; i++) {
-                let tblock = system.getBlock(tickingArea,bX,bY-i,bZ);
+                let tblock = system.getBlock(tickingArea,bX,bY+i,bZ);
                 let testBlockName = tblock.__identifier__;
                 //server.log(`找到的方块名${testBlockName}`);
                 if(testBlockName == blockName){
                     //system.sendText(player,`已找到向上电梯方块`);
                     system.executeCommand(`playsound tile.piston.in @a[name="${getName(player)}"] ${bX} ${bY} ${bZ} 1 1`,data=>{});
                     let pcmp = system.getComponent<IPositionComponent>(player,MinecraftComponent.Position);
-                    pcmp.data.y = bY - i + 1;
+                    pcmp.data.y = bY + i + 1;
                     system.applyComponentChanges(player,pcmp);
-                    system.executeCommand(`playsound tile.piston.out @a[name="${getName(player)}"] ${bX} ${bY - i +1} ${bZ} 1 1`,data=>{});
+                    system.executeCommand(`playsound tile.piston.out @a[name="${getName(player)}"] ${bX} ${bY + i +1} ${bZ} 1 1`,data=>{});
                     ifFind = true;
                     i = maxUpDis + 1;
                 }
             }
             if(!ifFind){
-                system.sendText(player, "未在下方找到电梯方块");
+                system.sendText(player, "未在上方找到电梯方块");
             }
         }
     });
@@ -63,22 +64,22 @@ system.initialize = function() {
         if(blockName == eBlockName && pX == bX && pZ == bZ){
             //server.log("玩家触发电梯方块");
             for (let i = 1; i <= maxUpDis; i++) {
-                let tblock = system.getBlock(tickingArea,bX,bY+i,bZ);
+                let tblock = system.getBlock(tickingArea,bX,bY-i,bZ);
                 let testBlockName = tblock.__identifier__;
                 //server.log(`找到的方块名${testBlockName}`);
                 if(testBlockName == blockName){
                     //system.sendText(player,`已找到向下电梯方块`);
                     system.executeCommand(`playsound tile.piston.in @a[name="${getName(player)}"] ${bX} ${bY} ${bZ} 1 1`,data=>{});
                     let pcmp = system.getComponent<IPositionComponent>(player,MinecraftComponent.Position);
-                    pcmp.data.y = bY + i + 1;
+                    pcmp.data.y = bY - i + 1;
                     system.applyComponentChanges(player,pcmp);
-                    system.executeCommand(`playsound tile.piston.out @a[name="${getName(player)}"] ${bX} ${bY + i +1} ${bZ} 1 1`,data=>{});
+                    system.executeCommand(`playsound tile.piston.out @a[name="${getName(player)}"] ${bX} ${bY - i +1} ${bZ} 1 1`,data=>{});
                     i = maxUpDis + 1;
                     ifFind = true;
                 }
             }
             if(!ifFind){
-                system.sendText(player, "未在上方找到电梯方块");
+                system.sendText(player, "未在下方找到电梯方块");
             }
         }
     });
