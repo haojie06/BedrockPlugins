@@ -1,0 +1,21 @@
+{
+  "private": true,
+  "devDependencies": {
+    "@types/node": "^12.6.8",
+    "rollup": "^1.17.0",
+    "rollup-plugin-commonjs": "^10.0.1",
+    "rollup-plugin-json": "^4.0.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-typescript2": "^0.22.0",
+    "tslib": "^1.10.0"
+  },
+  "scripts": {
+    "build": "rollup -c",
+    "watch": "rollup -c -w"
+  },
+  "dependencies": {
+    "cobblestone-addons": "https://github.com/stone-addons/cobblestone-typing/tarball/master",
+    "minecraft-scripting-types-server": "^1.0.0",
+    "typescript": "^3.5.3"
+  }
+}

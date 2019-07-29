@@ -1,0 +1,18 @@
+{
+	"format_version": 1,
+	"header": {
+		"name": "Elevator",
+		"description": "电梯插件 for StoneServer 1.12 created by haojie06",
+		"uuid": "5c76bb2d-38b0-4952-9280-4f5223eeefbb",
+		"version": [ 0, 0, 0 ],
+		"min_engine_version": [ 1, 12, 0 ]
+	},
+	"modules": [
+		{
+			"description": "data",
+			"type": "data",
+			"uuid": "8853dc09-8dc0-49a7-b12a-e9f8fa6564ea",
+			"version": [ 0, 0, 0 ]
+		}
+	]
+}
