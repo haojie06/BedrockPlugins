@@ -1,0 +1,18 @@
+{
+  "format_version": 1,
+  "header": {
+    "name": "EasyList",
+    "description": "简易的黑白名单插件",
+    "uuid": "e035cb1a-6711-416a-be73-9a6fb1aaee4c",
+    "version": [0, 0, 0],
+    "min_engine_version": [1, 12, 0]
+  },
+  "modules": [
+    {
+      "description": "data",
+      "type": "data",
+      "uuid": "a7dd6b76-a709-40d5-b442-7d8775a45c3f",
+      "version": [0, 0, 0]
+    }
+  ]
+}
