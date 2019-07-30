@@ -3,17 +3,17 @@ const system = server.registerSystem(0, 0);
 let itemWhitelist:string[] = ["minecraft:diamond","minecraft:gold_ore","minecraft:iron_ore","minecraft:diamond_ore","minecraft:diamond_block","minecraft:enchanting_table","minecraft:emerald_ore","minecraft:emerald_block","minecraft:beacon","minecraft:iron_shovel","minecraft:iron_pickaxe","minecraft:iron_axe","minecraft:bow","minecraft:diamond","minecraft:iron_ingot","minecraft:gold_ingot","minecraft:iron_sword","minecraft:diamond_sword","minecraft:diamond_shovel","minecraft:diamond_pickaxe","minecraft:diamond_axe"];
 //实体黑
 let entityBlacklist:string[] = [
-"minecraft:small_fireball","minecraft:silverfish","minecraft:polar_bear","minecraft:egg","minecraft:pufferfish","minecraft:rabbit","minecraft:mule","minecraft:llama","minecraft:horse",
-  "minecraft:guardian","minecraft:tropical_fish","minecraft:donkey","minecraft:cod",
+"minecraft:evoker","minecraft:vex","minecraft:vindicator","minecraft:cat","minecraft:wolf","minecraft:silverfish","minecraft:polar_bear","minecraft:pufferfish","minecraft:rabbit","minecraft:mule","minecraft:llama","minecraft:horse",
+  "minecraft:guardian","minecraft:tropical_fish","minecraft:tropicalfish","minecraft:donkey","minecraft:cod","minecraft:slime",
 ,"minecraft:squid","minecraft:dolphin","minecraft:chicken","minecraft:cow","minecraft:salmon",
-"minecraft:sheep","","minecraft:pig",  "minecraft:spider","minecraft:fireball",
-"minecraft:arrow","fine:halfzombie","minecraft:bat","minecraft:blaze",
+"minecraft:sheep","","minecraft:pig",  "minecraft:spider","minecraft:turtle","fine:halfzombie","minecraft:bat","minecraft:blaze",
 "minecraft:cave_spider","minecraft:creeper","minecraft:drowned","minecraft:enderman"
 ,"minecraft:ghast","minecraft:husk","minecraft:magma_cube","minecraft:skeleton","minecraft:squid"
 ,"minecraft:stray","minecraft:wither_skeleton","minecraft:zombie","minecraft:zombie_pigman","minecraft:ocelot"];
 //堆叠生物白名单
 let stackWhitelist:string[] = ["minecraft:xp_orb","minecraft:falling_block","minecraft:ravager","minecraft:pillager","minecraft:player","minecraft:armor_stand","minecraft:villager","minecraft:villager_v2","minecraft:villager_v2"];
-let itemQuery,mobQuery,entityQuery,positionQuery,playerQuery;
+let noNameEntityBlackList:string[] = ["minecraft:wither_skull","minecraft:egg","minecraft:xp_orb","minecraft:fireball","minecraft:small_fireball","minecraft:arrow"];
+let itemQuery,mobQuery,entityQuery,positionQuery,playerQuery,noNameEntityQuery;
 let notClearMobNum = 0,clearMobNum = 0;
 //模拟距离
 let tick = 0;
@@ -26,13 +26,15 @@ system.initialize = function () {
     itemQuery = system.registerQuery();
     mobQuery = system.registerQuery();
     entityQuery = system.registerQuery();
+    noNameEntityQuery = system.registerQuery();
     positionQuery = system.registerQuery(MinecraftComponent.Position, "x", "y", "z");
     system.registerComponent("lagremover:isItem", {});
     system.registerComponent("lagremover:isMob", {});
-    system.registerComponent("lagremover:isPlayer", {});
+    system.registerComponent("lagremover:noNameEntity", {});
     system.addFilterToQuery(itemQuery,"lagremover:isItem");
     system.addFilterToQuery(mobQuery,"lagremover:isMob");
     system.addFilterToQuery(mobQuery,"minecraft:nameable");
+    system.addFilterToQuery(noNameEntityQuery,"lagremover:noNameEntity")
     system.listenForEvent("minecraft:entity_created",onEntityCreate);
 
     system.registerCommand("lagstatus", {
@@ -46,8 +48,10 @@ system.initialize = function () {
               system.sendText(this.entity,`§c服务器已运行${minute}分钟${second}秒\n§c当前待清除掉落物数量:${entities.length}`)
               server.log(`当前待清除掉落物数量:${entities.length}`);
               entities = system.getEntitiesFromQuery(mobQuery);
-              system.sendText(this.entity,`§c当前待清除生物数量:${entities.length}`)
-              server.log(`当前待清除生物数量:${entities.length}`);
+              let noNameEntities = system.getEntitiesFromQuery(noNameEntityQuery);
+
+              system.sendText(this.entity,`§c当前待清除生物数量:${entities.length + noNameEntities.length}`);
+              server.log(`当前待清除生物数量:${entities.length + noNameEntities.length}`);
               entities = system.getEntitiesFromQuery(entityQuery);
               system.sendText(this.entity,`§c当前实体总数量${entities.length} \ntick:${tick} 距离清理:tick:${clearInterval + 1200 - tick}`)
               server.log(`当前实体总数量${entities.length} tick:${tick}\n距离清理:tick:${clearInterval + 1200 - tick}`);
@@ -108,6 +112,7 @@ system.update = function() {
     else if(tick == (clearInterval+1200)){
       let itemEntities = system.getEntitiesFromQuery(itemQuery);
       let mobEntities = system.getEntitiesFromQuery(mobQuery);
+      let noNameEntities = system.getEntitiesFromQuery(noNameEntityQuery);
       let mobLength = mobEntities.length;
       let itemLength = itemEntities.length;
       let beginTime = Date.now();
@@ -124,6 +129,10 @@ system.update = function() {
           system.destroyEntity(mob);
           clearMobNum++;
         }
+      }
+      for (let noNameE of noNameEntities){
+        system.destroyEntity(noNameE);
+        clearMobNum++;
       }
       let endTime = Date.now();
       let useTime = endTime - beginTime;
@@ -150,43 +159,10 @@ function onEntityCreate(data){
       if(entityBlacklist.indexOf(entity.__identifier__) != -1){
         system.createComponent(entity,"lagremover:isMob");
         }
-      else{
-        server.log(`${entity.__identifier__}不在清理名单内`);
-      }
-  
-          //生物出生的时候是否检查周围出现堆叠
-          /*
-        if(stackWhitelist.indexOf(entity.__identifier__) == -1){
-        let posComp = system.getComponent(entity,MinecraftComponent.Position);
-        let x = Math.floor(posComp.data.x);
-        let y = Math.floor(posComp.data.y);
-        let z = Math.floor(posComp.data.z);
-        let startTime = Date.now();
-        let entities = system.getEntitiesFromQuery(positionQuery,x-10,y-5,z-10,x+10,y+5,z+10);
-        if(entities == null){
-          throw("无法获得周边实体信息");
+        else if (noNameEntityBlackList.indexOf(entity.__identifier__) != -1){
+          system.createComponent(entity,"lagremover:noNameEntity");
         }
-        let sameEntities = [];
-        for(let enti of entities){
-            if(enti.__identifier__ == entity.__identifier__){
-              sameEntities.push(enti);
-            }
+        else{
         }
-        //server.log(`生成${entity.__identifier__}周围有同种实体${sameEntities.length}个`); 周围出现超过15个同类实体时清理
-        if (sameEntities.length >=maxStackSize) {
-          let name = entity.__identifier__;
-          let pos = system.getComponent(entity,MinecraftComponent.Position);
-          let x = Math.floor(pos.data.x);
-          let y = Math.floor(pos.data.y);
-          let z = Math.floor(pos.data.z);
-          let halfSize = maxStackSize / 2;
-          for(let i=0;i<halfSize;i++){
-            system.destroyEntity(entities[i]);
-          }
-          let endTime = Date.now() - startTime;
-          system.broadcastMessage(`§a§l清道夫§r §c${name}堆叠过多，触发清理 耗时${endTime}ms 请不要大量堆积生物(>20)`);
-          server.log(`实体${name}(${x},${y},${z})堆叠过多，触发清理 耗时${endTime}ms`);
-        }
-        }*/
     }
 }
