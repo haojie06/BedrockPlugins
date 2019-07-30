@@ -1,13 +1,14 @@
 const system = server.registerSystem(0, 0);
 //掉落物白名单
 let itemWhitelist:string[] = ["minecraft:diamond","minecraft:gold_ore","minecraft:iron_ore","minecraft:diamond_ore","minecraft:diamond_block","minecraft:enchanting_table","minecraft:emerald_ore","minecraft:emerald_block","minecraft:beacon","minecraft:iron_shovel","minecraft:iron_pickaxe","minecraft:iron_axe","minecraft:bow","minecraft:diamond","minecraft:iron_ingot","minecraft:gold_ingot","minecraft:iron_sword","minecraft:diamond_sword","minecraft:diamond_shovel","minecraft:diamond_pickaxe","minecraft:diamond_axe"];
-//实体白名单
+//实体黑
 let entityBlacklist:string[] = ["minecraft:fireball","minecraft:arrow","fine:halfzombie","minecraft:bat","minecraft:blaze","minecraft:cave_spider","minecraft:creeper","minecraft:drowned","minecraft:enderman","minecraft:ghast","minecraft:husk","minecraft:magma_cube","minecraft:skeleton","minecraft:squid","minecraft:stray","minecraft:wither_skeleton","minecraft:zombie","minecraft:zombie_pigman"];
 //堆叠生物白名单
 let stackWhitelist:string[] = ["minecraft:xp_orb","minecraft:falling_block","minecraft:ravager","minecraft:pillager","minecraft:player","minecraft:armor_stand","minecraft:villager","minecraft:villager_v2","minecraft:villager_v2"];
 let itemQuery,mobQuery,entityQuery,positionQuery;
 let tick = 0;
 let clearInterval = 10800; //清理间隔设置（这里是提醒的间隔） 上一次清理后间隔1200tick提醒，然后再等一分钟开始清理 一共两分钟
+//let clearInterval = 600;
 let second=0,minute=0,hour=0;
 system.initialize = function () {
     server.log("LagRemover Loaded");
@@ -31,15 +32,12 @@ system.initialize = function () {
             handler() {
                 if(!this.entity) throw "只有玩家可以执行";
               let entities = system.getEntitiesFromQuery(itemQuery);
-              //system.broadcastMessage(`§c服务器已运行${minute}分钟${second}秒\n§c当前待清除掉落物数量:${entities.length}`);
               system.sendText(this.entity,`§c服务器已运行${minute}分钟${second}秒\n§c当前待清除掉落物数量:${entities.length}`)
               server.log(`当前待清除掉落物数量:${entities.length}`);
               entities = system.getEntitiesFromQuery(mobQuery);
-              //system.broadcastMessage(`§c当前待清除生物数量:${entities.length}`);
               system.sendText(this.entity,`§c当前待清除生物数量:${entities.length}`)
               server.log(`当前待清除生物数量:${entities.length}`);
               entities = system.getEntitiesFromQuery(entityQuery);
-              //system.broadcastMessage(`§c当前实体总数量${entities.length} \ntick:${tick}`);
               system.sendText(this.entity,`§c当前实体总数量${entities.length} \ntick:${tick}`)
               server.log(`当前实体总数量${entities.length} tick:${tick}`);
           }
