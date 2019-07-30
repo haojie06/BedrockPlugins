@@ -1,61 +1,71 @@
-# BedrockPlugins for stoneserver 基岩版插件
-plugins for stoneserver（Minecraft bedrock edition server）
-现在已公布的bds（alpha）并没有提供开发的接口，并且优化糟糕。不过有一个更好的选择，那就是**CodeHz**的[stoneserver](https://github.com/codehz/StoneServer)*需使用 linux 基于pe开发*,更好的优化，扩展了官方脚本引擎，使用**typescript**以类似于开发官方脚本的方式编写插件。
+# StoneServer 如何添加插件
+**截至更新 StoneServer支持版本 1.12**
 
-用这个仓库储存我这个初学者糟糕的代码） 目前已有插件
+StoneServer一大特色就是其扩展了官方的脚本api，让玩家可以使用脚本来制作插件。官方脚本是通过行为包来加载的，而StoneServer的插件实际上也正是特殊的行为包，添加它们的方法是相似的。
 
-1. easyEssentials v1.0 目前功能：
- - 返回死亡地点 /back
- - 自杀 /suicide
- - 传送点系列（使用了sqlite）
- 	- /setwarp 设置传送点
-	- /warp 传送至传送点
-	- /delwarp 删除传送点
-	- /warps 显示所有传送点
- - home系列
-	- /sethome homename 设置家(最多三个)
-	- /homelist 显示所有的家
-	- /delhome homename 删除家
-	- /home homename(可选) 回家
-	
- - tpa系列(命令版)
- 	- /tpa
-	- /tpahere
-	- /tpac 接受请求
-	- /tpad 拒绝请求
-  - spawn 返回主城
-2. logSystem日志插件（超级简化版coi）v1.1 *1.12继续更新*
-- /logs ax ay az bx by bz 显示范围内所有的破坏/放置/开箱记录
-- /logs ax ay az bx by bz action   action有break/place/open分别对应上面的几个记录，查询区域内的指定类型记录
-**v1.2新增**
-- /logs ax ay az bx by bz 行为名（break/place/open）几小时内(可选) 玩家名(可选) 筛选符合条件的记录
-- /dellogs 几天前 删除几天以前的所有记录
-## 如何使用
+**注意，StoneServer存在一些BUG，而作者每天都在勤劳的修复扩展中👍，所以安装插件前请务必先运行install.sh并选择install cobblestone进行更新，以及想在游戏里输入命令需要开启作弊**
+![如图所示](https://s2.ax1x.com/2019/07/29/e86wKP.th.png)
 
-要使用插件请使用stoneserver，解压release中的压缩包到，把插件文件加移动到和启动脚本同名的游戏文件夹 比如 start/games/com.mojang/development_behavior_packs/ 里面，从插件文件夹的 manifest.json 复制出[header]下的两行
+## 下载插件
+
+目前似乎还没有太多人开发插件。。（欢迎大家加入插件的学习 **telegram：https://t.me/stone_server**
+下面列出了已知可用的插件（1.12）
+- [EasyEssentialsV2 基础指令插件](https://github.com/haojie06/BedrockPlugins/tree/master/EasyEssentialsV2)
+此插件提供了诸如 /tpa /back /home 等功能
+- [BehaviourLog 玩家行为日志插件](https://github.com/haojie06/BedrockPlugins/tree/master/BehaviourLog)
+此插件用于记录玩家的破坏/放置/开箱等行为 减少纠纷
+- [Elevator 方块电梯插件](https://github.com/haojie06/BedrockPlugins/tree/master/Elevator)
+名字就可以看出这是一个电梯插件
+- [EasyList 简易黑白名单插件](https://github.com/haojie06/BedrockPlugins/tree/master/EasyList)
+这个插件不同于原生白名单，它可以将玩家id和QQ号之类的东西绑定起来，不过目前还不成熟(我是结合QQ机器人使用的)
+- [Lagremover 自动清理插件](https://github.com/haojie06/BedrockPlugins/tree/master/LagRemover)
+定时清理生物/掉落物 /lagstatus显示待清理状态
+
+
+*上面这些插件都是已知的（我写的。。），虽然代码可能很幼稚，不过也算付出了一点劳动，欢迎给个star支持支持。*
+
+我的插件都会同时上传.tgz打包文件，比如https://github.com/haojie06/BedrockPlugins/tree/master/EasyEssentialsV2 中的 **EasyEssentialsV2.tgz** 这个文件（*插件成熟后我也会直接从release发布*），下载后上传到服务器上数据文件夹中的 **development_behavior_packs**目录下，执行`tar -zxvf EasyEssentialsV2.tgz`解压可得行为包文件夹，然后我们需要打开文件夹中的manifest.json。
 ```
-    "uuid": "58728fe0-99c1-4fed-bcce-8ffba5e76566",
+nano EasyEssentials/manifest.json
+#我们会看到类似于以下的内容
+{
+  "format_version": 1,
+  "header": {
+    "name": "EasyEssentials 2.0",
+    "description": "for stoneserver created by haojie06",
+    "uuid": "3289a580-6d2f-46fe-bc37-6dd121800f42",
     "version": [0, 0, 0],
+    "min_engine_version": [1, 12, 0]
+  },
+  "modules": [
+    {
+      "description": "data",
+      "type": "data",
+      "uuid": "21cfd061-9e23-4875-8a08-68169b225de9",
+      "version": [0, 0, 0]
+    }
+  ]
+}
 ```
-在存档文件夹*stoneserver/start/games/com.mojang/minecraftWorlds/world*下新建（如果有就直接编辑） nano world_behavior_packs.json 文件按以下格式添加
+
+在这里面，我们只需要复制出**header**中的两段,注意version之后的逗号要删掉。
 ```
+"uuid": "3289a580-6d2f-46fe-bc37-6dd121800f42",
+"version": [0, 0, 0]
+```
+在存档中编辑**world_behavior_packs.json**（如果没有的话就新建）
+```
+nano /home/minecraft/cobble/start/worlds/world/world_behavior_packs.json
+#以我的json文件为例（注意多个行为包的写法），填入我们刚才复制的内容，注意格式！
 [
-        {
-                "pack_id": "ff0d3a21-4ea8-4e02-82b7-bfd8e1ecdf64",
-                "version": [0, 0, 0]
-        },
-
-        {
-                "pack_id": "58728fe0-99c1-4fed-bcce-8ffba5e76566",
-                "version": [0, 0, 0]
-        }
-
+{
+    "pack_id": "3289a580-6d2f-46fe-bc37-6dd121800f42",
+    "version": [0, 0, 0]
+},
+{
+    "pack_id": "018718bc-ed21-42be-841d-839bc7eb1ca1",
+    "version": [0, 0, 0]
+}
 ]
-
 ```
-**注意 原来复制的uuid要改为pack_id**,示例中添加了两个插件，保存，重启服务端之后插件应该就加载了。
-
-
----
-
-The Bedrock Dedicated Server（Alpha）software doesn't provide interfaces for developers, and the script engine only has limited APIs, **CodeHz's** [stoneserver](https://github.com/codehz/StoneServer) is a better choice which optimizes the performance and expands the interces of the official script engine. I use this repository for storing my codes and released plugins.  [**official demo**](https://github.com/stone-addons) *use typescript*
+**需要注意的是，之前复制出来的uuid在这里要改成pack_id**，修改完毕之后保存，重启服务器，插件就应该成功加载了。
