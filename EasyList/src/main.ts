@@ -82,6 +82,7 @@ system.initialize = function() {
           if (datas.length != 0){
             server.log(`此人${$name}绑定号码${$bind}已在黑名单内，拒绝添加`);
             throw "此人绑定号码已在黑名单内，拒绝添加";
+            return "此人绑定号码已在黑名单内，拒绝添加";
           }
           }
           //防止重复添加
@@ -89,6 +90,7 @@ system.initialize = function() {
           if(datas.length != 0){
             server.log(`已经有人使用过这个名字了 ${datas[0].bind}`);
             throw `已经有人使用过这个名字了 ${datas[0].bind}`;
+            return `已经有人使用过这个名字了 ${datas[0].bind}`;
           }
           //可以进行添加
           db.update(INSERT_LIST,{
@@ -117,10 +119,12 @@ system.initialize = function() {
           server.log(`玩家已有账号：§r\n${namelist}`);
           system.executeCommand(`title @a[name="${$name}"] clear`,data=>{});
           system.executeCommand(`title @a[name="${$name}"] title §3你已获得白名单`,data=>{});
+          return "成功添加";
         }
         else{
         system.executeCommand(`tellraw @a {"rawtext":[{"text":"§a已为${$name}添加白名单 ${$msg}"}]}`,data=>{});
         server.log(`已为${$name}添加白名单 绑定:${$bind} 备注:${$msg}`);
+        return "成功添加";
       }
       }
       else if (action == "remove"){
@@ -130,6 +134,7 @@ system.initialize = function() {
         playerNotInWhiteNamelist.push($name);
         system.executeCommand(`tellraw @a {"rawtext":[{"text":"§a已移除${$name}的白名单 ${msg}"}]}`,data=>{});
         server.log(`已移除${$name}的白名单 ${msg}`);
+        return "成功移除";
       }
       else if (action == "list"){
         //查找该玩家添加的其他白名单
@@ -149,6 +154,7 @@ system.initialize = function() {
             message += "\n";
         }
         system.executeCommand(`tellraw @a {"rawtext":[{"text":"§eID:${target} 绑定账号:${$bind} 已有的账号有:§r\n${message}"}]}`,data=>{});
+        return `§eID:${target} 绑定账号:${$bind} 已有的账号有:§r\n${message}`;
       }
         }
       } as CommandOverload<["string","string","string","string"]>
@@ -212,10 +218,12 @@ system.initialize = function() {
 
         system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c已封禁${$name} reason:${$msg}\n${allmessage}"}]}`,data=>{});
         server.log(`已封禁${$name} reason:${$msg}\n${allmessage}`);
+        return "已封禁";
       }
         else{
         system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c已封禁${$name} reason:${$msg}"}]}`,data=>{});
         server.log(`已封禁${$name} reason:${$msg}`);
+        return "已封禁";
       }
     }
     } as CommandOverload<["string", "message"]>
@@ -251,6 +259,7 @@ system.registerCommand("funban", {
       }
     system.executeCommand(`tellraw @a {"rawtext":[{"text":"§a已解封${$name}"}]}`,data=>{});
     server.log(`已解封${$name}`);
+    return "已解封";
   }
   } as CommandOverload<["string"]>
 ]});
