@@ -19,8 +19,8 @@ StoneServer一大特色就是其扩展了官方的脚本api，让玩家可以使
 - [EasyList 简易黑白名单插件](https://github.com/haojie06/BedrockPlugins/tree/master/EasyList)
 这个插件不同于原生白名单，它可以将玩家id和QQ号之类的东西绑定起来，不过目前还不成熟(我是结合QQ机器人使用的)
 - [Lagremover 自动清理插件](https://github.com/haojie06/BedrockPlugins/tree/master/LagRemover)
-定时清理生物/掉落物 /lagstatus显示待清理状态
-
+定时清理生物/掉落物 /lagstatus显示待清理状态 更新后此插件会清理几乎所有的（除了村民/鹦鹉/熊猫/僵尸村民等）未命名生物实体
+，所以需要养殖的请准备大量命名牌，好处是*在我的服里* 大大的降低了卡顿。 另外清理名单/间隔都可以在脚本中设置
 
 *上面这些插件都是已知的（我写的。。），虽然代码可能很幼稚，不过也算付出了一点劳动，欢迎给个star支持支持。*
 
