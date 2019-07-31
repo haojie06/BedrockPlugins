@@ -3,7 +3,7 @@
 
 StoneServer一大特色就是其扩展了官方的脚本api，让玩家可以使用脚本来制作插件。官方脚本是通过行为包来加载的，而StoneServer的插件实际上也正是特殊的行为包，添加它们的方法是相似的。
 
-**注意，StoneServer存在一些BUG，而作者每天都在勤劳的修复扩展中👍，所以安装插件前请务必先运行install.sh并选择install cobblestone进行更新，以及想在游戏里输入命令需要开启作弊**
+**注意，StoneServer存在一些BUG，而作者每天都在勤劳的修复扩展中👍，所以安装插件前请务必先运行install.sh并选择install cobblestone进行更新，以及想在游戏里输入命令需要开启作弊 还有 请务必打开实验模式（不然插件无效）**
 ![如图所示](https://s2.ax1x.com/2019/07/29/e86wKP.th.png)
 
 ## 下载插件
@@ -19,8 +19,8 @@ StoneServer一大特色就是其扩展了官方的脚本api，让玩家可以使
 - [EasyList 简易黑白名单插件](https://github.com/haojie06/BedrockPlugins/tree/master/EasyList)
 这个插件不同于原生白名单，它可以将玩家id和QQ号之类的东西绑定起来，不过目前还不成熟(我是结合QQ机器人使用的)
 - [Lagremover 自动清理插件](https://github.com/haojie06/BedrockPlugins/tree/master/LagRemover)
-定时清理生物/掉落物 /lagstatus显示待清理状态
-
+定时清理生物/掉落物 /lagstatus显示待清理状态 更新后此插件会清理几乎所有的（除了村民/鹦鹉/熊猫/僵尸村民等）未命名生物实体
+，所以需要养殖的请准备大量命名牌，好处是*在我的服里* 大大的降低了卡顿。 另外清理名单/间隔都可以在脚本中设置
 
 *上面这些插件都是已知的（我写的。。），虽然代码可能很幼稚，不过也算付出了一点劳动，欢迎给个star支持支持。*
 
