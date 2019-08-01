@@ -221,59 +221,6 @@ export function commandsReg() {
     });
 
 
-    system.registerCommand("queryland",{
-        description: "查询领地",
-        permission: 1,
-        overloads:[{
-            parameters:[{
-                name:"land/player",
-                type:"string"
-            },
-        {
-            name:"name",
-            type:"string"
-        }],
-            handler([kind,name]){
-                if(kind == "land"){
-                    //查询领地详细信息
-                    let $name = name;
-                    let $landname = name;
-                    let datas = db.query(SELECT_LAND_BY_NAME,{$name});
-                    if(datas.length != 0){
-                        let residents = db.query(SELECT_RESIDENT_BY_LAND,{$landname});
-                        let res = "";
-                        for (let resident of residents){
-                            res += `[${resident.permission}]${resident.playername} `;
-                        }
-                        return `以下为领地:${name}的信息:\n领地范围:(${datas[0].sposition})至(${datas[0].eposition}) 维度:${datas[0].dim} 领地主人:${datas[0].owner}\n居民:${res}`;
-                    }
-                    else{
-                        return `未找到领地信息`;
-                    }
-                }
-                else if (kind == "player"){
-                    //查询玩家拥有的领地
-                    let $playername = name;
-                    let datas = db.query(SELECT_RESIDENT_BY_NAME,{$playername});
-                    if(datas.length != 0){
-                        let show="";
-                        for(let data of datas){
-                            show += `领地:${data.landname} 权限:${data.permission}\n`;
-                        }
-                        return show;
-                    }
-                    else{
-                        return `未找到玩家信息`;
-                    }
-                }
-                else{
-                    return `无效参数`;
-                }
-            }
-        }as CommandOverload<["string","string"]>]
-    });
-
-
     system.registerCommand("landclaim",{
         description: "创建领地",
         permission: 0,
