@@ -53,6 +53,8 @@ function fix(arr: TemplateStringsArray) {
 
 export var db = new SQLite3("behaviourLogs.db");
 db.exec(CREATE_TABLE);
+db.exec("PRAGMA journal_mode = WAL");
+db.exec("PRAGMA synchronous = NORMAL");
 
 //向数据库中添加记录
 export function addRecord($time, $name, $pX, $pY, $pZ, $action, $target, $tX, $tY, $tZ, $dim, $desc=""):void{
