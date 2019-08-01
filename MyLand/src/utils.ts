@@ -13,7 +13,7 @@ export function getName(entity: IEntity) {
 export function getVecOfEntity(entity:IEntity){
     let vec:Vec;
     if (system.hasComponent(entity, "minecraft:position")) {
-        let comp = system.getComponent(entity,MinecraftComponent.Position);
+        let comp = system.getComponent<IPositionComponent>(entity,MinecraftComponent.Position);
         let px,py,pz;
         vec.x = Math.floor(px);
         vec.y = Math.floor(py);
@@ -61,4 +61,35 @@ export function transNum(num:number):number{
       num = Math.floor(num);
   }
   return num;
+}
+
+export function getMax(a:number,b:number){
+    if(a > b){
+        return a;
+    }
+    else{
+        return b;
+    }
+}
+
+export function getMin(a:number,b:number){
+    if(a < b){
+        return a;
+    }
+    else{
+        return b;
+    }
+}
+
+//利用tag来给予op破坏权限
+export function checkAdmin(entity:IEntity){
+    let ifAdmin = false;
+    let extra = system.getComponent(entity,MinecraftComponent.ExtraData).data;
+    if(extra.value.abilities.value.op.value == "1"){
+        ifAdmin = true;
+    }
+    else{
+        ifAdmin = false;
+    }
+    return ifAdmin;
 }
