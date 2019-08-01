@@ -1,0 +1,18 @@
+{
+  "format_version": 1,
+  "header": {
+    "name": "MyLand",
+    "description": "简易领地",
+    "uuid": "505bd4ca-ccd8-4d62-a18e-1c8389ccd32a",
+    "version": [0, 0, 0],
+    "min_engine_version": [1, 12, 0]
+  },
+  "modules": [
+    {
+      "description": "data",
+      "type": "data",
+      "uuid": "d6bc88e0-a97d-4b40-a216-4df777dd19a3",
+      "version": [0, 0, 0]
+    }
+  ]
+}
