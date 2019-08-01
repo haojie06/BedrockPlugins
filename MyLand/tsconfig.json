@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    "alwaysStrict": true,
+    "module": "ES2015",
+    "lib": ["es2015"],
+    "target": "es6",
+    "outDir": "./placeholder",
+    "types": ["cobblestone-addons", "minecraft-scripting-types-server"],
+    "moduleResolution": "node",
+    "importHelpers": true,
+    "noEmitHelpers": false,
+    "inlineSourceMap": false,
+    "noEmit": false,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src/**/*.ts"]
+}
