@@ -397,6 +397,29 @@ export function commandsReg() {
         }as CommandOverload<["string"]>]
     });
 
+    system.registerCommand("mylands",{
+        description: "查看自己已有的领地",
+        permission: 0,
+        overloads:[{
+            parameters:[],
+            handler(){
+                if(!this.entity) throw "只有玩家可以使用该命令";
+                let $owner = this.name;
+                let datas = Array.from(db.query(SELECT_LAND_BY_OWNER,{$owner}));
+                if(datas.length != 0){
+                let result = `你有${datas.length}个领地:\n`;
+                for(let data of datas){
+                    result += `领地:${data.name} 范围:(${data.sposition})至(${data.eposition})\n`;
+                }
+                return result;
+            }
+            else{
+                return "你还没有领地";
+            }
+            }
+        }as CommandOverload<[]>]
+    });
+
     system.registerCommand("landtrust",{
         description: "添加居民",
         permission: 0,
