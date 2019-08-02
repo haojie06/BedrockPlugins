@@ -69,3 +69,4 @@ function fix(arr: TemplateStringsArray) {
   db.exec(CREATE_RESIDENT_TABLE);
   db.exec("PRAGMA journal_mode = WAL");
   db.exec("PRAGMA synchronous = NORMAL");
+  

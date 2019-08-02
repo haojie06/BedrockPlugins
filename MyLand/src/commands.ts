@@ -1,7 +1,7 @@
 import { system } from "./system";
 import {db,DELETE_RESIDENT_BY_LAND_NAME,DELETE_LAND_BY_NAME_OWNER,SELECT_LAND_BY_OWNER,SELECT_RESIDENT_BY_NAME,SELECT_RESIDENT_BY_LAND,SELECT_LAND_BY_POS,INSERT_LAND,SELECT_LAND_BY_NAME,INSERT_RESIDENT,DELETE_RESIDENT_BY_LAND,DELETE_LAND_BY_NAME} from "./database"
 import {getName,getDimensionOfEntity,getVecOfEntity,Vec,getMax,getMin} from "./utils"
-let selectTool = "minecraft:wooden_hoe";
+let selectTool = "minecraft:stick";
 //玩家圈地最大的x，z
 let MaxX = 32;
 let MaxZ = 32;

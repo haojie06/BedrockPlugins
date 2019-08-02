@@ -58,11 +58,11 @@ export function moveCheck(player:IEntity) {
                 if(playerName != data.owner){
                 //持续三轮检测
                     comp.data.showTime = 15;
-                    system.sendText(player,`§e欢迎来到领地:${data.name} 领地主人:${data.owner} 领地范围:(${data.sposition})至(${data.eposition})`,5);
+                    system.sendText(player,`§e欢迎来到领地:${data.name} 领地主人:${data.owner}`,5);
                 }
                 else{
                     comp.data.showTime = 6;
-                    system.sendText(player,`§e你已回到你的领地:${data.name} (${data.sposition})至(${data.eposition})`,5);                
+                    system.sendText(player,`§e你已回到你的领地:${data.name}`,5);                
                 }
                 system.applyComponentChanges(player, comp);
             }
@@ -77,10 +77,10 @@ export function moveCheck(player:IEntity) {
                 }
                 system.applyComponentChanges(player, comp);
                 if(playerName != data.owner){
-                    system.sendText(player,`§e欢迎来到领地:${data.name} 领地主人:${data.owner} 领地范围:(${data.sposition})至(${data.eposition})`,5);
+                    system.sendText(player,`§e欢迎来到领地:${data.name} 领地主人:${data.owner}`,5);
                 }
                 else{
-                    system.sendText(player,`§e你已回到你的领地:${data.name} (${data.sposition})至(${data.eposition})`,5);                
+                    system.sendText(player,`§e你已回到你的领地:${data.name}`,5);                
                 }
             }
             else if(justNow == true && now == true){
