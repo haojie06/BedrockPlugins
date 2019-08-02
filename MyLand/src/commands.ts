@@ -500,7 +500,7 @@ export function commandsReg() {
                 if(datas.length != 0){
                 let result = `你有${datas.length}个领地:\n`;
                 for(let data of datas){
-                    result += `领地:${data.name} 范围:(${data.sposition})至(${data.eposition})\n`;
+                    result += `领地:${data.name} 维度:${data.dim} 范围:(${data.sposition})至(${data.eposition})\n`;
                 }
                 return result;
             }
