@@ -378,7 +378,9 @@ export function commandsReg() {
                                 $permission:"member",
                                 $extra:""
                             });
-                            if(res != 0) {return `成功添加成员${name};`}
+                            if(res != 0) {
+                                system.executeCommand(`tellraw @a[name="${name}"] {"rawtext":[{"text":"§a${this.name}已为你添加领地${data.name}的居民权限"}]}`,data=>{});
+                                return `成功添加成员${name};`}
                             else{return `添加成员失败`} 
                         }
                         else{
@@ -419,7 +421,9 @@ export function commandsReg() {
                                    $landname:data.name,
                                    $playername:name
                                });
-                               if(res != 0) {return `成功移除成员${name};`}
+                               if(res != 0) {
+                                system.executeCommand(`tellraw @a[name="${name}"] {"rawtext":[{"text":"§c${this.name}已从领地${data.name}移除你的居民权限"}]}`,data=>{});
+                                return `成功移除成员${name};`}
                                else{return `移除成员失败`} 
                            }
                            else{
