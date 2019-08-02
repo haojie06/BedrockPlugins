@@ -1,19 +1,26 @@
 const system = server.registerSystem(0, 0);
 //掉落物白名单
 let itemWhitelist:string[] = ["minecraft:diamond","minecraft:gold_ore","minecraft:iron_ore","minecraft:diamond_ore","minecraft:diamond_block","minecraft:enchanting_table","minecraft:emerald_ore","minecraft:emerald_block","minecraft:beacon","minecraft:iron_shovel","minecraft:iron_pickaxe","minecraft:iron_axe","minecraft:bow","minecraft:diamond","minecraft:iron_ingot","minecraft:gold_ingot","minecraft:iron_sword","minecraft:diamond_sword","minecraft:diamond_shovel","minecraft:diamond_pickaxe","minecraft:diamond_axe"];
-//实体黑
+//需要清理的实体
 let entityBlacklist:string[] = [
-"minecraft:evoker","minecraft:vex","minecraft:vindicator","minecraft:cat","minecraft:wolf","minecraft:silverfish","minecraft:polar_bear","minecraft:pufferfish","minecraft:rabbit","minecraft:mule","minecraft:llama","minecraft:horse",
-  "minecraft:guardian","minecraft:tropical_fish","minecraft:tropicalfish","minecraft:donkey","minecraft:cod","minecraft:slime",
+"minecraft:ravager","minecraft:zombie_villager","minecraft:evoker","minecraft:zombie_villager_v2","minecraft:phantom","minecraft:vex","minecraft:vindicator",
+"minecraft:cat","minecraft:wolf","minecraft:silverfish","minecraft:polar_bear","minecraft:pufferfish",
+"minecraft:rabbit","minecraft:mule","minecraft:llama","minecraft:horse",
+"minecraft:guardian","minecraft:tropical_fish","minecraft:tropicalfish","minecraft:donkey","minecraft:cod",
+"minecraft:slime","minecraft:skeleton_horse",
 ,"minecraft:squid","minecraft:dolphin","minecraft:chicken","minecraft:cow","minecraft:salmon",
-"minecraft:sheep","","minecraft:pig",  "minecraft:spider","minecraft:turtle","fine:halfzombie","minecraft:bat","minecraft:blaze",
+"minecraft:sheep","minecraft:pig","minecraft:spider","minecraft:turtle","fine:halfzombie","minecraft:bat","minecraft:blaze",
 "minecraft:cave_spider","minecraft:creeper","minecraft:drowned","minecraft:enderman"
 ,"minecraft:ghast","minecraft:husk","minecraft:magma_cube","minecraft:skeleton","minecraft:squid"
 ,"minecraft:stray","minecraft:wither_skeleton","minecraft:zombie","minecraft:zombie_pigman","minecraft:ocelot"];
 //堆叠生物白名单
-let stackWhitelist:string[] = ["minecraft:xp_orb","minecraft:falling_block","minecraft:ravager","minecraft:pillager","minecraft:player","minecraft:armor_stand","minecraft:villager","minecraft:villager_v2","minecraft:villager_v2"];
+//let stackWhitelist:string[] = ["minecraft:xp_orb","minecraft:falling_block","minecraft:ravager","minecraft:pillager","minecraft:player","minecraft:armor_stand","minecraft:villager","minecraft:villager_v2","minecraft:villager_v2"];
+//需要清理的非生物实体
 let noNameEntityBlackList:string[] = ["minecraft:wither_skull","minecraft:egg","minecraft:xp_orb","minecraft:fireball","minecraft:small_fireball","minecraft:arrow"];
-let itemQuery,mobQuery,entityQuery,positionQuery,playerQuery,noNameEntityQuery;
+
+//类似于盔甲架一类的实体
+let placeableEntityList:string[] = ["minecraft:armor_stand","minecraft:boat","minecraft:chest_minecart","minecraft:end_crystal","minecraft:furnace_minecart","minecraft:hopper_minecart","minecraft:item_frame","minecraft:minecar","minecraft:painting","minecraft:tnt_minecart"];
+let itemQuery,mobQuery,entityQuery,positionQuery,playerQuery,noNameEntityQuery,placeableEntityQuery;
 let notClearMobNum = 0,clearMobNum = 0;
 //模拟距离
 let tick = 0;
@@ -22,40 +29,81 @@ let clearInterval = 10800; //清理间隔设置（这里是提醒的间隔） �
 let second=0,minute=0,hour=0;
 system.initialize = function () {
     server.log("LagRemover Loaded");
-
+    placeableEntityQuery = system.registerQuery();
     itemQuery = system.registerQuery();
     mobQuery = system.registerQuery();
     entityQuery = system.registerQuery();
     noNameEntityQuery = system.registerQuery();
     positionQuery = system.registerQuery(MinecraftComponent.Position, "x", "y", "z");
+    system.registerComponent("lagremover:isEntity", {});
+    system.registerComponent("lagremover:placeableEntity", {});
     system.registerComponent("lagremover:isItem", {});
     system.registerComponent("lagremover:isMob", {});
     system.registerComponent("lagremover:noNameEntity", {});
+    system.addFilterToQuery(placeableEntityQuery,"lagremover:placeableEntity");
     system.addFilterToQuery(itemQuery,"lagremover:isItem");
+    system.addFilterToQuery(entityQuery,"lagremover:isEntity");
     system.addFilterToQuery(mobQuery,"lagremover:isMob");
     system.addFilterToQuery(mobQuery,"minecraft:nameable");
     system.addFilterToQuery(noNameEntityQuery,"lagremover:noNameEntity")
     system.listenForEvent("minecraft:entity_created",onEntityCreate);
 
-    system.registerCommand("lagstatus", {
+
+      system.registerCommand("lagstatus", {
         description: "查看当前卡顿情况",
         permission: 1,
         overloads: [{
             parameters:[],
             handler() {
-                if(!this.entity) throw "只有玩家可以执行";
+                //if(!this.entity) throw "只有玩家可以执行";
               let entities = system.getEntitiesFromQuery(itemQuery);
-              system.sendText(this.entity,`§c服务器已运行${minute}分钟${second}秒\n§c当前待清除掉落物数量:${entities.length}`)
+              let show = "";
+              show += `§e服务器已运行${minute}分钟${second}秒\n§c当前待清除掉落物数量:${entities.length}\n`;
               server.log(`当前待清除掉落物数量:${entities.length}`);
               entities = system.getEntitiesFromQuery(mobQuery);
               let noNameEntities = system.getEntitiesFromQuery(noNameEntityQuery);
+              let placeableEntities = system.getEntitiesFromQuery(placeableEntityQuery);
+              show += `§c当前待清除有AI生物实体数量:${entities.length} 无AI生物实体数量 ${noNameEntities.length}\n`;
 
-              system.sendText(this.entity,`§c当前待清除生物数量:${entities.length + noNameEntities.length}`);
               server.log(`当前待清除生物数量:${entities.length + noNameEntities.length}`);
               entities = system.getEntitiesFromQuery(entityQuery);
-              system.sendText(this.entity,`§c当前实体总数量${entities.length} \ntick:${tick} 距离清理:tick:${clearInterval + 1200 - tick}`)
+             
+              show +=`§c当前实体总数量${entities.length} 不会被清理的放置类实体数量 ${placeableEntities.length}\ntick:${tick} 距离清理:tick:${clearInterval + 1200 - tick}`;
               server.log(`当前实体总数量${entities.length} tick:${tick}\n距离清理:tick:${clearInterval + 1200 - tick}`);
-          }
+              return show;
+            }
+        } as CommandOverload<[]>
+        ]
+      });
+
+      system.registerCommand("clearlag", {
+        description: "提前清除所有需要清理的生物",
+        permission: 1,
+        overloads: [{
+            parameters:[],
+            handler() {
+              let beginTime = Date.now();
+              let mobs = system.getEntitiesFromQuery(mobQuery);
+              for (let mob of mobs){
+                // if(system.getComponent(mob,MinecraftComponent.Nameable).data.name == ""){
+                 let nameCmp = system.getComponent<INameableComponent>(mob,"minecraft:nameable");
+                 if(nameCmp.data.name != ""){
+                   notClearMobNum++;
+                 }
+                 else{
+                   system.destroyEntity(mob);
+                   clearMobNum++;
+                 }
+               }
+              let endTime = Date.now();
+              let useTime = endTime - beginTime;
+              let show = `§e管理员召唤清道夫清理了${clearMobNum}个待清理生物,有${notClearMobNum}个命名生物未被清理,耗时${useTime}ms`;
+              server.log(show);
+              system.executeCommand(`tellraw @a {"rawtext":[{"text":"§e管理员召唤清道夫清理了${clearMobNum}个待清理生物,有${notClearMobNum}个命名生物未被清理,耗时${useTime}ms"}]}`,data=>{});
+              notClearMobNum = 0;
+              clearMobNum = 0;
+              return "已清理";
+            }
         } as CommandOverload<[]>
         ]
       });
@@ -162,7 +210,12 @@ function onEntityCreate(data){
         else if (noNameEntityBlackList.indexOf(entity.__identifier__) != -1){
           system.createComponent(entity,"lagremover:noNameEntity");
         }
+        else if (placeableEntityList.indexOf(entity.__identifier__) != -1){
+          system.createComponent(entity,"lagremover:placeableEntity");
+        }
         else{
+
         }
     }
+    system.createComponent(entity,"lagremover:isEntity");
 }
