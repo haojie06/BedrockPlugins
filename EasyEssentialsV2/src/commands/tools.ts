@@ -14,6 +14,7 @@ export function toolReg(sys) {
                 parameters: [],
                 handler(){
                     if (!this.entity || this.entity.__identifier__ != "minecraft:player") throw `Can only be used by player`;
+                    system.executeCommand(`execute @a[name="${this.name}"] ~ ~ ~ me 自杀了`,data=>{});
                     system.executeCommand(`kill @a[name="${this.name}"]`,data=>{});
                 }
             } as CommandOverload<[]>
