@@ -81,7 +81,7 @@ system.initialize = function() {
           datas = Array.from(db.query(SELECT_ALLINBLACKLIST_BYBIND,{$bind}));
           if (datas.length != 0){
             server.log(`此人${$name}绑定号码${$bind}已在黑名单内，拒绝添加`);
-            throw "此人绑定号码已在黑名单内，拒绝添加";
+            //throw "此人绑定号码已在黑名单内，拒绝添加";
             return "此人绑定号码已在黑名单内，拒绝添加";
           }
           }
@@ -89,7 +89,7 @@ system.initialize = function() {
           datas = Array.from(db.query(SELECT_WHITELIST_BIND_BYNAME,{$name}));
           if(datas.length != 0){
             server.log(`已经有人使用过这个名字了 ${datas[0].bind}`);
-            throw `已经有人使用过这个名字了 ${datas[0].bind}`;
+            //throw `已经有人使用过这个名字了 ${datas[0].bind}`;
             return `已经有人使用过这个名字了 ${datas[0].bind}`;
           }
           //可以进行添加

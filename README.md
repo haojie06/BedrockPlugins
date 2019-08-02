@@ -21,8 +21,12 @@ StoneServer一大特色就是其扩展了官方的脚本api，让玩家可以使
 - [Lagremover 自动清理插件](https://github.com/haojie06/BedrockPlugins/tree/master/LagRemover)
 定时清理生物/掉落物 /lagstatus显示待清理状态 更新后此插件会清理几乎所有的（除了村民/鹦鹉/熊猫/僵尸村民等）未命名生物实体
 ，所以需要养殖的请准备大量命名牌，好处是*在我的服里* 大大的降低了卡顿。 另外清理名单/间隔都可以在脚本中设置
+- [LoreEffect Lore粒子特效插件](https://github.com/haojie06/BedrockPlugins/tree/master/LoreEffect)
+  这个插件需要结合EassyEssentials的/setlore命令使用，并依赖于[MoreParticles资源包](https://mcpedl.com/more-particles-add-on/) 这个插件可以让通过给装备加上lore的方式给它们加上一些特效，比如给武器加上 岩浆 这个lore，当玩家攻击生物的时候，便会产生岩浆粒子，效果还有很多，欢迎查看仓库内的README。
+- [**MyLand 领地插件**](https://github.com/haojie06/BedrockPlugins/tree/master/MyLand)
+  有了这个插件，玩家终于可以自主圈地并避免领地内方块被破坏/箱子被打开了，详细请查看链接内的介绍。
 
-*上面这些插件都是已知的（我写的。。），虽然代码可能很幼稚，不过也算付出了一点劳动，欢迎给个star支持支持。*
+*上面这些插件都是已知的（我写的。。），虽然代码可能很幼稚，不过也算付出了一点劳动，欢迎给个**star**👍支持支持。*
 
 我的插件都会同时上传.tgz打包文件，比如https://github.com/haojie06/BedrockPlugins/tree/master/EasyEssentialsV2 中的 **EasyEssentialsV2.tgz** 这个文件（*插件成熟后我也会直接从release发布*），下载后上传到服务器上数据文件夹中的 **development_behavior_packs**目录下，执行`tar -zxvf EasyEssentialsV2.tgz`解压可得行为包文件夹，然后我们需要打开文件夹中的manifest.json。
 ```

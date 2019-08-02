@@ -7,6 +7,7 @@ export function equReg(){
     system.registerComponent("loreeffect:isplayer", {});
     playerQuery = system.registerQuery();
     system.addFilterToQuery(playerQuery,"loreeffect:isplayer");
+    
     system.listenForEvent(ReceiveFromMinecraftServer.EntityCreated,data=>{
         let entity = data.data.entity;
         if (entity.__identifier__ == "minecraft:player") {
