@@ -1,5 +1,5 @@
 import { system } from "../system";
-import {possibility,randomNum} from "../utils";
+import {possibility,randomNum,getDimensionOfEntity,spawnParticleInWorld} from "../utils";
 let playerQuery;
 let tick = 0;
 
@@ -41,82 +41,120 @@ system.update = function(){
             lores.push(getArmorLore(playerBoots));
             let allLores = String(lores);
             //system.sendText(player,`your armor lores:\n${allLores}`);
+            let dim = getDimensionOfEntity(player);
             let px,py,pz;
             if(allLores.indexOf("低语")!=-1){
                 let comp = system.getComponent<IPositionComponent>(player,MinecraftComponent.Position);
-                px = Math.floor(comp.data.x);
-                py = Math.floor(comp.data.y);
-                pz = Math.floor(comp.data.z);
-                system.executeCommand(`particle enchant-normal ${px} ${py+0.6} ${pz}`,data=>{});
-                system.executeCommand(`particle enchant-normal ${px+1} ${py+0.8} ${pz+1}`,data=>{});
-                //system.executeCommand(`particle enchant-normal ${px+0.5} ${py+1} ${pz-0.5}`,data=>{});
-                //system.executeCommand(`particle enchant-normal ${px-0.5} ${py+1} ${pz+0.5}`,data=>{});
-                system.executeCommand(`particle enchant-normal ${px-1} ${py+0.8} ${pz-1}`,data=>{});
-                //system.executeCommand(`particle enchant-normal ${px} ${py+0.5} ${pz}`,data=>{});
+                px = comp.data.x;
+                py = comp.data.y;
+                pz = comp.data.z;
+                spawnParticleInWorld("enchant-normal",[px,py+0.6,pz],dim);
+                spawnParticleInWorld("enchant-normal",[px+1,py+0.8,pz+1],dim);
+                spawnParticleInWorld("enchant-normal",[px+0.5,py+1,pz-0.5],dim);
+                spawnParticleInWorld("enchant-normal",[px-0.5,py+1,pz+0.5],dim);
+                spawnParticleInWorld("enchant-normal",[px-1,py+0.8,pz-1],dim);
+                spawnParticleInWorld("enchant-normal",[px,py+0.5,pz],dim);
+
+                let div = 0.5;
+                spawnParticleInWorld("minecraft:enchanting_table_particle",[px+div,py+1,pz+div],dim);
+                spawnParticleInWorld("minecraft:enchanting_table_particle",[px-div,py+1,pz-div],dim);
+                spawnParticleInWorld("minecraft:enchanting_table_particle",[px+div,py+1,pz-div],dim);
+                spawnParticleInWorld("minecraft:enchanting_table_particle",[px-div,py+1,pz-div],dim);
+
+
             }
             if(allLores.indexOf("末影之心")!=-1){
                 let comp = system.getComponent<IPositionComponent>(player,MinecraftComponent.Position);
-                px = Math.floor(comp.data.x);
-                py = Math.floor(comp.data.y);
-                pz = Math.floor(comp.data.z);
+                px = comp.data.x;
+                py = comp.data.y;
+                pz = comp.data.z;
                 let dif1 = 1,dif2 = 1;
-                system.executeCommand(`particle ender ${px} ${py+1} ${pz}`,data=>{});
-                system.executeCommand(`particle ender ${px+dif1} ${py+1} ${pz+dif1}`,data=>{});
-                system.executeCommand(`particle ender ${px-dif1} ${py+1} ${pz-dif1}`,data=>{});
-                system.executeCommand(`particle ender ${px+dif1} ${py+1} ${pz-dif1}`,data=>{});
-                system.executeCommand(`particle ender ${px-dif1} ${py+1} ${pz-dif1}`,data=>{});
+                spawnParticleInWorld("ender",[px,py+1,pz],dim);
+                spawnParticleInWorld("ender",[px+dif1,py+1,pz+dif1],dim);
+                spawnParticleInWorld("ender",[px-dif1,py+1,pz-dif1],dim);
+                spawnParticleInWorld("ender",[px+dif1,py+1,pz-dif1],dim);
+                spawnParticleInWorld("ender",[px-dif1,py+1,pz-dif1],dim);
 
-                system.executeCommand(`particle ender ${px} ${py+1} ${pz}`,data=>{});
-                system.executeCommand(`particle ender ${px+dif2} ${py+0.6} ${pz+dif2}`,data=>{});
-                system.executeCommand(`particle ender ${px-dif2} ${py+0.6} ${pz-dif2}`,data=>{});
-                system.executeCommand(`particle ender ${px+dif2} ${py+0.6} ${pz-dif2}`,data=>{});
-                system.executeCommand(`particle ender ${px-dif2} ${py+0.6} ${pz-dif2}`,data=>{});
+                spawnParticleInWorld("ender",[px,py+1,pz],dim);
+                spawnParticleInWorld("ender",[px+dif2,py+0.6,pz+dif2],dim);
+                spawnParticleInWorld("ender",[px-dif2,py+0.6,pz-dif2],dim);
+                spawnParticleInWorld("ender",[px+dif2,py+0.6,pz-dif2],dim);
+                spawnParticleInWorld("ender",[px-dif2,py+0.6,pz-dif2],dim);
             }
             if(allLores.indexOf("萤火虫")!=-1){
-                if(possibility(0.2)){
+                if(possibility(0.25)){
                 let comp = system.getComponent<IPositionComponent>(player,MinecraftComponent.Position);
-                px = Math.floor(comp.data.x);
-                py = Math.floor(comp.data.y);
-                pz = Math.floor(comp.data.z);
-                system.executeCommand(`particle totem-normal ${px} ${py+1} ${pz}`,data=>{});
+                px = comp.data.x;
+                py = comp.data.y;
+                pz = comp.data.z;
+                spawnParticleInWorld("totem-normal",[px,py+1,pz],dim);
             }
             }
             
             if(allLores.indexOf("村民之友")!=-1){
                 let comp = system.getComponent<IPositionComponent>(player,MinecraftComponent.Position);
-                px = Math.floor(comp.data.x);
-                py = Math.floor(comp.data.y);
-                pz = Math.floor(comp.data.z);
+                px = comp.data.x;
+                py = comp.data.y;
+                pz = comp.data.z;
                 let rd = randomNum(-1,1);
-                system.executeCommand(`particle villager-happy ${px} ${py} ${pz}`,data=>{});
-                system.executeCommand(`particle villager-happy ${px} ${py+0.2} ${pz}`,data=>{});
-                system.executeCommand(`particle villager-happy ${px} ${py+0.3} ${pz}`,data=>{});
-                system.executeCommand(`particle villager-happy ${px} ${py+2} ${pz}`,data=>{});
-                system.executeCommand(`particle  hearth ${px - rd} ${py+2.2} ${pz + rd}`,data=>{});
-                system.executeCommand(`particle  hearth ${px + rd} ${py+2.2} ${pz - rd}`,data=>{});
-                system.executeCommand(`particle  hearth ${px - rd} ${py+1.2} ${pz - rd}`,data=>{});
-                system.executeCommand(`particle  hearth ${px + rd} ${py+1.2} ${pz + rd}`,data=>{});
+                spawnParticleInWorld("villager-happy",[px,py,pz],dim);
+                spawnParticleInWorld("villager-happy",[px,py+0.2,pz],dim);
+                spawnParticleInWorld("villager-happy",[px,py+0.3,pz],dim);
+                spawnParticleInWorld("villager-happy",[px,py+2,pz],dim);
 
+                spawnParticleInWorld("hearth",[px-rd,py+2.2,pz+rd],dim);
+                spawnParticleInWorld("hearth",[px+rd,py+2.2,pz-rd],dim);
+                spawnParticleInWorld("hearth",[px-rd,py+2.2,pz-rd],dim);
+
+                spawnParticleInWorld("hearth",[px+rd,py+1.2,pz-rd],dim);
+                spawnParticleInWorld("hearth",[px-rd,py+1.2,pz-rd],dim);
+                spawnParticleInWorld("hearth",[px+rd,py+1.2,pz+rd],dim);
             }
             if(allLores.indexOf("村民之敌")!=-1){
                 let comp = system.getComponent<IPositionComponent>(player,MinecraftComponent.Position);
-                px = Math.floor(comp.data.x);
-                py = Math.floor(comp.data.y);
-                pz = Math.floor(comp.data.z);
+                px = comp.data.x;
+                py = comp.data.y;
+                pz = comp.data.z;
                 //system.executeCommand(`particle villager-happy ${px} ${py} ${pz}`,data=>{});
-                system.executeCommand(`particle villager-angry ${px} ${py+2.5} ${pz}`,data=>{});
-                system.executeCommand(`particle lava_particle ${px} ${py+2} ${pz}`,data=>{});
-                system.executeCommand(`particle lava_particle ${px} ${py+2.5} ${pz}`,data=>{});
+                spawnParticleInWorld("villager-angry",[px,py+2.5,pz],dim);
+                spawnParticleInWorld("lava_particle",[px,py+2,pz],dim);
+                spawnParticleInWorld("lava_particle",[px,py+2.5,pz],dim);
+
             }
             if(allLores.indexOf("着火")!=-1){
                 let comp = system.getComponent<IPositionComponent>(player,MinecraftComponent.Position);
-                px = Math.floor(comp.data.x);
-                py = Math.floor(comp.data.y);
-                pz = Math.floor(comp.data.z);
+                px = comp.data.x;
+                py = comp.data.y;
+                pz = comp.data.z;
                 //system.executeCommand(`particle villager-happy ${px} ${py} ${pz}`,data=>{});
-                system.executeCommand(`particle smoke ${px} ${py} ${pz}`,data=>{});
-                system.executeCommand(`particle lava_particle ${px} ${py-0.1} ${pz}`,data=>{});
-                system.executeCommand(`particle lava_particle ${px} ${py} ${pz}`,data=>{});
+                spawnParticleInWorld("smoke",[px,py,pz],dim);
+                spawnParticleInWorld("lava_particle",[px,py-0.1,pz],dim);
+                spawnParticleInWorld("lava_particle",[px,py,pz],dim);
+            }
+
+            if(allLores.indexOf("屠龙勇士") != -1){
+                let pComp = system.getComponent<IPositionComponent>(player,MinecraftComponent.Position);
+                let px,py,pz;
+                px = pComp.data.x;
+                py = pComp.data.y;
+                pz = pComp.data.z;
+                spawnParticleInWorld("minecraft:conduit_attack_emitter",[px,py,pz],dim);
+                spawnParticleInWorld("minecraft:conduit_attack_emitter",[px,py+1.1,pz],dim);
+                spawnParticleInWorld("minecraft:conduit_attack_emitter",[px,py+1.2,pz],dim);
+                spawnParticleInWorld("minecraft:conduit_attack_emitter",[px,py+1.3,pz],dim);
+                spawnParticleInWorld("minecraft:conduit_attack_emitter",[px,py+1.4,pz],dim);
+                spawnParticleInWorld("minecraft:conduit_attack_emitter",[px,py+1.5,pz],dim);
+
+                let div = Math.random();
+                spawnParticleInWorld("minecraft:basic_portal_particle",[px,py+1.5,pz],dim);
+                spawnParticleInWorld("minecraft:basic_portal_particle",[px+div,py+1.5,pz+div],dim);
+                spawnParticleInWorld("minecraft:basic_portal_particle",[px-div,py+1.5,pz-div],dim);
+                spawnParticleInWorld("minecraft:basic_portal_particle",[px+div,py+1.5,pz-div],dim);
+                spawnParticleInWorld("minecraft:basic_portal_particle",[px-div,py+1.5,pz+div],dim);
+                if(possibility(0.1)){
+                    spawnParticleInWorld("minecraft:splash_spell_emitter",[px,py+0.25,pz],dim);
+                }
+
             }
             
         }

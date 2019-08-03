@@ -1,4 +1,5 @@
 import { system } from "./system";
+
 export function utilsReg(){
 }
 export function getName(entity: IEntity) {
@@ -32,7 +33,7 @@ export function getDimensionOfEntity(entity: IEntity){
   let dimension;
   if (system.hasComponent(entity, "stone:dimension")) {
     let comp = system.getComponent(entity,MinecraftComponent.Dimension);
-    dimension = comp.data;
+    dimension = String(comp.data);
 }
   else{
     dimension = "无法获得维度";
@@ -60,4 +61,21 @@ export function possibility(p:number){
     else{
         return false;
     }
+}
+
+
+export function spawnParticleInWorld(name:string,vec,dim:string){
+    let eventData = system.createEventData("minecraft:spawn_particle_in_world");
+    eventData.data.effect = name;
+    eventData.data.position = vec;
+    if(dim == "0"){
+      eventData.data.dimension = "overworld";
+    }
+    else if(dim == "1"){
+      eventData.data.dimension = "nether";
+    }
+    else if(dim == "2"){
+      eventData.data.dimension = "the end";
+    }
+    system.broadcastEvent("minecraft:spawn_particle_in_world", eventData);
 }
