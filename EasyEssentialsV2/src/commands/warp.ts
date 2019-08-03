@@ -30,8 +30,8 @@ export function warpReg(sys) {
                 $owner,
                 $position
             });
-            system.executeCommand(`tellraw @a[name="${$owner}"] {"rawtext":[{"text":"§a已创建传送点${$name} (${$position})"}]}`,data=>{});
-            }
+            return `§a已创建传送点${$name} (${$position})`;    
+        }
         }as CommandOverload<["string"]> ]
     });
 
@@ -79,11 +79,11 @@ export function warpReg(sys) {
                 let position = datas[0].position;
                 let owner = datas[0].owner;
                 let name = getName(entity);
-                system.executeCommand(`playsound mob.endermen.portal @a[name="${name}"] ${position} 1 0.8`,data=>{});
+                system.executeCommand(`playsound mob.endermen.portal @a ${position} 1 0.8`,data=>{});
 
                 system.executeCommand(`tp @a[name="${name}"] ${position}`,data=>{});
-                system.executeCommand(`tellraw @a[name="${name}"] {"rawtext":[{"text":"§a已为你传送"}]}`,data=>{});
-                system.executeCommand(`playsound mob.endermen.portal @a[name="${name}"] ${position} 1 0.8`,data=>{});    
+                system.executeCommand(`playsound mob.endermen.portal @a ${position} 1 0.8`,data=>{});  
+                return "§a已为你传送";  
             }
             }as CommandOverload<["string"]> ]
         });
@@ -103,7 +103,7 @@ export function warpReg(sys) {
                     show += `${data.name}:(${data.position}) by ${data.owner}\n`;
                 }
                 let name = getName(entity);
-                system.executeCommand(`tellraw @a[name="${name}"] {"rawtext":[{"text":"${show}"}]}`,data=>{});
+                return show;
             }
         }as CommandOverload<[]>
     ]

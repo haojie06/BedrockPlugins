@@ -108,12 +108,12 @@ export function tpReg(sys) {
                 //只传送最早的那个请求
                 let data = datas[0];
                 let pos = getPositionofEntity(this.entity);
-                system.executeCommand(`playsound mob.endermen.portal @a[name="${data.source}"] ${pos} 1 1`,data=>{});                
+                system.executeCommand(`playsound mob.endermen.portal @a ${pos} 1 1`,data=>{});                
                 system.executeCommand(`tellraw @a[name="${data.source}"] {"rawtext":[{"text":"§a玩家${$target}接受了你的传送请求"}]}`,data=>{});
                 system.executeCommand(`tellraw @a[name="${$target}"] {"rawtext":[{"text":"§a接受了${data.source}的传送请求"}]}`,data=>{});                
                 system.executeCommand(`tp @a[name="${data.source}"] @a[name="${$target}"]`,data=>{});
                 pos = getPositionofEntity(this.entity);
-                system.executeCommand(`playsound mob.endermen.portal @a[name="${data.source}"] ${pos} 1 1`,data=>{});                
+                system.executeCommand(`playsound mob.endermen.portal @a ${pos} 1 1`,data=>{});                
                 let $source = data.source;
                 delNum = db.update(DELETE_COMMAND_DENY,{
                     $command,
@@ -188,12 +188,12 @@ export function tpReg(sys) {
                 //只传送最早的那个请求
                 let data = datas[0];
                 let pos = getPositionofEntity(this.entity);
-                system.executeCommand(`playsound mob.endermen.portal @a[name="${data.target}"] ${pos} 1 0.8`,data=>{});
+                system.executeCommand(`playsound mob.endermen.portal @a ${pos} 1 0.8`,data=>{});
                 system.executeCommand(`tellraw @a[name="${data.source}"] {"rawtext":[{"text":"§a玩家${$target}接受了你的传送邀请"}]}`,data=>{});
                 system.executeCommand(`tellraw @a[name="${$target}"] {"rawtext":[{"text":"§a接受了${data.source}的传送邀请"}]}`,data=>{});
                 system.executeCommand(`tp @a[name="${data.target}"] @a[name="${data.source}"]`,data=>{});
                 pos = getPositionofEntity(this.entity);
-                system.executeCommand(`playsound mob.endermen.portal @a[name="${data.target}"] ${pos} 1 1`,data=>{});
+                system.executeCommand(`playsound mob.endermen.portal @a ${pos} 1 1`,data=>{});
                 //传送后删除
                 let $source = data.source;
                 delNum = db.update(DELETE_COMMAND_DENY,{

@@ -21,12 +21,11 @@ export function backReg(sys) {
                     if(data.length == 0) throw "你还没有记录的死亡点哦";
                     let position = data[0].position;
                     let pos = getPositionofEntity(entity);
-                    system.executeCommand(`playsound mob.endermen.portal @a[name="${$player}"] ${pos} 1 0.8`,data=>{});
+                    system.executeCommand(`playsound mob.endermen.portal @a ${pos} 1 0.8`,data=>{});
                     system.executeCommand(`tp @a[name="${$player}"] ${position}`,data=>{});
-                    system.executeCommand(`tellraw @a[name="${$player}"] {"rawtext":[{"text":"§e已传送至上一死亡点"}]}`,data=>{});
-                    //system.executeCommand(`playsound mob.endermen.portal @a[name="${$player}"] ${position} 1.0 1.0 0.8`,data=>{});
-                    system.executeCommand(`playsound mob.endermen.portal @a[name="${$player}"] ${position} 1 0.8`,data=>{});
+                    system.executeCommand(`playsound mob.endermen.portal @a ${position} 1 0.8`,data=>{});
                     db.update(DELETE_DEATH,{$player});
+                    return `§e已传送至上一死亡点`;
                 }
             } as CommandOverload<[]>
         ]

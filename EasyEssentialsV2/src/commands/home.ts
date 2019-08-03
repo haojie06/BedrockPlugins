@@ -36,7 +36,7 @@ export function homeReg(sys) {
                     //可以执行添加
                     db.update(INSERT_HOME,{$homeName,$position,$owner});
                     //this.invokeConsoleCommand("home",`tell "${$owner}" 已为你设置名为${$homeName}的家`);
-                    system.executeCommand(`tellraw @a[name="${$owner}"] {"rawtext":[{"text":"§a已为你设置名为${$homeName}的家"}]}`,data=>{});
+                    return `§a已为你设置名为${$homeName}的家`;
                 }else{
                     throw "设置的home数量超过上限";
                 }
@@ -62,7 +62,7 @@ export function homeReg(sys) {
                     for (let index in datas){
                         say += `§a<${Number(index)+1}>.home:${datas[index].homeName} position: ${datas[index].position}\n`;
                 }
-                system.executeCommand(`tellraw @a[name="${$owner}"] {"rawtext":[{"text":"${say}"}]}`,data=>{});
+                return say;
             }
         }as CommandOverload<[]>]
     });
@@ -94,10 +94,10 @@ export function homeReg(sys) {
                         }
                     }
                     if (flag){
-                        system.executeCommand(`tellraw @a[name="${$owner}"] {"rawtext":[{"text":"已删除${$homeName}"}]}`,data=>{});
+                        return `已删除${$homeName}`;
                     }
                     else{
-                        system.executeCommand(`tellraw @a[name="${$owner}"] {"rawtext":[{"text":"§c删除${$homeName}失败"}]}`,data=>{});
+                        return `§c删除${$homeName}失败`;
                     }
                 }else{
                     throw "home数量为0";
@@ -125,8 +125,8 @@ export function homeReg(sys) {
                 if(datas.length != 0){
                     if ($homeName == ""){
                         system.executeCommand(`tp @a[name="${$owner}"] ${datas[0].position}`,data=>{});
-                        system.executeCommand(`tellraw @a[name="${$owner}"] {"rawtext":[{"text":"§a已传送至${datas[0].homeName}"}]}`,data=>{});
-                        system.executeCommand(`playsound mob.endermen.portal @a[name="${$owner}"] ${datas[0].position} 1 1`,data=>{});
+                        system.executeCommand(`playsound mob.endermen.portal @a ${datas[0].position} 1 1`,data=>{});
+                        return `§a已传送至${datas[0].homeName}`;
                     }
                     else{
                     //判断是否有重名的home
@@ -135,12 +135,13 @@ export function homeReg(sys) {
                         if (data.homeName == $homeName) {
                             //可以执行传送
                             system.executeCommand(`tp @a[name="${$owner}"] ${data.position}`,data=>{});
-                            system.executeCommand(`tellraw @a[name="${$owner}"] {"rawtext":[{"text":"§a已传送至${data.homeName}"}]}`,data=>{});
-                            system.executeCommand(`playsound mob.endermen.portal @a[name="${$owner}"] ${data.position} 1 1`,data=>{});
+                            system.executeCommand(`playsound mob.endermen.portal @a ${data.position} 1 1`,data=>{});
                             flag = true;
+                            return `§a已传送至${data.homeName}`;
                         }
                         }
-                        if(flag == false) throw "未找到该home";  
+                        if(flag == false) return "未找到该home";  
+                       
                     }
                 }else{
                     throw "你还没有设置家哟~";
