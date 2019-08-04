@@ -22,7 +22,7 @@ function fix(arr: TemplateStringsArray) {
     maxy INT NOT NULL,
     maxz INT NOT NULL,
     size INT NOT NULL,
-    flags TEXT,
+    flags TEXT DEFAULT '',
     extra TEXT
   );`;
 //创建一个储存领地居民的表
@@ -37,9 +37,9 @@ function fix(arr: TemplateStringsArray) {
 `;
   export const INSERT_LAND = fix`
   INSERT INTO land (
-    name, creator, owner, dim, sposition, eposition, minx, miny, minz, maxx, maxy, maxz, size
+    name, creator, owner, dim, sposition, eposition, minx, miny, minz, maxx, maxy, maxz, size, flags
   ) values (
-    $name, $creator, $owner, $dim, $sposition, $eposition, $minx, $miny, $minz, $maxx, $maxy, $maxz, $size
+    $name, $creator, $owner, $dim, $sposition, $eposition, $minx, $miny, $minz, $maxx, $maxy, $maxz, $size, $flags
   );`;
 
   export const INSERT_RESIDENT = fix`
@@ -50,9 +50,12 @@ function fix(arr: TemplateStringsArray) {
   );
   `;
 
+
+    export const UPDATE_LAND_FLAGS = fix`UPDATE land SET flags=$flags WHERE name=$name;`;
     export const SELECT_LAND_BY_POS = fix`SELECT * FROM land WHERE $px>=minx AND $px<=maxx AND $py>=miny AND $py<=maxy AND $pz>=minz AND $pz<=maxz AND $sdim=dim;`;
     export const SELECT_LAND_BY_NAME = fix`SELECT * FROM land WHERE name=$name;`;
     export const SELECT_LAND_BY_OWNER = fix`SELECT * FROM land WHERE $owner=owner;`;
+    export const SELECT_LAND_BY_OWNER_CREATOR = fix`SELECT * FROM land WHERE $owner=owner AND $creator=creator;`;
     export const SELECT_RESIDENT_BY_LAND_AND_NAME = fix`SELECT * FROM resident WHERE $landname=landname AND $playername=playername;`;
     export const SELECT_RESIDENT_BY_LAND = fix`SELECT * FROM resident WHERE $landname=landname;`;
     export const SELECT_RESIDENT_BY_NAME = fix`SELECT * FROM resident WHERE $playername=playername;`;

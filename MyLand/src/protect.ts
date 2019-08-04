@@ -2,7 +2,15 @@
 import { system } from "./system";
 import { Vec,getVecOfEntity,getDimensionOfEntity,getName,checkAdmin } from "./utils";
 import {db,SELECT_LAND_BY_POS,SELECT_RESIDENT_BY_LAND_AND_NAME} from "./database";
-
+//允许玩家打开的开关（按钮/拉杆/）方块
+let switchList = ["minecraft:stone_button","minecraft:wooden_button","minecraft:lever","minecraft:acacia_button","minecraft:birch_button","minecraft:dark_oak_button","minecraft:jungle_button","minecraft:spruce_button"];
+let doorList = ["minecraft:wooden_door","minecraft:acacia_door","minecraft:birch_door","minecraft:dark_oak_door","minecraft:jungle_door","minecraft:spruce_door", "minecraft:wooden_trapdoor","minecraft:acacia_trapdoor","minecraft:birch_trapdoor","minecraft:dark_oak_trapdoor","minecraft:jungle_trapdoor","minecraft:spruce_trapdoor"];
+//添加flag后玩家可以打开的容器
+let containerList = [];
+//添加了flag后可以使用的工具类方块
+let functionBlockList = ["minecraft:grindstone","minecraft:cartography_table","minecraft:stonecutter_block","minecraft:crafting_table","minecraft:enchanting_table","minecraft:ender_chest","minecraft:anvil"];
+//添加了flag也无法攻击的实体（盔甲架一类）
+let mobCannotAttack = ["minecraft:armor_stand","minecraft:boat","minecraft:chest_minecart","minecraft:command_block_minecart","minecraft:hopper_minecart","minecraft:minecart","minecraft:tnt_minecart","minecraft:item_frame","minecraft:painting"];
 export interface IfInLnadComponent{
         //现在是否在领地内
         now:boolean,
@@ -150,6 +158,7 @@ export function interactCheck(){
         let player = data.player;
         let playerPos = data.pos;
         let block = data.block;
+        let item = data.item;
         if(checkAdmin(player) == false){
         let bPosition = block.block_position;
         let $px = bPosition.x;
@@ -164,9 +173,40 @@ export function interactCheck(){
             let residents = db.query(SELECT_RESIDENT_BY_LAND_AND_NAME,{$landname,$playername});
 
             if(residents.length == 0){
-                //未找到该玩家有此领地的破坏权限
-            system.sendText(player,`你没有权限与(${bPosition.x},${bPosition.y},${bPosition.z})处的方块交互\n所属领地${datas[0].name} 主人:${datas[0].owner}`);
-            return false;
+            //查看交互的方块是否是开关
+            let flags = String(datas[0].flags); 
+            if((switchList.indexOf(block.__identifier__) != -1) && (flags.indexOf("useswitch") != -1)){
+                //交互的是开关，判断是否空手
+                if(item.__identifier__ == "minecraft:undefined"){
+                return true;
+                }
+                else{
+                    system.sendText(player,`领地已打开开关交互权限,但是请空手使用`);
+                    return false; 
+                }
+            }
+            else if ((doorList.indexOf(block.__identifier__) != -1) && (flags.indexOf("opendoor") != -1)){
+                if(item.__identifier__ == "minecraft:undefined"){
+                    return true;
+                    }
+                else{
+                    system.sendText(player,`领地已打开开门权限,但是请空手使用`);
+                    return false; 
+                }
+            }
+            else if ((functionBlockList.indexOf(block.__identifier__) != -1) && (flags.indexOf("functionblock") != -1)){
+                if(item.__identifier__ == "minecraft:undefined"){
+                    return true;
+                    }
+                else{
+                    system.sendText(player,`领地已打开功能方块使用权限,但是请空手使用`);
+                    return false; 
+                }
+            }
+            else{
+                system.sendText(player,`你没有权限与(${bPosition.x},${bPosition.y},${bPosition.z})处的方块交互\n所属领地${datas[0].name} 主人:${datas[0].owner}`);
+                return false;
+            }
             }
             else{ 
                 return true;
@@ -190,13 +230,22 @@ export function attackCheck(){
         //先判断方块是否在领地内
         let $sdim = getDimensionOfEntity(player);
         let datas = Array.from(db.query(SELECT_LAND_BY_POS,{$px,$py,$pz,$sdim}));
+        let flags = String(datas[0].flags);
         if(datas.length != 0){
             let $landname = datas[0].name;
-            
             let residents = db.query(SELECT_RESIDENT_BY_LAND_AND_NAME,{$landname,$playername});
 
             if(residents.length == 0){
-                //未找到该玩家有此领地的破坏权限
+            //未找到该玩家有此领地的破坏权限
+            if (flags.indexOf("attackmob")!=-1) {
+                if(mobCannotAttack.indexOf(target.__identifier__) == -1){
+                    return true;
+                }
+                else{
+                    system.sendText(player,`领地已打开攻击实体权限,但是此实体不可攻击`);
+                    return false;
+                }
+            }
             system.sendText(player,`你没有权限攻击(${$px},${$py},${$pz})处的实体\n所属领地${datas[0].name} 主人:${datas[0].owner}`);
             return false;
             }

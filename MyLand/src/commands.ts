@@ -1,13 +1,15 @@
 import { system } from "./system";
-import {db,DELETE_RESIDENT_BY_LAND_NAME,DELETE_LAND_BY_NAME_OWNER,SELECT_LAND_BY_OWNER,SELECT_RESIDENT_BY_NAME,SELECT_RESIDENT_BY_LAND,SELECT_LAND_BY_POS,INSERT_LAND,SELECT_LAND_BY_NAME,INSERT_RESIDENT,DELETE_RESIDENT_BY_LAND,DELETE_LAND_BY_NAME} from "./database"
-import {getName,getDimensionOfEntity,getVecOfEntity,Vec,getMax,getMin} from "./utils"
+import {db,SELECT_RESIDENT_BY_LAND_AND_NAME,UPDATE_LAND_FLAGS,SELECT_LAND_BY_OWNER_CREATOR,DELETE_RESIDENT_BY_LAND_NAME,DELETE_LAND_BY_NAME_OWNER,SELECT_LAND_BY_OWNER,SELECT_RESIDENT_BY_NAME,SELECT_RESIDENT_BY_LAND,SELECT_LAND_BY_POS,INSERT_LAND,SELECT_LAND_BY_NAME,INSERT_RESIDENT,DELETE_RESIDENT_BY_LAND,DELETE_LAND_BY_NAME} from "./database"
+import {getName,getDimensionOfEntity,getVecOfEntity,Vec,getMax,getMin,checkAdmin} from "./utils"
 let selectTool = "minecraft:stick";
+//已有领地flag列表 使用开关/打开容器/攻击生物 (前两者必须空手)
+let landFlags = ["useswitch","opencontainer","attackmob","opendoor","functionblock"];
 //玩家圈地最大的x，z
-let MaxX = 32;
-let MaxZ = 32;
-let MaxY = 100;
+let MaxX = 50;
+let MaxZ = 50;
+let MaxY = 257;
 //一个玩家最多有几块领地
-let MaxLands = 2;
+let MaxLands = 1;
 interface SelectPoint {
     sdim:string;
     sx:number;
@@ -43,7 +45,7 @@ export function commandsReg() {
             //选取两点后应在数据库中进行检查
             if(pointMap.has(playerName)){
             let sp = pointMap.get(playerName);
-            if(sp.ex == 0){
+            if(sp.ex == 0 && sp.ey == 0){
                 //第二个点还未选取的时候
                 let dim = getDimensionOfEntity(player);
                 if(dim != sp.sdim){
@@ -52,7 +54,8 @@ export function commandsReg() {
                 }
                 else{
                 sp.ex = blockPos.x;
-                sp.ey = blockPos.y;
+                //sp.ey = blockPos.y;
+                sp.ey = 255;
                 sp.ez = blockPos.z;
                 let divX = Math.abs(sp.ex-sp.sx) + 1;
                 let divY = Math.abs(sp.ey - sp.sy) + 1;
@@ -82,7 +85,9 @@ export function commandsReg() {
                 };
                 sp.sdim = dim;
                 sp.sx = blockPos.x;
-                sp.sy = blockPos.y;
+                //暂时y方向全部计入领地
+                //sp.sy = blockPos.y;
+                sp.sy = 0;
                 sp.sz = blockPos.z;
                 pointMap.set(playerName,sp);
                 system.sendText(player,`你已选取领地第一点（${sp.sx},${sp.sy},${sp.sz})`);
@@ -146,7 +151,8 @@ export function commandsReg() {
                                     $maxx:getMax(sp.sx,sp.ex),
                                     $maxy:getMax(sp.sy,sp.ey),
                                     $maxz:getMax(sp.sz,sp.ez),
-                                    $size:sp.size
+                                    $size:sp.size,
+                                    $flags:""
                                 });
 
                                 db.update(INSERT_RESIDENT,{
@@ -171,7 +177,7 @@ export function commandsReg() {
                         }    
                     }
                     else{
-                        return "无法创建领地";
+                        return "无法创建领地，请先选点";
                     }
                 }
             } as CommandOverload<["string","string"]>
@@ -256,10 +262,11 @@ export function commandsReg() {
 
                 let yLength = Math.abs(sp.sy - sp.ey)+1;
                 if(yLength > MaxY) return `y方向长度${yLength}超出范围${MaxY}，圈地失败`;
-                //查看玩家领地数是否超过上限
+                //查看玩家自己创建的领地数是否超过上限（op给予的不算）
                 let $owner = this.name;
-                let lands = Array.from(db.query(SELECT_LAND_BY_OWNER,{$owner}));
-                if (lands.length >= MaxLands) return `你的领地数${lands.length}已达到上限${MaxLands}`;
+                let $creator = this.name;
+                let lands = Array.from(db.query(SELECT_LAND_BY_OWNER_CREATOR,{$owner,$creator}));
+                if (lands.length >= MaxLands) return `你创建的领地数${lands.length}已达到上限${MaxLands}`;
 
                 let datas = Array.from(db.query(SELECT_LAND_BY_POS,{$px,$py,$pz,$sdim}));
                 if(datas.length == 0){
@@ -290,7 +297,8 @@ export function commandsReg() {
                             $maxx:getMax(sp.sx,sp.ex),
                             $maxy:getMax(sp.sy,sp.ey),
                             $maxz:getMax(sp.sz,sp.ez),
-                            $size:sp.size
+                            $size:sp.size,
+                            $flags:""
                         });
 
                         db.update(INSERT_RESIDENT,{
@@ -315,7 +323,7 @@ export function commandsReg() {
                 }    
             }
             else{
-                return "无法创建领地";
+                return "无法创建领地，请先选点";
             }
         }}as CommandOverload<["string"]>]
     });
@@ -387,6 +395,121 @@ export function commandsReg() {
                             return `只有领地主人才有权限添加成员噢`;
                         }
                     }
+            }
+        }as CommandOverload<["string"]>]
+    });
+
+    system.registerCommand("landflags",{
+        description: "领地内权限控制",
+        permission: 0,
+        overloads:[{
+            parameters:[
+                {
+                    name:"add/remove",
+                    type:"string"
+                },
+                {
+                    name:"flag",
+                    type:"string"
+                }
+            ],
+            handler([action,flag]){
+                    //玩家需要站在领地中
+                    if (!this.entity) {
+                        throw "只有玩家可以使用";
+                    }
+                    let pComp = system.getComponent<IPositionComponent>(this.entity,MinecraftComponent.Position);
+                    let $px = Math.floor(pComp.data.x);
+                    let $py = Math.floor(pComp.data.y);
+                    let $pz = Math.floor(pComp.data.z);
+                    let $sdim = getDimensionOfEntity(this.entity);
+                    let datas = Array.from(db.query(SELECT_LAND_BY_POS,{$px,$py,$pz,$sdim}));
+                    if (datas.length == 0) {
+                        return `你需要站在你的领地中`;
+                    }
+                    else{
+                        if(landFlags.indexOf(flag) == -1){
+                            throw `目前插件还不支持此flag,请使用以下flag:${String(landFlags)}`;
+                        }
+                        //需要是主人/op
+                        let data = datas[0];
+                        let flags = String(data.flags);
+                        if (this.name == data.owner || checkAdmin(this.entity)) {
+                            if (action == "add") {
+                                
+                                if(flags.indexOf(flag) != -1){
+                                    throw `你已添加过此flag，当前领地拥有以下flag:${flags}`;
+                                }
+                                flags += `,${flag}`;
+                                let res = db.update(UPDATE_LAND_FLAGS,{
+                                    $flags:flags,
+                                    $name:data.name
+                                });
+                                if(res == 1){
+                                    return `成功更新领地flag,当前领地flag:${flags}`;
+                                }
+                                else{
+                                    return `更新领地flag失败`;
+                                }
+                            }
+                            else if (action == "remove"){
+                                if(flags.indexOf(flag) == -1){
+                                    throw `你未添加过此flag，当前领地拥有以下flag:${flags}`;
+                                }
+
+                                    let sflags = flags.split(",");
+                                    sflags.splice(sflags.indexOf(flag),1);
+                                    flags = sflags.join(",");
+    
+                                    let res = db.update(UPDATE_LAND_FLAGS,{
+                                        $flags:flags,
+                                        $name:data.name
+                                    });
+                                    if(res == 1){
+                                        return `成功更新领地flag 当前flags:${flags}`;
+                                    }
+                                    else{
+                                        return `更新领地flag失败`;
+                                    }
+                            }
+                            else{
+                                throw "无效参数";
+                            }
+                        }
+                        else{
+                            return `只有领地主人才有权限编辑领地flag噢`;
+                        }
+                    }
+            }
+        }as CommandOverload<["string","string"]>]
+    });
+
+    system.registerCommand("landinfo",{
+        description: "查询领地信息",
+        permission: 0,
+        overloads:[{
+            parameters:[{
+                name:"领地名",
+                type:"string"
+            }],
+            handler([$landname]){
+                    //玩家需要站在领地中
+                    if (!this.entity) {
+                        throw "只有玩家可以使用";
+                    }
+                    let $playername = this.name;
+                    let datas = Array.from(db.query(SELECT_RESIDENT_BY_LAND_AND_NAME,{$landname,$playername}));
+                    if(datas.length == 0){
+                        throw "你没有查询该领地的权限/领地不存在";
+                    }
+                    let data = Array.from(db.query(SELECT_LAND_BY_NAME,{$name:$landname}))[0];
+                    let showInfo = "";
+                    showInfo += `§a查询信息:\n领地名:${data.name} 领地主人:${data.owner} 领地范围:(${data.sposition})至(${data.eposition})\n§e领地flags:${data.flags}\n领地成员信息:\n`;
+                    datas = Array.from(db.query(SELECT_RESIDENT_BY_LAND,{$landname}));
+                    for(let data of datas){
+                        showInfo += `§2[${data.permission}].${data.playername}\n`;
+                    }
+                    return showInfo;
             }
         }as CommandOverload<["string"]>]
     });
