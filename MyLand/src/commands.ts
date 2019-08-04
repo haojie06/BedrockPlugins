@@ -583,7 +583,7 @@ export function commandsReg() {
                         for (let resident of residents){
                             res += `[${resident.permission}]${resident.playername} `;
                         }
-                        return `以下为领地:${name}的信息:\n领地范围:(${datas[0].sposition})至(${datas[0].eposition}) 维度:${datas[0].dim} 领地主人:${datas[0].owner}\n居民:${res}`;
+                        return `以下为领地:${name}的信息:\n领地范围:(${datas[0].sposition})至(${datas[0].eposition}) 维度:${datas[0].dim} 领地主人:${datas[0].owner}\n领地flags:${datas[0].flags}\n居民:${res}`;
                     }
                     else{
                         return `未找到领地信息`;
