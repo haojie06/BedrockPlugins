@@ -85,14 +85,14 @@ system.initialize = function () {
     server.log("Inspect背包信息查询 loaded");
     system.registerCommand("inspect",{
         description: "查看背包",
-        permission: 0,
+        permission: 1,
         overloads:[{
             parameters:[{
                 name:"玩家",
                 type:"player"
             }],
             handler([players]){
-                if(!this.entity) return "只有玩家可以执行";
+                //if(!this.entity) return "只有玩家可以执行";
                 if(players.length != 1) return "一次只能查询一个玩家的背包";
                 let player = players[0];
                 
