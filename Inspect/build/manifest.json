@@ -1,0 +1,18 @@
+{
+  "format_version": 1,
+  "header": {
+    "name": "Inspect",
+    "description": "用于查看玩家的背包物品栏末影箱等信息",
+    "uuid": "47dfbf0f-b74b-402b-8378-9aee82724258",
+    "version": [0, 0, 0],
+    "min_engine_version": [1, 12, 0]
+  },
+  "modules": [
+    {
+      "description": "data",
+      "type": "data",
+      "uuid": "a611c851-2eff-4468-acf6-8570e18dbe75",
+      "version": [0, 0, 0]
+    }
+  ]
+}
