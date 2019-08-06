@@ -13,7 +13,7 @@ export function kickTickReset() {
 
 export function kickTickAdd(){
     kickTick++;
-    if (kickTick >= 40) {
+    if (kickTick >= 60) {
         kickTick = 0;
         return true;
     }

@@ -1,7 +1,7 @@
 import {getName,checkAdmin} from "../utils";
 import {system,playerKicked,kickTickReset,IUseCraftTableComponent} from "../system";
 let playerQuery;
-let cannotPushContainerList = ["minecraft:barrel","minecraft:blast_furnace","minecraft:‎smoker","minecraft:grindstone","minecraft:crafting_table","minecraft:dropper","minecraft:hopper","minecraft:trapped_chest","minecraft:lit_furnace","minecraft:furnace","minecraft:chest","minecraft:dispenser",""];
+let cannotPushContainerList = ["minecraft:smoker","minecraft:barrel","minecraft:blast_furnace","minecraft:grindstone","minecraft:crafting_table","minecraft:dropper","minecraft:hopper","minecraft:trapped_chest","minecraft:lit_furnace","minecraft:furnace","minecraft:chest","minecraft:dispenser"];
 let unusualBlockList = ["minecraft:invisiblebedrock","minecraft:bedrock","minecraft:mob_spawner","minecraft:end_portal_frame","minecraft:barrier","minecraft:command_block"];
 let enchMap = new Map<string,string>();
 let levelMap = new Map<string,number>();
@@ -61,7 +61,7 @@ export function ItemModuleReg() {
             let count = itemStack.count;
             let playerName = getName(entity);
             //server.log(`玩家${playerName} ${method} ${count}个${item}`);
-            //system.sendText(entity,`玩家${playerName} ${method} ${count}个${item}`);
+            system.sendText(entity,`玩家${playerName} ${method} ${count}个${item}`);
         }
     });
 */
@@ -180,17 +180,10 @@ system.handlePolicy(MinecraftPolicy.EntityPickItemUp,(data,def)=>{
                     system.executeCommand(`fill ${bPosition.x} ${bPosition.y} ${bPosition.z} ${bPosition.x} ${bPosition.y} ${bPosition.z} air 0 replace`,data=>{});
                     system.sendText(player,`你想做什么？`);
                 }
+                else{
+
+                }
             }
         }
-        server.log(`检测到${pPosition.x},${pPosition.y},${pPosition.z}处活塞推动`);
-
-        /*
-        for (let player of players){
-            let playerName = getName(player);
-            server.log(`在推动的活塞(${pPosition.x},${pPosition.y},${pPosition.z})周围找到玩家${playerName}`);
-        }
-        */
-        //system.executeCommand(`fill ${bPosition.x} ${bPosition.y} ${bPosition.z} ${bPosition.x} ${bPosition.y} ${bPosition.z} air 0 replace`,data=>{});
-        //system.executeCommand(`fill ${pPosition.x} ${pPosition.y} ${pPosition.z} ${pPosition.x} ${pPosition.y} ${pPosition.z} air 0 replace`,data=>{});
     });
 }
