@@ -67,6 +67,7 @@ export function ItemModuleReg() {
 */
 
 //阻止普通玩家放置不应该放置的东西（基岩/刷怪箱...）
+
 system.listenForEvent("minecraft:player_placed_block",data=>{
     let player = data.data.player;
     if(!checkAdmin(player)){
@@ -89,8 +90,12 @@ system.listenForEvent("minecraft:player_placed_block",data=>{
     }
 });
 
+
+
 system.listenForEvent("minecraft:entity_carried_item_changed",data=>{
+    try{
     let entity = data.data.entity;
+    if(entity){
     let item = data.data.carried_item;
     if(entity.__identifier__ == "minecraft:player"){
         if(!checkAdmin(entity)){
@@ -104,7 +109,12 @@ system.listenForEvent("minecraft:entity_carried_item_changed",data=>{
             }
         }
     }
+}
+}catch (err){
+    server.log("出现错误");
+}
 });
+
 
 
 //防刷
@@ -132,8 +142,8 @@ system.listenForEvent("minecraft:block_interacted_with",data=>{
 });
 
 //使用工作台的时候无法捡起物品
+
 system.handlePolicy(MinecraftPolicy.EntityPickItemUp,(data,def)=>{
-    //(如果ifUse为真 判断坐标是否变化)
     let player = data.entity;
     if(player.__identifier__ == "minecraft:player"){
     let comp = system.getComponent<IUseCraftTableComponent>(player,"misbehavior:useCraftTable");
@@ -152,7 +162,9 @@ system.handlePolicy(MinecraftPolicy.EntityPickItemUp,(data,def)=>{
     else{
         return true;
     }
+
 });
+
     
 
     playerQuery = system.registerQuery();

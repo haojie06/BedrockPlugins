@@ -1,0 +1,18 @@
+{
+  "format_version": 1,
+  "header": {
+    "name": "Misbehavior",
+    "description": "异常行为处理",
+    "uuid": "81a1c38a-992b-485e-a8e4-db4d310500c9",
+    "version": [0, 0, 0],
+    "min_engine_version": [1, 12, 0]
+  },
+  "modules": [
+    {
+      "description": "data",
+      "type": "data",
+      "uuid": "d8b8ae03-41f9-4b23-9082-2b4affc8ac71",
+      "version": [0, 0, 0]
+    }
+  ]
+}

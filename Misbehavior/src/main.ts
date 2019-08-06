@@ -20,16 +20,21 @@ system.initialize = function () {
         if (entity.__identifier__ == "minecraft:player") {
         system.createComponent(entity,"misbehavior:isplayer");
         system.createComponent<IUseCraftTableComponent>(entity,"misbehavior:useCraftTable");
-    }});
+    }
+});
 
-    ItemModuleReg();
+ItemModuleReg();
+
+    
 }
 
 system.update = function () {
+
     if(kickTickAdd()){
         for(let index in playerKicked){
             system.destroyEntity(playerKicked[index]);
             playerKicked.splice(Number(index),1);
         }
     }
+
 }
