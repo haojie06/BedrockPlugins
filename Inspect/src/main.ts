@@ -3,7 +3,7 @@ const system = server.registerSystem(0, 0);
 
 let enchMap = new Map<string,string>();
 let levelMap = new Map<string,number>();
-
+let unusualItem = ["bedrock","mob_spawner","spawn_egg","command_block","dragon_egg","end_portal_frame","beacon"];
 enchMap.set("0","protection");
 enchMap.set("1","fire_aspect");
 enchMap.set("2","feather_falling");
@@ -137,9 +137,26 @@ system.initialize = function () {
                         let index = i*9+j;
                         let invName = extradata.value.Inventory.value[index].value.Name.value.split(":")[1];
                         //invName = invName.replace(/[\r\n]/g,"");
-                        let invCount = extradata.value.Inventory.value[index].value.Count.value;
+                        let invCount = Number(extradata.value.Inventory.value[index].value.Count.value);
+                        let invNumShow = "";
+                        if(invCount < 32){
+                            invNumShow = `§a[${invCount}]§r`;
+                        }
+                        else if(invCount < 64){
+                            invNumShow = `§e[${invCount}]§r`;
+                        }
+                        else{
+                            invNumShow = `§c[${invCount}]§r`;
+                        }
+
                         if(invName != undefined){
-                            show += `[${invCount}]${invName}`;
+                            if(unusualItem.indexOf(invName)!= -1){
+                                show += `§4<异常物品>§r${invNumShow}${invName}`;
+                            }
+                            else{
+                                show += `${invNumShow}${invName}`;
+                            }
+                            
                             try{
                                 //有附魔
                                 let enchNum = extradata.value.Inventory.value[index].value.tag.value.ench.value.length;
@@ -172,9 +189,25 @@ system.initialize = function () {
                         let index = i*9+j;
                         let invName = extradata.value.EnderChestInventory.value[index].value.Name.value.split(":")[1];
                         //invName = invName.replace(/[\r\n]/g,"");
-                        let invCount = extradata.value.EnderChestInventory.value[index].value.Count.value;
+                        let invCount = Number(extradata.value.EnderChestInventory.value[index].value.Count.value);
+                        
+                        let invNumShow = "";
+                        if(invCount < 32){
+                            invNumShow = `§a[${invCount}]§r`;
+                        }
+                        else if(invCount < 64){
+                            invNumShow = `§e[${invCount}]§r`;
+                        }
+                        else{
+                            invNumShow = `§c[${invCount}]§r`;
+                        }
                         if(invName != undefined){
-                            show += `[${invCount}]${invName}`;
+                            if(unusualItem.indexOf(invName)!= -1){
+                                show += `§4<异常物品>§r${invNumShow}${invName}`;
+                            }
+                            else{
+                                show += `${invNumShow}${invName}`;
+                            }
                             try{
                                 //有附魔
                                 let enchNum = extradata.value.EnderChestInventory.value[index].value.tag.value.ench.value.length;
