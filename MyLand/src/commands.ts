@@ -36,6 +36,7 @@ export function commandsReg() {
     //领地选择
     system.listenForEvent("minecraft:block_destruction_started",data=>{
         let player = data.data.player;
+        if(player){
         const hand = system.getComponent<IHandContainerComponent>(player, MinecraftComponent.HandContainer);
         const item = hand.data[0];
         let itemName = item.__identifier__;
@@ -93,7 +94,7 @@ export function commandsReg() {
                 system.sendText(player,`你已选取领地第一点（${sp.sx},${sp.sy},${sp.sz})`);
             }
         }
-    });
+    }});
     //创建领地 （op）
     system.registerCommand("createland",{
         description: "创建领地",
