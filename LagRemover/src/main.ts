@@ -2,6 +2,7 @@ const system = server.registerSystem(0, 0);
 //掉落物白名单
 let itemWhitelist:string[] = ["minecraft:diamond","minecraft:gold_ore","minecraft:iron_ore","minecraft:diamond_ore","minecraft:diamond_block","minecraft:enchanting_table","minecraft:emerald_ore","minecraft:emerald_block","minecraft:beacon","minecraft:iron_shovel","minecraft:iron_pickaxe","minecraft:iron_axe","minecraft:bow","minecraft:diamond","minecraft:iron_ingot","minecraft:gold_ingot","minecraft:iron_sword","minecraft:diamond_sword","minecraft:diamond_shovel","minecraft:diamond_pickaxe","minecraft:diamond_axe"];
 //需要清理的实体
+/*
 let entityBlacklist:string[] = [
 "minecraft:ravager","minecraft:zombie_villager","minecraft:evoker","minecraft:zombie_villager_v2","minecraft:phantom","minecraft:vex","minecraft:vindicator",
 "minecraft:cat","minecraft:wolf","minecraft:silverfish","minecraft:polar_bear","minecraft:pufferfish",
@@ -11,15 +12,18 @@ let entityBlacklist:string[] = [
 ,"minecraft:squid","minecraft:dolphin","minecraft:chicken","minecraft:cow","minecraft:salmon",
 "minecraft:sheep","minecraft:pig","minecraft:spider","minecraft:turtle","fine:halfzombie","minecraft:bat","minecraft:blaze",
 "minecraft:cave_spider","minecraft:creeper","minecraft:drowned","minecraft:enderman"
-,"minecraft:ghast","minecraft:husk","minecraft:magma_cube","minecraft:skeleton","minecraft:squid"
-,"minecraft:stray","minecraft:wither_skeleton","minecraft:zombie","minecraft:zombie_pigman","minecraft:ocelot"];
+,"minecraft:ghast","minecraft:husk","minecraft:magma_cube","minecraft:skeleton","minecraft:squid","minecraft:panda"
+,"minecraft:stray","minecraft:wither_skeleton","minecraft:zombie","minecraft:zombie_pigman","minecraft:ocelot","minecraft:mooshroom"];
+*/
+//实体清理白名单,里面的生物即使不命名也不会被自动清理 (排除非生物以及少数生物)
+let entityWhitelist:string[] = ["minecraft:elder_guardian","minecraft:villager_v2","minecraft:villager","minecraft:ender_dragon","minecraft:ravager","minecraft:wither"];
 //堆叠生物白名单
 //let stackWhitelist:string[] = ["minecraft:xp_orb","minecraft:falling_block","minecraft:ravager","minecraft:pillager","minecraft:player","minecraft:armor_stand","minecraft:villager","minecraft:villager_v2","minecraft:villager_v2"];
 //需要清理的非生物实体
-let noNameEntityBlackList:string[] = ["minecraft:wither_skull","minecraft:egg","minecraft:xp_orb","minecraft:fireball","minecraft:small_fireball","minecraft:arrow"];
+let noNameEntityBlackList:string[] = ["minecraft:snowball","minecraft:splash_potion","minecraft:xp_bottle","minecraft:wither_skull","minecraft:egg","minecraft:xp_orb","minecraft:fireball","minecraft:small_fireball","minecraft:arrow"];
 
 //类似于盔甲架一类的实体
-let placeableEntityList:string[] = ["minecraft:armor_stand","minecraft:boat","minecraft:chest_minecart","minecraft:end_crystal","minecraft:furnace_minecart","minecraft:hopper_minecart","minecraft:item_frame","minecraft:minecar","minecraft:painting","minecraft:tnt_minecart"];
+let placeableEntityList:string[] = ["minecraft:tnt","minecraft:armor_stand","minecraft:boat","minecraft:chest_minecart","minecraft:end_crystal","minecraft:furnace_minecart","minecraft:hopper_minecart","minecraft:item_frame","minecraft:minecar","minecraft:painting","minecraft:tnt_minecart"];
 let itemQuery,mobQuery,entityQuery,positionQuery,playerQuery,noNameEntityQuery,placeableEntityQuery;
 let notClearMobNum = 0,clearMobNum = 0;
 //模拟距离
@@ -204,18 +208,24 @@ function onEntityCreate(data){
         }
     }
     else{
-      if(entityBlacklist.indexOf(entity.__identifier__) != -1){
-        system.createComponent(entity,"lagremover:isMob");
-        }
-        else if (noNameEntityBlackList.indexOf(entity.__identifier__) != -1){
+      //在生物清理的白名单之外
+      if(entityWhitelist.indexOf(entity.__identifier__) == -1){
+        //system.createComponent(entity,"lagremover:isMob");
+        //是无名字组件的生物实体（火球一类）
+        if (noNameEntityBlackList.indexOf(entity.__identifier__) != -1){
           system.createComponent(entity,"lagremover:noNameEntity");
         }
-        else if (placeableEntityList.indexOf(entity.__identifier__) != -1){
+        else if(placeableEntityList.indexOf(entity.__identifier__) != -1){
+          //在可放置实体列表中（不清理）
           system.createComponent(entity,"lagremover:placeableEntity");
         }
         else{
-
+          //剩下的就是需要清理的生物
+          if(system.hasComponent(entity,MinecraftComponent.Nameable)){
+          system.createComponent(entity,"lagremover:isMob");
+          }
         }
+      }
     }
     system.createComponent(entity,"lagremover:isEntity");
 }

@@ -81,7 +81,6 @@ export function getMin(a:number,b:number){
     }
 }
 
-//利用tag来给予op破坏权限
 export function checkAdmin(entity:IEntity){
     let ifAdmin = false;
     let extra = system.getComponent(entity,MinecraftComponent.ExtraData).data;
