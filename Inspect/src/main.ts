@@ -3,7 +3,7 @@ const system = server.registerSystem(0, 0);
 
 let enchMap = new Map<string,string>();
 let levelMap = new Map<string,number>();
-let unusualItem = ["bedrock","mob_spawner","spawn_egg","command_block","dragon_egg","end_portal_frame","beacon"];
+let unusualItem = ["invisibleBedrock","invisiblebedrock","bedrock","mob_spawner","spawn_egg","command_block","dragon_egg","end_portal_frame","beacon"];
 enchMap.set("0","protection");
 enchMap.set("1","fire_aspect");
 enchMap.set("2","feather_falling");
