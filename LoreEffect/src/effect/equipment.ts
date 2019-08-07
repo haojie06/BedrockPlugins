@@ -24,6 +24,7 @@ system.update = function(){
         let players = system.getEntitiesFromQuery(playerQuery);
         //server.log(`目前有玩家${players.length}`)
         for (let player of players){
+            if(player){
             if(system.hasComponent(player,"minecraft:armor_container")){
             let playerArmor = system.getComponent(player, "minecraft:armor_container");
             // Get the players helmet
@@ -156,12 +157,24 @@ system.update = function(){
                 }
 
             }
+
+            if(allLores.indexOf("花瓣") != -1){
+                let pComp = system.getComponent<IPositionComponent>(player,MinecraftComponent.Position);
+                let px,py,pz;
+                px = pComp.data.x;
+                py = pComp.data.y;
+                pz = pComp.data.z;
+                if(possibility(0.1)){
+                spawnParticleInWorld("spiral-pink-1",[px,py-3.5,pz],dim);
+                }
+            
+            }
             
         }
         else{
             //server.log(`玩家没有装备栏？`);
         }
-    }
+    }}
 
     }
 };

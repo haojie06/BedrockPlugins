@@ -4,7 +4,9 @@ export function attackReg() {
     server.log("LoreEffect 攻击特效已加载");
     system.listenForEvent("minecraft:player_attacked_entity",data=>{
         let player:IEntity = data.data.player;
+        if (player) {
         let target = data.data.attacked_entity;
+        if(target){
         let playerName = getName(player);
         let dim = getDimensionOfEntity(player);
         if (!system.hasComponent(player, MinecraftComponent.HandContainer)){
@@ -85,8 +87,6 @@ export function attackReg() {
             spawnParticleInWorld("minecraft:falling_dust_dragon_egg_particle",[px,py+1,pz],dim);
             spawnParticleInWorld("minecraft:falling_dust_dragon_egg_particle",[px,py+0.5,pz],dim);
             spawnParticleInWorld("minecraft:falling_dust_dragon_egg_particle",[px,py+1.2,pz],dim);
-
-
             if(possibility(0.35)){
                 spawnParticleInWorld("blood",[px,py+1,pz],dim);
             }
@@ -119,6 +119,20 @@ export function attackReg() {
         system.executeCommand(`execute @a[name="${playerName}"] ~ ~ ~ playsound item.trident.throw @a ${px} ${py} ${pz} 1 1`,data=>{});
     }
 }
+if(lore.indexOf("七夕") != -1){
+    let pComp = system.getComponent<IPositionComponent>(target,MinecraftComponent.Position);
+    let px,py,pz;
+    px = pComp.data.x;
+    py = pComp.data.y;
+    pz = pComp.data.z;
+    let ry = randomNum(0,2);
+    spawnParticleInWorld("hearth",[px,py,pz],dim);
+    spawnParticleInWorld("hearth",[px,py+1,pz],dim);
+    spawnParticleInWorld("hearth",[px,py+2,pz],dim);
+    spawnParticleInWorld("hearth",[px + ry,py+1,pz + ry],dim);
+    spawnParticleInWorld("hearth",[px - ry,py+1,pz - ry],dim);
+    spawnParticleInWorld("hearth",[px +ry,py+1,pz - ry],dim);
+}
         }
-    });
+    }}});
 }

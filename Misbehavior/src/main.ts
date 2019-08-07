@@ -17,15 +17,20 @@ system.initialize = function () {
     
     system.listenForEvent(ReceiveFromMinecraftServer.EntityCreated,data=>{
         let entity = data.data.entity;
-        if (entity.__identifier__ == "minecraft:player") {
-        system.createComponent(entity,"misbehavior:isplayer");
-        system.createComponent<IUseCraftTableComponent>(entity,"misbehavior:useCraftTable");
-    }
+        try {
+            if(entity){
+                if (entity.__identifier__ == "minecraft:player") {
+                system.createComponent(entity,"misbehavior:isplayer");
+                system.createComponent<IUseCraftTableComponent>(entity,"misbehavior:useCraftTable");
+                }
+            }
+        } catch (error) {
+            
+        }
+
 });
 
 ItemModuleReg();
-
-    
 }
 
 system.update = function () {

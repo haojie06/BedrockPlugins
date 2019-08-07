@@ -202,30 +202,37 @@ system.update = function() {
 
 function onEntityCreate(data){
     let entity = data.data.entity;
-    if(entity.__type__ == "item_entity"){
-        if(itemWhitelist.indexOf(entity.__identifier__) == -1){
-        system.createComponent(entity,"lagremover:isItem");
-        }
-    }
-    else{
-      //在生物清理的白名单之外
-      if(entityWhitelist.indexOf(entity.__identifier__) == -1){
-        //system.createComponent(entity,"lagremover:isMob");
-        //是无名字组件的生物实体（火球一类）
-        if (noNameEntityBlackList.indexOf(entity.__identifier__) != -1){
-          system.createComponent(entity,"lagremover:noNameEntity");
-        }
-        else if(placeableEntityList.indexOf(entity.__identifier__) != -1){
-          //在可放置实体列表中（不清理）
-          system.createComponent(entity,"lagremover:placeableEntity");
+    try {
+      if(entity){
+        if(entity.__type__ == "item_entity"){
+            if(itemWhitelist.indexOf(entity.__identifier__) == -1){
+            system.createComponent(entity,"lagremover:isItem");
+            }
         }
         else{
-          //剩下的就是需要清理的生物
-          if(system.hasComponent(entity,MinecraftComponent.Nameable)){
-          system.createComponent(entity,"lagremover:isMob");
+          //在生物清理的白名单之外
+          if(entityWhitelist.indexOf(entity.__identifier__) == -1){
+            //system.createComponent(entity,"lagremover:isMob");
+            //是无名字组件的生物实体（火球一类）
+            if (noNameEntityBlackList.indexOf(entity.__identifier__) != -1){
+              system.createComponent(entity,"lagremover:noNameEntity");
+            }
+            else if(placeableEntityList.indexOf(entity.__identifier__) != -1){
+              //在可放置实体列表中（不清理）
+              system.createComponent(entity,"lagremover:placeableEntity");
+            }
+            else{
+              //剩下的就是需要清理的生物
+              if(system.hasComponent(entity,MinecraftComponent.Nameable)){
+              system.createComponent(entity,"lagremover:isMob");
+              }
+            }
           }
         }
-      }
+        system.createComponent(entity,"lagremover:isEntity");
     }
-    system.createComponent(entity,"lagremover:isEntity");
+    } catch (error) {
+      
+    }
+
 }
