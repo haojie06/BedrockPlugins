@@ -2,7 +2,7 @@ import {getName,checkAdmin} from "../utils";
 import {system,playerKicked,kickTickReset,IUseCraftTableComponent} from "../system";
 let playerQuery;
 let cannotPushContainerList = ["minecraft:smoker","minecraft:barrel","minecraft:blast_furnace","minecraft:grindstone","minecraft:crafting_table","minecraft:dropper","minecraft:hopper","minecraft:trapped_chest","minecraft:lit_furnace","minecraft:furnace","minecraft:chest","minecraft:dispenser"];
-let unusualBlockList = ["minecraft:invisibleBedrock","minecraft:invisiblebedrock","minecraft:bedrock","minecraft:mob_spawner","minecraft:end_portal_frame","minecraft:barrier","minecraft:command_block"];
+let unusualBlockList = ["minecraft:spawn_egg","minecraft:invisibleBedrock","minecraft:invisiblebedrock","minecraft:bedrock","minecraft:mob_spawner","minecraft:end_portal_frame","minecraft:barrier","minecraft:command_block"];
 let enchMap = new Map<string,string>();
 let levelMap = new Map<string,number>();
 
@@ -85,6 +85,7 @@ system.listenForEvent("minecraft:player_placed_block",data=>{
             system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c大家小心,${playerName}放置了${placeBlock}"}]}`,data=>{});
             playerKicked.push(player);
             kickTickReset();
+            server.log(`${playerName}异常放置${placeBlock}`);
             //system.destroyEntity(player);
         }
     }
@@ -106,6 +107,7 @@ system.listenForEvent("minecraft:entity_carried_item_changed",data=>{
                 system.executeCommand(`clear @a[name="${playerName}"] ${item.__identifier__.split(":")[1]} 0 1000`,data=>{});
                 playerKicked.push(entity);
                 kickTickReset();
+                server.log(`${playerName}持有违禁品${item.__identifier__}`);
             }
         }
     }
@@ -195,10 +197,12 @@ system.handlePolicy(MinecraftPolicy.EntityPickItemUp,(data,def)=>{
                     //此人为嫌疑人
                     let tickAreaCmp = system.getComponent<ITickWorldComponent>(player,MinecraftComponent.TickWorld);
                     let tickingArea = tickAreaCmp.data.ticking_area;
+                    let playerName = getName(player);
                     let pushBlock = system.getBlock(tickingArea,bPosition.x,bPosition.y,bPosition.z).__identifier__;
                     if(cannotPushContainerList.indexOf(pushBlock) != -1){
-                        system.executeCommand(`fill ${bPosition.x} ${bPosition.y} ${bPosition.z} ${bPosition.x} ${bPosition.y} ${bPosition.z} air 0 replace`,data=>{});
+                        system.executeCommand(`execute @a[name="${playerName}"] ~ ~ ~ fill ${bPosition.x} ${bPosition.y} ${bPosition.z} ${bPosition.x} ${bPosition.y} ${bPosition.z} air 0 replace`,data=>{});
                         system.sendText(player,`你想做什么？`);
+                        server.log(`玩家${playerName}有刷物品嫌疑`);
                     }
                     else{
     

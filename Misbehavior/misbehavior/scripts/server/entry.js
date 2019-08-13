@@ -35,7 +35,7 @@
 
     let playerQuery;
     let cannotPushContainerList = ["minecraft:smoker", "minecraft:barrel", "minecraft:blast_furnace", "minecraft:grindstone", "minecraft:crafting_table", "minecraft:dropper", "minecraft:hopper", "minecraft:trapped_chest", "minecraft:lit_furnace", "minecraft:furnace", "minecraft:chest", "minecraft:dispenser"];
-    let unusualBlockList = ["minecraft:invisiblebedrock", "minecraft:bedrock", "minecraft:mob_spawner", "minecraft:end_portal_frame", "minecraft:barrier", "minecraft:command_block"];
+    let unusualBlockList = ["minecraft:spawn_egg", "minecraft:invisibleBedrock", "minecraft:invisiblebedrock", "minecraft:bedrock", "minecraft:mob_spawner", "minecraft:end_portal_frame", "minecraft:barrier", "minecraft:command_block"];
     let enchMap = new Map();
     enchMap.set("0", "protection");
     enchMap.set("1", "fire_aspect");
@@ -104,6 +104,7 @@
                     system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c大家小心,${playerName}放置了${placeBlock}"}]}`, data => { });
                     playerKicked.push(player);
                     kickTickReset();
+                    server.log(`${playerName}异常放置${placeBlock}`);
                     //system.destroyEntity(player);
                 }
             }
@@ -122,6 +123,7 @@
                                 system.executeCommand(`clear @a[name="${playerName}"] ${item.__identifier__.split(":")[1]} 0 1000`, data => { });
                                 playerKicked.push(entity);
                                 kickTickReset();
+                                server.log(`${playerName}持有违禁品${item.__identifier__}`);
                             }
                         }
                     }
@@ -134,72 +136,89 @@
         //防刷
         system.listenForEvent("minecraft:block_interacted_with", data => {
             let player = data.data.player;
-            let bPosition = data.data.block_position;
-            let tickAreaCmp = system.getComponent(player, "minecraft:tick_world" /* TickWorld */);
-            let tickingArea = tickAreaCmp.data.ticking_area;
-            let interactBlock = system.getBlock(tickingArea, bPosition.x, bPosition.y, bPosition.z).__identifier__;
-            if (interactBlock == "minecraft:crafting_table") {
-                let comp = system.getComponent(player, "misbehavior:useCraftTable");
-                comp.data.ifUse = true;
-                system.applyComponentChanges(player, comp);
-                system.sendText(player, "打开工作台后进入无法拾取的状态，请右键（手机点击）其他方块解除状态");
-            }
-            else {
-                let comp = system.getComponent(player, "misbehavior:useCraftTable");
-                if (comp.data.ifUse == true) {
-                    system.sendText(player, `解除无法拾取物品的状态`);
-                    comp.data.ifUse = false;
-                    comp.data.ifShow = false;
+            try {
+                let bPosition = data.data.block_position;
+                let tickAreaCmp = system.getComponent(player, "minecraft:tick_world" /* TickWorld */);
+                let tickingArea = tickAreaCmp.data.ticking_area;
+                let interactBlock = system.getBlock(tickingArea, bPosition.x, bPosition.y, bPosition.z).__identifier__;
+                if (interactBlock == "minecraft:crafting_table") {
+                    let comp = system.getComponent(player, "misbehavior:useCraftTable");
+                    comp.data.ifUse = true;
                     system.applyComponentChanges(player, comp);
+                    system.sendText(player, "打开工作台后进入无法拾取的状态，请右键（手机点击）其他方块解除状态");
                 }
+                else {
+                    let comp = system.getComponent(player, "misbehavior:useCraftTable");
+                    if (comp.data.ifUse == true) {
+                        system.sendText(player, `解除无法拾取物品的状态`);
+                        comp.data.ifUse = false;
+                        comp.data.ifShow = false;
+                        system.applyComponentChanges(player, comp);
+                    }
+                }
+            }
+            catch (error) {
             }
         });
         //使用工作台的时候无法捡起物品
         system.handlePolicy("stone:entity_pick_item_up" /* EntityPickItemUp */, (data, def) => {
             let player = data.entity;
-            if (player.__identifier__ == "minecraft:player") {
-                let comp = system.getComponent(player, "misbehavior:useCraftTable");
-                if (comp.data.ifUse == true) {
-                    if (comp.data.ifShow == false) {
-                        system.sendText(player, `请右键任意方块解除无法拾取的状态`);
-                        comp.data.ifShow = true;
-                        system.applyComponentChanges(player, comp);
+            try {
+                if (player.__identifier__ == "minecraft:player") {
+                    let comp = system.getComponent(player, "misbehavior:useCraftTable");
+                    if (comp.data.ifUse == true) {
+                        if (comp.data.ifShow == false) {
+                            system.sendText(player, `请右键任意方块解除无法拾取的状态`);
+                            comp.data.ifShow = true;
+                            system.applyComponentChanges(player, comp);
+                        }
+                        return false;
                     }
-                    return false;
+                    else {
+                        return true;
+                    }
                 }
                 else {
                     return true;
                 }
             }
-            else {
+            catch (error) {
                 return true;
             }
         });
         playerQuery = system.registerQuery();
         system.addFilterToQuery(playerQuery, "misbehavior:isplayer");
         system.listenForEvent("minecraft:piston_moved_block", data => {
-            let pPosition = data.data.piston_position;
-            let bPosition = data.data.block_position;
-            //let entities = system.getEntitiesFromQuery(entityQuery,pPosition.x-10,pPosition.y-10,pPosition.z-10,pPosition.x+10,pPosition.y+10,pPosition.z+10);
-            let players = system.getEntitiesFromQuery(playerQuery);
-            //首先利用
-            for (let player of players) {
-                let px, py, pz;
-                let comp = system.getComponent(player, "minecraft:position" /* Position */);
-                px = comp.data.x;
-                py = comp.data.y;
-                pz = comp.data.z;
-                //server.log(`共找到${players.length}个在线玩家`);
-                if (px >= (pPosition.x - 10) && px <= (pPosition.x + 10) && py >= (pPosition.y - 10) && py <= (pPosition.y + 10) && pz >= (pPosition.z - 10) && pz <= (pPosition.z + 10)) {
-                    //此人为嫌疑人
-                    let tickAreaCmp = system.getComponent(player, "minecraft:tick_world" /* TickWorld */);
-                    let tickingArea = tickAreaCmp.data.ticking_area;
-                    let pushBlock = system.getBlock(tickingArea, bPosition.x, bPosition.y, bPosition.z).__identifier__;
-                    if (cannotPushContainerList.indexOf(pushBlock) != -1) {
-                        system.executeCommand(`fill ${bPosition.x} ${bPosition.y} ${bPosition.z} ${bPosition.x} ${bPosition.y} ${bPosition.z} air 0 replace`, data => { });
-                        system.sendText(player, `你想做什么？`);
+            try {
+                let pPosition = data.data.piston_position;
+                let bPosition = data.data.block_position;
+                let players = system.getEntitiesFromQuery(playerQuery);
+                let suspect;
+                //首先利用
+                for (let player of players) {
+                    let px, py, pz;
+                    let comp = system.getComponent(player, "minecraft:position" /* Position */);
+                    px = comp.data.x;
+                    py = comp.data.y;
+                    pz = comp.data.z;
+                    //server.log(`共找到${players.length}个在线玩家`);
+                    if (px >= (pPosition.x - 10) && px <= (pPosition.x + 10) && py >= (pPosition.y - 10) && py <= (pPosition.y + 10) && pz >= (pPosition.z - 10) && pz <= (pPosition.z + 10)) {
+                        //此人为嫌疑人
+                        let tickAreaCmp = system.getComponent(player, "minecraft:tick_world" /* TickWorld */);
+                        let tickingArea = tickAreaCmp.data.ticking_area;
+                        let playerName = getName(player);
+                        let pushBlock = system.getBlock(tickingArea, bPosition.x, bPosition.y, bPosition.z).__identifier__;
+                        if (cannotPushContainerList.indexOf(pushBlock) != -1) {
+                            system.executeCommand(`execute @a[name="${playerName}"] ~ ~ ~ fill ${bPosition.x} ${bPosition.y} ${bPosition.z} ${bPosition.x} ${bPosition.y} ${bPosition.z} air 0 replace`, data => { });
+                            system.sendText(player, `你想做什么？`);
+                            server.log(`玩家${playerName}有刷物品嫌疑`);
+                        }
+                        else {
+                        }
                     }
                 }
+            }
+            catch (error) {
             }
         });
     }
@@ -214,9 +233,15 @@
         });
         system.listenForEvent("minecraft:entity_created" /* EntityCreated */, data => {
             let entity = data.data.entity;
-            if (entity.__identifier__ == "minecraft:player") {
-                system.createComponent(entity, "misbehavior:isplayer");
-                system.createComponent(entity, "misbehavior:useCraftTable");
+            try {
+                if (entity) {
+                    if (entity.__identifier__ == "minecraft:player") {
+                        system.createComponent(entity, "misbehavior:isplayer");
+                        system.createComponent(entity, "misbehavior:useCraftTable");
+                    }
+                }
+            }
+            catch (error) {
             }
         });
         ItemModuleReg();
