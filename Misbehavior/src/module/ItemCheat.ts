@@ -1,5 +1,7 @@
-import {getName,checkAdmin} from "../utils";
+import {getName,checkAdmin,getTime,getDimensionOfEntity} from "../utils";
 import {system,playerKicked,kickTickReset,IUseCraftTableComponent} from "../system";
+import {db,INSERT_MISB,QUERY_ALL_MISB,QUERY_MISB_BYNAME} from "../database";
+
 let playerQuery;
 let cannotPushContainerList = ["minecraft:smoker","minecraft:barrel","minecraft:blast_furnace","minecraft:grindstone","minecraft:crafting_table","minecraft:dropper","minecraft:hopper","minecraft:trapped_chest","minecraft:lit_furnace","minecraft:furnace","minecraft:chest","minecraft:dispenser"];
 let unusualBlockList = ["minecraft:spawn_egg","minecraft:invisibleBedrock","minecraft:invisiblebedrock","minecraft:bedrock","minecraft:mob_spawner","minecraft:end_portal_frame","minecraft:barrier","minecraft:command_block"];
@@ -49,25 +51,9 @@ enchMap.set("32","channeling");
 
 export function ItemModuleReg() {
     server.log("防物品作弊模块已加载");
-
-    /*
-    system.listenForEvent("minecraft:entity_acquired_item",data=>{
-        let entity = data.data.entity;
-        if (entity.__identifier__ == "minecraft:player") {
-            let method = data.data.acquisition_method;
-            let amount = data.data.acquired_amount;
-            let itemStack = data.data.item_stack;
-            let item = itemStack.item;
-            let count = itemStack.count;
-            let playerName = getName(entity);
-            //server.log(`玩家${playerName} ${method} ${count}个${item}`);
-            system.sendText(entity,`玩家${playerName} ${method} ${count}个${item}`);
-        }
-    });
-*/
+    let date = new Date();
 
 //阻止普通玩家放置不应该放置的东西（基岩/刷怪箱...）
-
 system.listenForEvent("minecraft:player_placed_block",data=>{
     let player = data.data.player;
     if(!checkAdmin(player)){
@@ -85,8 +71,24 @@ system.listenForEvent("minecraft:player_placed_block",data=>{
             system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c大家小心,${playerName}放置了${placeBlock}"}]}`,data=>{});
             playerKicked.push(player);
             kickTickReset();
+            
             server.log(`${playerName}异常放置${placeBlock}`);
-            //system.destroyEntity(player);
+            db.update(INSERT_MISB,{
+                $time:getTime(),
+                $name:playerName,
+                $position:`${bPosition.x} ${bPosition.y} ${bPosition.z}`,
+                $behavior:`放置异常物品`,
+                $description:placeBlock,
+                $extra:"",
+                $dim:getDimensionOfEntity(player),
+                $timestamp:date.getTime()
+            });
+            //依赖EasyList
+            let datas = db.query(QUERY_MISB_BYNAME,{$name:playerName});
+            if (datas.length > 3){
+                system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}被记录的异常行为超过3次，予以封禁"}]}`,data=>{});
+                system.executeCommand(`fban ${playerName} misbehaviour-place`,data=>{});
+            }
         }
     }
 });
@@ -108,6 +110,22 @@ system.listenForEvent("minecraft:entity_carried_item_changed",data=>{
                 playerKicked.push(entity);
                 kickTickReset();
                 server.log(`${playerName}持有违禁品${item.__identifier__}`);
+                db.update(INSERT_MISB,{
+                    $time:getTime(),
+                    $name:playerName,
+                    $position:"",
+                    $behavior:`持有违禁品`,
+                    $description:`${item.__identifier__}`,
+                    $extra:"",
+                    $dim:getDimensionOfEntity(entity),
+                    $timestamp:date.getTime()
+                });
+                //依赖EasyList
+                let datas = db.query(QUERY_MISB_BYNAME,{$name:playerName});
+                if (datas.length > 3){
+                    system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}被记录的异常行为超过3次，予以封禁"}]}`,data=>{});
+                    system.executeCommand(`fban ${playerName} misbehaviour-have`,data=>{});
+                }
             }
         }
     }
@@ -203,6 +221,23 @@ system.handlePolicy(MinecraftPolicy.EntityPickItemUp,(data,def)=>{
                         system.executeCommand(`execute @a[name="${playerName}"] ~ ~ ~ fill ${bPosition.x} ${bPosition.y} ${bPosition.z} ${bPosition.x} ${bPosition.y} ${bPosition.z} air 0 replace`,data=>{});
                         system.sendText(player,`你想做什么？`);
                         server.log(`玩家${playerName}有刷物品嫌疑`);
+                        db.update(INSERT_MISB,{
+                            $time:getTime(),
+                            $name:playerName,
+                            $position:`${bPosition.x} ${bPosition.y} ${bPosition.z}`,
+                            $behavior:`刷物品嫌疑`,
+                            $description:`推动容器${pushBlock}`,
+                            $extra:"",
+                            $dim:getDimensionOfEntity(player),
+                            $timestamp:date.getTime()
+                        });
+                        system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}有刷物品的嫌疑"}]}`,data=>{});
+
+                        let datas = db.query(QUERY_MISB_BYNAME,{$name:playerName});
+                        if (datas.length > 3){
+                            system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}被记录的异常行为超过3次，予以封禁"}]}`,data=>{});
+                            system.executeCommand(`fban ${playerName} misbehaviour-push`,data=>{});
+                        }
                     }
                     else{
     
@@ -214,4 +249,24 @@ system.handlePolicy(MinecraftPolicy.EntityPickItemUp,(data,def)=>{
         }
 
     });
+
+
+    //查询命令
+    system.registerCommand("misblog",{
+        description:"查看不当行为记录",
+        permission:1,
+        overloads:[{
+          parameters:[],
+          handler([]){
+            let datas = Array.from(db.query(QUERY_ALL_MISB,{}));
+            let show = "";
+            for (let index in datas){
+                let data = datas[index];
+                show += `<${index}>${data.time} ${data.name} ${data.behavior} ${data.description}\n`;
+            }
+            return show;
+        }
+        } as CommandOverload<[]>
+      ]
+      });
 }

@@ -18,10 +18,10 @@ export function getPositionofEntity(entity: IEntity){
 }
 
 export function getDimensionOfEntity(entity: IEntity){
-  let dimension;
+  let dimension:string;
   if (system.hasComponent(entity, "stone:dimension")) {
     let comp = system.getComponent(entity,MinecraftComponent.Dimension);
-    dimension = comp.data;
+    dimension = String(comp.data);
 }
   else{
     dimension = "无法获得维度";
@@ -50,4 +50,14 @@ export function checkAdmin(entity:IEntity){
       ifAdmin = false;
   }
   return ifAdmin;
+}
+
+export function getTime():string {
+  let date = new Date();
+  let month = date.getMonth() + 1;
+  let day = date.getDate();
+  let hour = date.getHours() + 8; //GMT+8
+  let minute = date.getMinutes();
+  let second = date.getSeconds();
+  return `${month}/${day}/${hour}-${minute}-${second}`;
 }
