@@ -211,7 +211,7 @@ system.handlePolicy(MinecraftPolicy.EntityPickItemUp,(data,def)=>{
                 py = comp.data.y;
                 pz = comp.data.z;
                 //server.log(`共找到${players.length}个在线玩家`);
-                if(px >= (pPosition.x-10) && px <= (pPosition.x+10) && py >= (pPosition.y-10) && py <= (pPosition.y+10) && pz >= (pPosition.z-10) && pz <= (pPosition.z+10)){
+                if(px >= (pPosition.x-10) && px <= (pPosition.x+10) && py >= (pPosition.y-10) && py <= (pPosition.y+10) && pz >= (pPosition.z-10) && pz <= (pPosition.z+10) && !checkAdmin(player)){
                     //此人为嫌疑人
                     let tickAreaCmp = system.getComponent<ITickWorldComponent>(player,MinecraftComponent.TickWorld);
                     let tickingArea = tickAreaCmp.data.ticking_area;

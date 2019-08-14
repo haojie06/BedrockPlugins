@@ -21,6 +21,17 @@
     function getName(entity) {
         return system.getComponent(entity, "minecraft:nameable" /* Nameable */).data.name;
     }
+    function getDimensionOfEntity(entity) {
+        let dimension;
+        if (system.hasComponent(entity, "stone:dimension")) {
+            let comp = system.getComponent(entity, "stone:dimension" /* Dimension */);
+            dimension = String(comp.data);
+        }
+        else {
+            dimension = "无法获得维度";
+        }
+        return dimension;
+    }
     function checkAdmin(entity) {
         let ifAdmin = false;
         let extra = system.getComponent(entity, "stone:extra_data" /* ExtraData */).data;
@@ -32,6 +43,51 @@
         }
         return ifAdmin;
     }
+    function getTime() {
+        let date = new Date();
+        let month = date.getMonth() + 1;
+        let day = date.getDate();
+        let hour = date.getHours() + 8; //GMT+8
+        let minute = date.getMinutes();
+        let second = date.getSeconds();
+        return `${month}/${day}/${hour}-${minute}-${second}`;
+    }
+
+    function fix(arr) {
+        return arr
+            .join("")
+            .replace(/\(\n\s+/g, "(")
+            .replace(/\n\s+\)/g, ")")
+            .replace(/\s+/g, " ");
+    }
+    //创建记录不当行为的数据表
+    const CREATE_MISB_TABLE = fix `
+CREATE TABLE IF NOT EXISTS misb(
+  id,
+  time TEXT NOT NULL,
+  name TEXT NOT NULL,
+  position TEXT NOT NULL,
+  behavior TEXT NOT NULL,
+  description TEXT NOT NULL,
+  extra TEXT NOT NULL,
+  dim TEXT NOT NULL,
+  timestamp INT NOT NULL
+);`;
+    //添加记录
+    const INSERT_MISB = fix `
+INSERT INTO misb (
+  time, name, position, behavior,description, extra, dim, timestamp
+) values (
+  $time, $name, $position, $behavior, $description, $extra, $dim, $timestamp
+);`;
+    const QUERY_ALL_MISB = fix `
+SELECT * from misb;
+`;
+    const QUERY_MISB_BYNAME = fix `
+SELECT * from misb WHERE name=$name;
+`;
+    var db = new SQLite3("misbehavior.db");
+    db.exec(CREATE_MISB_TABLE);
 
     let playerQuery;
     let cannotPushContainerList = ["minecraft:smoker", "minecraft:barrel", "minecraft:blast_furnace", "minecraft:grindstone", "minecraft:crafting_table", "minecraft:dropper", "minecraft:hopper", "minecraft:trapped_chest", "minecraft:lit_furnace", "minecraft:furnace", "minecraft:chest", "minecraft:dispenser"];
@@ -72,21 +128,7 @@
     enchMap.set("32", "channeling");
     function ItemModuleReg() {
         server.log("防物品作弊模块已加载");
-        /*
-        system.listenForEvent("minecraft:entity_acquired_item",data=>{
-            let entity = data.data.entity;
-            if (entity.__identifier__ == "minecraft:player") {
-                let method = data.data.acquisition_method;
-                let amount = data.data.acquired_amount;
-                let itemStack = data.data.item_stack;
-                let item = itemStack.item;
-                let count = itemStack.count;
-                let playerName = getName(entity);
-                //server.log(`玩家${playerName} ${method} ${count}个${item}`);
-                system.sendText(entity,`玩家${playerName} ${method} ${count}个${item}`);
-            }
-        });
-    */
+        let date = new Date();
         //阻止普通玩家放置不应该放置的东西（基岩/刷怪箱...）
         system.listenForEvent("minecraft:player_placed_block", data => {
             let player = data.data.player;
@@ -105,7 +147,22 @@
                     playerKicked.push(player);
                     kickTickReset();
                     server.log(`${playerName}异常放置${placeBlock}`);
-                    //system.destroyEntity(player);
+                    db.update(INSERT_MISB, {
+                        $time: getTime(),
+                        $name: playerName,
+                        $position: `${bPosition.x} ${bPosition.y} ${bPosition.z}`,
+                        $behavior: `放置异常物品`,
+                        $description: placeBlock,
+                        $extra: "",
+                        $dim: getDimensionOfEntity(player),
+                        $timestamp: date.getTime()
+                    });
+                    //依赖EasyList
+                    let datas = db.query(QUERY_MISB_BYNAME, { $name: playerName });
+                    if (datas.length > 3) {
+                        system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}被记录的异常行为超过3次，予以封禁"}]}`, data => { });
+                        system.executeCommand(`fban ${playerName} misbehaviour-place`, data => { });
+                    }
                 }
             }
         });
@@ -124,6 +181,22 @@
                                 playerKicked.push(entity);
                                 kickTickReset();
                                 server.log(`${playerName}持有违禁品${item.__identifier__}`);
+                                db.update(INSERT_MISB, {
+                                    $time: getTime(),
+                                    $name: playerName,
+                                    $position: "",
+                                    $behavior: `持有违禁品`,
+                                    $description: `${item.__identifier__}`,
+                                    $extra: "",
+                                    $dim: getDimensionOfEntity(entity),
+                                    $timestamp: date.getTime()
+                                });
+                                //依赖EasyList
+                                let datas = db.query(QUERY_MISB_BYNAME, { $name: playerName });
+                                if (datas.length > 3) {
+                                    system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}被记录的异常行为超过3次，予以封禁"}]}`, data => { });
+                                    system.executeCommand(`fban ${playerName} misbehaviour-have`, data => { });
+                                }
                             }
                         }
                     }
@@ -202,7 +275,7 @@
                     py = comp.data.y;
                     pz = comp.data.z;
                     //server.log(`共找到${players.length}个在线玩家`);
-                    if (px >= (pPosition.x - 10) && px <= (pPosition.x + 10) && py >= (pPosition.y - 10) && py <= (pPosition.y + 10) && pz >= (pPosition.z - 10) && pz <= (pPosition.z + 10)) {
+                    if (px >= (pPosition.x - 10) && px <= (pPosition.x + 10) && py >= (pPosition.y - 10) && py <= (pPosition.y + 10) && pz >= (pPosition.z - 10) && pz <= (pPosition.z + 10) && !checkAdmin(player)) {
                         //此人为嫌疑人
                         let tickAreaCmp = system.getComponent(player, "minecraft:tick_world" /* TickWorld */);
                         let tickingArea = tickAreaCmp.data.ticking_area;
@@ -212,6 +285,22 @@
                             system.executeCommand(`execute @a[name="${playerName}"] ~ ~ ~ fill ${bPosition.x} ${bPosition.y} ${bPosition.z} ${bPosition.x} ${bPosition.y} ${bPosition.z} air 0 replace`, data => { });
                             system.sendText(player, `你想做什么？`);
                             server.log(`玩家${playerName}有刷物品嫌疑`);
+                            db.update(INSERT_MISB, {
+                                $time: getTime(),
+                                $name: playerName,
+                                $position: `${bPosition.x} ${bPosition.y} ${bPosition.z}`,
+                                $behavior: `刷物品嫌疑`,
+                                $description: `推动容器${pushBlock}`,
+                                $extra: "",
+                                $dim: getDimensionOfEntity(player),
+                                $timestamp: date.getTime()
+                            });
+                            system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}有刷物品的嫌疑"}]}`, data => { });
+                            let datas = db.query(QUERY_MISB_BYNAME, { $name: playerName });
+                            if (datas.length > 3) {
+                                system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}被记录的异常行为超过3次，予以封禁"}]}`, data => { });
+                                system.executeCommand(`fban ${playerName} misbehaviour-push`, data => { });
+                            }
                         }
                         else {
                         }
@@ -220,6 +309,24 @@
             }
             catch (error) {
             }
+        });
+        //查询命令
+        system.registerCommand("misblog", {
+            description: "查看不当行为记录",
+            permission: 1,
+            overloads: [{
+                    parameters: [],
+                    handler([]) {
+                        let datas = Array.from(db.query(QUERY_ALL_MISB, {}));
+                        let show = "";
+                        for (let index in datas) {
+                            let data = datas[index];
+                            show += `<${index}>${data.time} ${data.name} ${data.behavior} ${data.description}\n`;
+                        }
+                        return show;
+                    }
+                }
+            ]
         });
     }
 
