@@ -494,13 +494,12 @@ export function commandsReg() {
                 type:"string"
             }],
             handler([$landname]){
-                    //玩家需要站在领地中
-                    if (!this.entity) {
-                        throw "只有玩家可以使用";
+                    if(!this.entity){
+                        return "只有玩家可以使用该命令";
                     }
                     let $playername = this.name;
                     let datas = Array.from(db.query(SELECT_RESIDENT_BY_LAND_AND_NAME,{$landname,$playername}));
-                    if(datas.length == 0){
+                    if(datas.length == 0 && !checkAdmin(this.entity)){
                         throw "你没有查询该领地的权限/领地不存在";
                     }
                     let data = Array.from(db.query(SELECT_LAND_BY_NAME,{$name:$landname}))[0];
