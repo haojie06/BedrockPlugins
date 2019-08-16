@@ -1,7 +1,7 @@
 //领地保护模块
 import { system } from "./system";
 import { Vec,getVecOfEntity,getDimensionOfEntity,getName,checkAdmin } from "./utils";
-import {db,SELECT_LAND_BY_POS,SELECT_RESIDENT_BY_LAND_AND_NAME} from "./database";
+import {db,SELECT_ZONE_BY_POSANDLAND,SELECT_LAND_BY_POS,SELECT_RESIDENT_BY_LAND_AND_NAME} from "./database";
 //允许玩家打开的开关（按钮/拉杆/）方块
 let switchList = ["minecraft:stone_button","minecraft:wooden_button","minecraft:lever","minecraft:acacia_button","minecraft:birch_button","minecraft:dark_oak_button","minecraft:jungle_button","minecraft:spruce_button"];
 let doorList = ["minecraft:wooden_door","minecraft:acacia_door","minecraft:birch_door","minecraft:dark_oak_door","minecraft:jungle_door","minecraft:spruce_door", "minecraft:wooden_trapdoor","minecraft:acacia_trapdoor","minecraft:birch_trapdoor","minecraft:dark_oak_trapdoor","minecraft:jungle_trapdoor","minecraft:spruce_trapdoor"];
@@ -39,6 +39,12 @@ export function moveCheck(player:IEntity) {
         //server.log(`检测到玩家在领地内`);
         if(system.hasComponent(player,"myland:ifInLand")){
         let data = datas[0];
+        //查看玩家是否在子领地内
+        datas = Array.from(db.query(SELECT_ZONE_BY_POSANDLAND,{$px,$py,$pz,$landname:data.name}));
+        if(datas.length != 0 ){
+            let dat = datas[0];
+            system.sendText(player,`§3你已来到${dat.owner}的子领地${dat.zonename} (${dat.sposition})~(${dat.eposition})`,5);
+        }
         let comp = system.getComponent<IfInLnadComponent>(player,"myland:ifInLand");
         let justNow = comp.data.justNow;
         let now = comp.data.now;
@@ -135,7 +141,7 @@ export function breakCheck(){
             let $sdim = getDimensionOfEntity(player);
             let datas = Array.from(db.query(SELECT_LAND_BY_POS,{$px,$py,$pz,$sdim}));
             if(datas.length != 0){
-            //再检查该玩家是否有这个领地的权限
+            //再检查该玩家是否是这个领地的居民
             let $landname = datas[0].name;
             let $playername = getName(player); 
             let residents = db.query(SELECT_RESIDENT_BY_LAND_AND_NAME,{$landname,$playername});
@@ -144,8 +150,26 @@ export function breakCheck(){
             system.sendText(player,`你没有权限破坏(${bPosition.x},${bPosition.y},${bPosition.z})处的方块\n所属领地${datas[0].name} 主人:${datas[0].owner}`);
             return false;
             }
-            else{ 
-                return true;
+            else{
+                //子领地检查
+                datas = Array.from(db.query(SELECT_ZONE_BY_POSANDLAND,{$px,$py,$pz,$landname}));
+                if(datas.length == 0){
+                    //此处没有子领地
+                    return true;
+                }
+                else{
+                    //判断是否有子领地的权限
+                    let dat = datas[0];
+                    let trust = String(dat.trust);
+                    if(trust.indexOf($playername) != -1)
+                    {
+                        return true;
+                    }
+                    else{
+                        system.sendText(player,`你没有权限破坏(${bPosition.x},${bPosition.y},${bPosition.z})处的方块\n所属子领地${dat.zonename} 主人:${dat.owner}`);
+                        return false;
+                    }
+                }
             }
             }
             else{
@@ -214,8 +238,25 @@ export function interactCheck(){
                     return false;
                 }
                 }
-                else{ 
+                else{
+                    //判断方块是否在子领地中
+                    datas = Array.from(db.query(SELECT_ZONE_BY_POSANDLAND,{$px,$py,$pz,$landname}));
+                    if(datas.length == 0){
                     return true;
+                    }
+                    else{
+                        //判断玩家是否有子领地权限
+                        let dat = datas[0];
+                        let trust = String(dat.trust);
+                        if(trust.indexOf($playername) != -1){
+                            return true;
+                        }
+                        else{
+                            //是否要应用flag？ 暂时不受领地flag影响
+                            system.sendText(player,`你没有权限与(${bPosition.x},${bPosition.y},${bPosition.z})处的方块交互\n所属子领地${dat.zonename} 主人:${dat.owner}`);
+                            return false;
+                        }
+                    }
                 }
             }
             return true;
@@ -261,7 +302,22 @@ export function attackCheck(){
                 return false;
                 }
                 else{ 
+                    //检查实体是否位于子领地中
+                    datas = Array.from(db.query(SELECT_ZONE_BY_POSANDLAND,{$px,$py,$pz,$landname}));
+                    if(datas.length == 0){
                     return true;
+                    }
+                    else{
+                        let dat = datas[0];
+                        let trust = String(dat.trust);
+                        if(trust.indexOf($playername) != -1)
+                        {
+                            return true;
+                        }
+                        else{
+                            system.sendText(player,`你没有权限攻击(${$px},${$py},${$pz})处的实体\n所属子领地${dat.zonename} 主人:${dat.owner}`);
+                        }
+                    }
                 }
             }
             return true;
