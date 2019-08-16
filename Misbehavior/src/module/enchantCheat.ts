@@ -12,6 +12,7 @@ export function enchantCheck(){
         const handComp = system.getComponent(player, MinecraftComponent.HandContainer);
         let item = handComp.data[0];
         const extraData = system.getComponent(item,MinecraftComponent.ExtraData);
+        
         server.log(JSON.stringify(extraData.data));
     }
 }

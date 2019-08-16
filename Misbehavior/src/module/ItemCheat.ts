@@ -1,57 +1,47 @@
 import {getName,checkAdmin,getTime,getDimensionOfEntity} from "../utils";
 import {system,playerKicked,kickTickReset,IUseCraftTableComponent} from "../system";
-import {db,INSERT_MISB,QUERY_ALL_MISB,QUERY_MISB_BYNAME} from "../database";
+import {db,DELETE_MISB_AUTOCHECK_LOG,DELETE_MISB_LOG,INSERT_MISB,QUERY_ALL_MISB,QUERY_MISB_BYNAME} from "../database";
+import {enchMap,levelMap} from "./data";
 
 let playerQuery;
 let cannotPushContainerList = ["minecraft:smoker","minecraft:barrel","minecraft:blast_furnace","minecraft:grindstone","minecraft:crafting_table","minecraft:dropper","minecraft:hopper","minecraft:trapped_chest","minecraft:lit_furnace","minecraft:furnace","minecraft:chest","minecraft:dispenser"];
 let unusualBlockList = ["minecraft:spawn_egg","minecraft:invisibleBedrock","minecraft:invisiblebedrock","minecraft:bedrock","minecraft:mob_spawner","minecraft:end_portal_frame","minecraft:barrier","minecraft:command_block"];
-let enchMap = new Map<string,string>();
-let levelMap = new Map<string,number>();
-
-enchMap.set("0","protection");
-enchMap.set("1","fire_aspect");
-enchMap.set("2","feather_falling");
-enchMap.set("3","blast_protection");
-enchMap.set("4","projectile_protection");
-enchMap.set("5","thorns");
-
-enchMap.set("6","respiration");
-enchMap.set("7","depth_strider");
-enchMap.set("8","aqua_affinity");
-enchMap.set("9","sharpness");
-enchMap.set("10","smite");
-enchMap.set("11","bane_of_arthropods");
-
-enchMap.set("12","knockback");
-enchMap.set("13","fire_aspect");
-enchMap.set("14","looting");
-enchMap.set("15","efficiency");
-enchMap.set("16","silk_touch");
-enchMap.set("17","unbreaking");
-
-enchMap.set("18","fortune");
-enchMap.set("19","power");
-enchMap.set("20","punch");
-enchMap.set("21","flame");
-enchMap.set("22","infinity");
-enchMap.set("23","luck_of_the_sea");
-
-enchMap.set("24","lure");
-enchMap.set("25","frost_walker");
-enchMap.set("26","mending");
-enchMap.set("27","");
-enchMap.set("28","");
-enchMap.set("29","impaling");
-
-enchMap.set("30","riptide");
-enchMap.set("31","loyalty");
-enchMap.set("32","channeling");
+//危险度超过这个数会封禁玩家
+let maxcount = 3;
 
 
 
 export function ItemModuleReg() {
     server.log("防物品作弊模块已加载");
     let date = new Date();
+
+    system.listenForEvent(ReceiveFromMinecraftServer.EntityCreated,data=>{
+        let entity = data.data.entity;
+        try {
+            if(entity){
+                if (entity.__identifier__ == "minecraft:player") {
+                    //背包检查
+                    invCheck(entity);
+                }
+            }
+        } catch (error) {
+            
+        }
+    });
+    
+    system.listenForEvent("minecraft:entity_death",data=>{
+        let entity = data.data.entity;
+        try {
+            if(entity){
+                if (entity.__identifier__ == "minecraft:player") {
+                    //背包检查
+                    invCheck(entity);
+                }
+            }
+        } catch (error) {
+            
+        }
+    });
 
 //阻止普通玩家放置不应该放置的东西（基岩/刷怪箱...）
 system.listenForEvent("minecraft:player_placed_block",data=>{
@@ -269,4 +259,181 @@ system.handlePolicy(MinecraftPolicy.EntityPickItemUp,(data,def)=>{
         } as CommandOverload<[]>
       ]
       });
+
+
+
+      system.registerCommand("autocheckclear",{
+        description:"清空自动检测记录",
+        permission:1,
+        overloads:[{
+          parameters:[],
+          handler([]){
+            let res = db.update(DELETE_MISB_AUTOCHECK_LOG,{});
+            return `删除${res}条自动检测记录`;
+        }
+        } as CommandOverload<[]>
+      ]
+      });
+
+      
+      system.registerCommand("invcheck",{
+        description:"检查背包",
+        permission:0,
+        overloads:[{
+            parameters:[{
+            name:"玩家",
+            type:"player"
+            }],
+        handler([player]){
+            let date = new Date();
+            let stime = date.getTime();
+            for(let p of player){
+                let res = invCheck(p);
+            }
+            let etime = date.getTime();
+            if(this.entity){
+            system.sendText(this.entity,`检查了${player.length}个玩家 耗时${etime - stime}ms`);
+            //return res;
+            }
+        }
+    }as CommandOverload<["player"]>]
+});
+}
+//背包自动检查 检查异常物品/异常附魔
+export function invCheck(entity:IEntity){
+    if(checkAdmin(entity)){
+        return `该玩家有免检查权限`;
+    }
+    let extradata = system.getComponent(entity,MinecraftComponent.ExtraData).data;
+    //严重性计数
+    let count = 0;
+    //附魔不可超过的等级
+    let maxLevel = 5;
+    let playerName = getName(entity);
+    //system.sendText(entity,extradata.toString());
+    //装备栏检查
+    for(let i = 0;i<4;i++){
+        let armorName = extradata.value.Armor.value[i].value.Name.value
+        if(armorName == undefined || armorName == ""){
+            continue;
+        }
+        let enchantNum;
+        try{
+            enchantNum = extradata.value.Armor.value[i].value.tag.value.ench.value.length;
+        }catch(err){
+            enchantNum = 0;
+        }
+        if(enchantNum != 0){
+            for(let j = 0;j < enchantNum;j++){
+            let enchId = String(extradata.value.Armor.value[i].value.tag.value.ench.value[j].value.id.value);
+            let enchLv = extradata.value.Armor.value[i].value.tag.value.ench.value[j].value.lvl.value;
+            let enchName = enchMap.get(enchId);
+            if(enchLv > maxLevel){
+                //出现异常等级的附魔 进行处理并记录到数据库中
+                system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}的${armorName}被检测到异常附魔:${enchName} lv:${enchLv}"}]}`,data=>{});
+                //记录异常
+                misbDB(playerName,"异常附魔",`物品:${armorName} 附魔${enchName}:${enchLv}级 [装备栏]`,"自动检测");
+                count++;
+            }
+            }
+        }
+    }
+
+    //物品栏检查
+    for(let i = 0;i<36;i++){
+        let invName = extradata.value.Inventory.value[i].value.Name.value;
+        if(invName == undefined || invName == ""){
+            continue;
+        }
+
+        let invCount = Number(extradata.value.Inventory.value[i].value.Count.value);
+
+        //检查物品是否违禁品
+        if(unusualBlockList.indexOf(invName) != -1){
+            system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}被检测到持有违禁品:${invName} 数量:${invCount}"}]}`,data=>{});
+            //记录异常
+            misbDB(playerName,"违禁品",`物品:${invName}数量:${invCount} [物品栏]`,"自动检测");
+            count++;
+        }
+
+        let enchantNum;
+        try{
+            enchantNum = extradata.value.Inventory.value[i].value.tag.value.ench.value.length;
+        }catch(err){
+            enchantNum = 0;
+        }
+        
+        if(enchantNum != 0){
+            for(let j = 0;j < enchantNum;j++){
+            let enchId = String(extradata.value.Inventory.value[i].value.tag.value.ench.value[j].value.id.value);
+            let enchLv = extradata.value.Inventory.value[i].value.tag.value.ench.value[j].value.lvl.value;
+            let enchName = enchMap.get(enchId);
+            if(enchLv > maxLevel){
+                //出现异常等级的附魔 进行处理并记录到数据库中
+                system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}的${invName}被检测到异常附魔:${enchName} lv:${enchLv}"}]}`,data=>{});
+                //记录异常
+                misbDB(playerName,"异常附魔",`物品:${invName} 附魔${enchName}:${enchLv}级 [物品栏]`,"自动检测");
+                count++;
+            }
+            }
+        }
+    }
+
+    //末影箱检查
+    for(let i=0;i<27;i++){
+        let invName = extradata.value.EnderChestInventory.value[i].value.Name.value;
+        if(invName == undefined || invName == ""){
+            continue;
+        }
+        let invCount = Number(extradata.value.EnderChestInventory.value[i].value.Count.value);
+
+        if(unusualBlockList.indexOf(invName) != -1){
+            system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}的末影箱被检测出包含违禁品:${invName} 数量:${invCount}"}]}`,data=>{});
+            //记录异常
+            misbDB(playerName,"违禁品",`物品:${invName}数量:${invCount} [末影箱]`,"自动检测");
+            count++;
+        }
+
+        let enchantNum;
+        try{
+            enchantNum = extradata.value.EnderChestInventory.value[i].value.tag.value.ench.value.length;
+        }catch(err){
+            enchantNum = 0;
+        }
+        if(enchantNum != 0){
+            for(let j = 0;j < enchantNum;j++){
+            let enchId = String(extradata.value.EnderChestInventory.value[i].value.tag.value.ench.value[j].value.id.value);
+            let enchLv = extradata.value.EnderChestInventory.value[i].value.tag.value.ench.value[j].value.lvl.value;
+            let enchName = enchMap.get(enchId);
+            if(enchLv > maxLevel){
+                //出现异常等级的附魔 进行处理并记录到数据库中
+                system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}的${invName}被检测到异常附魔:${enchName} lv:${enchLv}"}]}`,data=>{});
+                //记录异常
+                misbDB(playerName,"异常附魔",`物品:${invName} 附魔${enchName}:${enchLv}级 [末影箱]`,"自动检测");
+                count++;
+            }
+            }
+        }
+    }
+    //system.sendText(entity,`完成检查 危险度:${count}`);
+    if(count > maxcount){
+    system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}的危险度${count}超过上限${maxcount} 予以封禁"}]}`,data=>{});
+    server.log(`${playerName}的危险度${count}超过上限${maxcount} 予以封禁`);
+    system.executeCommand(`fban ${playerName} misbehaviour-autocheck`,data=>{});
+    }
+    return `检查完成 危险度${count}`;
+}
+
+function misbDB($name,$behavior,$description,$extra){
+    let date = new Date();
+    db.update(INSERT_MISB,{
+        $time:getTime(),
+        $name,
+        $position:``,
+        $behavior,
+        $description,
+        $extra,
+        $dim:"0",
+        $timestamp:date.getTime()
+    });
 }

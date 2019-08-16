@@ -34,5 +34,7 @@ SELECT * from misb;
 export const QUERY_MISB_BYNAME = fix`
 SELECT * from misb WHERE name=$name;
 `;
+export const DELETE_MISB_LOG = fix`DELETE FROM from misb WHERE 1=1;`;
+export const DELETE_MISB_AUTOCHECK_LOG = fix`DELETE FROM misb WHERE extra="自动检测";`;
 export var db = new SQLite3("misbehavior.db");
 db.exec(CREATE_MISB_TABLE);
