@@ -1,4 +1,4 @@
-import { ItemModuleReg } from "./module/ItemCheat";
+import { ItemModuleReg,invCheck } from "./module/ItemCheat";
 import {system,playerKicked,kickTickAdd,IUseCraftTableComponent} from "./system";
 import {enchantReg,enchantCheck} from "./module/enchantCheat";
 let tick = 0;
@@ -34,7 +34,12 @@ ItemModuleReg();
 }
 
 system.update = function () {
-
+    tick++;
+    if(tick > 1200){
+        tick = 0;
+        //system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c进行背包检查"}]}`,data=>{});
+        system.executeCommand(`invcheck @a`,data=>{});
+    }
     if(kickTickAdd()){
         for(let index in playerKicked){
             system.destroyEntity(playerKicked[index]);

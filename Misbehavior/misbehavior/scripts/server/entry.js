@@ -73,6 +73,21 @@ CREATE TABLE IF NOT EXISTS misb(
   dim TEXT NOT NULL,
   timestamp INT NOT NULL
 );`;
+    //
+    const CTEATE_ALERTS_TABLE = fix `
+CREATE TABLE IF NOT EXISTS alerts(
+  time TEXT NOT NULL,
+  name TEXT NOT NULL,
+  alert TEXT NOT NULL,
+  description TEXT NOT NULL,
+  extra TEXT NOT NULL
+);`;
+    const INSERT_ALERTS = fix `
+INSERT INTO alerts (
+  time, name, alert, description, extra
+) values (
+  $time, $name, $alert, $description, $extra
+);`;
     //添加记录
     const INSERT_MISB = fix `
 INSERT INTO misb (
@@ -83,13 +98,18 @@ INSERT INTO misb (
     const QUERY_ALL_MISB = fix `
 SELECT * from misb;
 `;
+    const QUERY_ALL_ALERTS = fix `
+SELECT * from alerts;
+`;
     const QUERY_MISB_BYNAME = fix `
 SELECT * from misb WHERE name=$name;
 `;
     const DELETE_MISB_LOG = fix `DELETE FROM from misb WHERE 1=1;`;
     const DELETE_MISB_AUTOCHECK_LOG = fix `DELETE FROM misb WHERE extra="自动检测";`;
+    const DELETE_ALERT_AUTOCHECK_LOG = fix `DELETE FROM alerts WHERE extra="自动检测";`;
     var db = new SQLite3("misbehavior.db");
     db.exec(CREATE_MISB_TABLE);
+    db.exec(CTEATE_ALERTS_TABLE);
 
     let enchMap = new Map();
     let levelMap = new Map();
@@ -166,24 +186,28 @@ SELECT * from misb WHERE name=$name;
     let playerQuery;
     let cannotPushContainerList = ["minecraft:smoker", "minecraft:barrel", "minecraft:blast_furnace", "minecraft:grindstone", "minecraft:crafting_table", "minecraft:dropper", "minecraft:hopper", "minecraft:trapped_chest", "minecraft:lit_furnace", "minecraft:furnace", "minecraft:chest", "minecraft:dispenser"];
     let unusualBlockList = ["minecraft:spawn_egg", "minecraft:invisibleBedrock", "minecraft:invisiblebedrock", "minecraft:bedrock", "minecraft:mob_spawner", "minecraft:end_portal_frame", "minecraft:barrier", "minecraft:command_block"];
+    //熊孩子喜欢刷的物品列表 (正常游戏很难获得一组的物品)
+    let alertItemList = ["minecraft:nether_star", "minecraft:sticky_piston", "minecraft:piston", "minecraft:fire", "minecraft:diamond_block", "minecraft:enchanting_table", "minecraft:brewing_stand", "minecraft:dragon_egg", "minecraft:emerald_block", "minecraft:ender_chest", "minecraft:beacon", "minecraft:slime", "minecraft:experience_bottle", "minecraft:skull", "minecraft:end_crystal"];
     //危险度超过这个数会封禁玩家
-    let maxcount = 3;
+    let kickLine = 5, banLine = 15;
     function ItemModuleReg() {
         server.log("防物品作弊模块已加载");
         let date = new Date();
-        system.listenForEvent("minecraft:entity_created" /* EntityCreated */, data => {
+        /*
+        system.listenForEvent(ReceiveFromMinecraftServer.EntityCreated,data=>{
             let entity = data.data.entity;
             try {
-                if (entity) {
+                if(entity){
                     if (entity.__identifier__ == "minecraft:player") {
                         //背包检查
-                        invCheck(entity);
+                        //invCheck(entity);
                     }
                 }
-            }
-            catch (error) {
+            } catch (error) {
+                
             }
         });
+        */
         system.listenForEvent("minecraft:entity_death", data => {
             let entity = data.data.entity;
             try {
@@ -327,6 +351,33 @@ SELECT * from misb WHERE name=$name;
                 return true;
             }
         });
+        system.handlePolicy("stone:entity_pick_item_up" /* EntityPickItemUp */, (data, def) => {
+            let player = data.entity;
+            try {
+                if (player.__identifier__ == "minecraft:player") {
+                    let extradata = system.getComponent(player, "stone:extra_data" /* ExtraData */).data;
+                    //server.log(extradata.toString());
+                    //system.sendText(player,);
+                    //UI容器中必须九个都为空才能拾取
+                    let uiEmptyContainerCount = 0;
+                    for (let i = 0; i < 9; i++) {
+                        let cName = extradata.value.UntrackedInteractionUIContainer.value[i].value.Name.value;
+                        if (cName == "") {
+                            uiEmptyContainerCount++;
+                        }
+                    }
+                    if (uiEmptyContainerCount == 9) {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
+                }
+            }
+            catch (error) {
+                return true;
+            }
+        });
         playerQuery = system.registerQuery();
         system.addFilterToQuery(playerQuery, "misbehavior:isplayer");
         system.listenForEvent("minecraft:piston_moved_block", data => {
@@ -389,7 +440,24 @@ SELECT * from misb WHERE name=$name;
                         let show = "";
                         for (let index in datas) {
                             let data = datas[index];
-                            show += `<${index}>${data.time} ${data.name} ${data.behavior} ${data.description}\n`;
+                            show += `§a<${index}>${data.time} ${data.name} ${data.behavior} ${data.description}\n`;
+                        }
+                        return show;
+                    }
+                }
+            ]
+        });
+        system.registerCommand("alertlog", {
+            description: "查看异常警告记录",
+            permission: 1,
+            overloads: [{
+                    parameters: [],
+                    handler([]) {
+                        let datas = Array.from(db.query(QUERY_ALL_ALERTS, {}));
+                        let show = "";
+                        for (let index in datas) {
+                            let data = datas[index];
+                            show += `§a<${index}>${data.time} ${data.name} ${data.alert} ${data.description}\n`;
                         }
                         return show;
                     }
@@ -403,6 +471,18 @@ SELECT * from misb WHERE name=$name;
                     parameters: [],
                     handler([]) {
                         let res = db.update(DELETE_MISB_AUTOCHECK_LOG, {});
+                        return `删除${res}条自动检测记录`;
+                    }
+                }
+            ]
+        });
+        system.registerCommand("alertlogclear", {
+            description: "清空自动检测记录（异常检测）",
+            permission: 1,
+            overloads: [{
+                    parameters: [],
+                    handler([]) {
+                        let res = db.update(DELETE_ALERT_AUTOCHECK_LOG, {});
                         return `删除${res}条自动检测记录`;
                     }
                 }
@@ -423,10 +503,7 @@ SELECT * from misb WHERE name=$name;
                             let res = invCheck(p);
                         }
                         let etime = date.getTime();
-                        if (this.entity) {
-                            system.sendText(this.entity, `检查了${player.length}个玩家 耗时${etime - stime}ms`);
-                            //return res;
-                        }
+                        return `检查了${player.length}个玩家 耗时${etime - stime}ms`;
                     }
                 }]
         });
@@ -485,6 +562,11 @@ SELECT * from misb WHERE name=$name;
                 misbDB(playerName, "违禁品", `物品:${invName}数量:${invCount} [物品栏]`, "自动检测");
                 count++;
             }
+            //检测玩家是否持有异常数量的物品
+            if (alertItemList.indexOf(invName) != -1 && invCount > 63) {
+                alertDB(playerName, "异常数量物品", `物品:${invName}数量:${invCount} [物品栏]`, "自动检测");
+                server.log(`检测到${playerName}拥有异常数量物品 物品:${invName}数量:${invCount} [物品栏]`);
+            }
             let enchantNum;
             try {
                 enchantNum = extradata.value.Inventory.value[i].value.tag.value.ench.value.length;
@@ -520,6 +602,10 @@ SELECT * from misb WHERE name=$name;
                 misbDB(playerName, "违禁品", `物品:${invName}数量:${invCount} [末影箱]`, "自动检测");
                 count++;
             }
+            if (alertItemList.indexOf(invName) != -1 && invCount > 63) {
+                alertDB(playerName, "异常数量物品", `物品:${invName}数量:${invCount} [末影箱]`, "自动检测");
+                server.log(`检测到${playerName}拥有异常数量物品 物品:${invName}数量:${invCount} [末影箱]`);
+            }
             let enchantNum;
             try {
                 enchantNum = extradata.value.EnderChestInventory.value[i].value.tag.value.ench.value.length;
@@ -543,10 +629,16 @@ SELECT * from misb WHERE name=$name;
             }
         }
         //system.sendText(entity,`完成检查 危险度:${count}`);
-        if (count > maxcount) {
-            system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}的危险度${count}超过上限${maxcount} 予以封禁"}]}`, data => { });
-            server.log(`${playerName}的危险度${count}超过上限${maxcount} 予以封禁`);
+        if (count > banLine) {
+            system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}的危险度${count}超过上限${kickLine} 踢出"}]}`, data => { });
+            server.log(`${playerName}的危险度${count}超过上限${banLine} 封禁`);
             system.executeCommand(`fban ${playerName} misbehaviour-autocheck`, data => { });
+        }
+        else if (count > kickLine) {
+            system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}的危险度${count}超过上限${kickLine} 踢出"}]}`, data => { });
+            server.log(`${playerName}的危险度${count}超过上限${kickLine} 踢出`);
+            system.executeCommand(`clear @a[name="${playerName}"]`, data => { });
+            system.destroyEntity(entity);
         }
         return `检查完成 危险度${count}`;
     }
@@ -554,8 +646,8 @@ SELECT * from misb WHERE name=$name;
         let date = new Date();
         db.update(INSERT_MISB, {
             $time: getTime(),
+            $position: "",
             $name,
-            $position: ``,
             $behavior,
             $description,
             $extra,
@@ -563,7 +655,17 @@ SELECT * from misb WHERE name=$name;
             $timestamp: date.getTime()
         });
     }
+    function alertDB($name, $alert, $description, $extra) {
+        db.update(INSERT_ALERTS, {
+            $time: getTime(),
+            $name,
+            $alert,
+            $description,
+            $extra
+        });
+    }
 
+    let tick = 0;
     system.initialize = function () {
         server.log("Misbehavior loaded");
         system.registerComponent("misbehavior:isplayer", {});
@@ -588,6 +690,12 @@ SELECT * from misb WHERE name=$name;
         ItemModuleReg();
     };
     system.update = function () {
+        tick++;
+        if (tick > 1200) {
+            tick = 0;
+            //system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c进行背包检查"}]}`,data=>{});
+            system.executeCommand(`invcheck @a`, data => { });
+        }
         if (kickTickAdd()) {
             for (let index in playerKicked) {
                 system.destroyEntity(playerKicked[index]);

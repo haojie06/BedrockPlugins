@@ -1,33 +1,37 @@
 import {getName,checkAdmin,getTime,getDimensionOfEntity} from "../utils";
 import {system,playerKicked,kickTickReset,IUseCraftTableComponent} from "../system";
-import {db,DELETE_MISB_AUTOCHECK_LOG,DELETE_MISB_LOG,INSERT_MISB,QUERY_ALL_MISB,QUERY_MISB_BYNAME} from "../database";
+import {db,DELETE_ALERT_AUTOCHECK_LOG,QUERY_ALL_ALERTS,INSERT_ALERTS,DELETE_MISB_AUTOCHECK_LOG,DELETE_MISB_LOG,INSERT_MISB,QUERY_ALL_MISB,QUERY_MISB_BYNAME} from "../database";
 import {enchMap,levelMap} from "./data";
 
 let playerQuery;
 let cannotPushContainerList = ["minecraft:smoker","minecraft:barrel","minecraft:blast_furnace","minecraft:grindstone","minecraft:crafting_table","minecraft:dropper","minecraft:hopper","minecraft:trapped_chest","minecraft:lit_furnace","minecraft:furnace","minecraft:chest","minecraft:dispenser"];
 let unusualBlockList = ["minecraft:spawn_egg","minecraft:invisibleBedrock","minecraft:invisiblebedrock","minecraft:bedrock","minecraft:mob_spawner","minecraft:end_portal_frame","minecraft:barrier","minecraft:command_block"];
+//熊孩子喜欢刷的物品列表 (正常游戏很难获得一组的物品)
+let alertItemList = ["minecraft:nether_star","minecraft:sticky_piston","minecraft:piston","minecraft:fire","minecraft:diamond_block","minecraft:enchanting_table","minecraft:brewing_stand","minecraft:dragon_egg","minecraft:emerald_block","minecraft:ender_chest","minecraft:beacon","minecraft:slime","minecraft:experience_bottle","minecraft:skull","minecraft:end_crystal"];
 //危险度超过这个数会封禁玩家
-let maxcount = 3;
-
+let kickLine = 5,banLine=15;
+let tick = 0;
 
 
 export function ItemModuleReg() {
     server.log("防物品作弊模块已加载");
     let date = new Date();
 
+    /*
     system.listenForEvent(ReceiveFromMinecraftServer.EntityCreated,data=>{
         let entity = data.data.entity;
         try {
             if(entity){
                 if (entity.__identifier__ == "minecraft:player") {
                     //背包检查
-                    invCheck(entity);
+                    //invCheck(entity);
                 }
             }
         } catch (error) {
             
         }
     });
+    */
     
     system.listenForEvent("minecraft:entity_death",data=>{
         let entity = data.data.entity;
@@ -128,6 +132,7 @@ system.listenForEvent("minecraft:entity_carried_item_changed",data=>{
 
 
 //防刷
+
 system.listenForEvent("minecraft:block_interacted_with",data=>{
     let player = data.data.player;
     try {
@@ -156,6 +161,7 @@ system.listenForEvent("minecraft:block_interacted_with",data=>{
 
 });
 
+
 //使用工作台的时候无法捡起物品
 
 system.handlePolicy(MinecraftPolicy.EntityPickItemUp,(data,def)=>{
@@ -179,6 +185,33 @@ system.handlePolicy(MinecraftPolicy.EntityPickItemUp,(data,def)=>{
                 return true;
             }
     } catch (error) {
+        return true;
+    }
+});
+
+system.handlePolicy(MinecraftPolicy.EntityPickItemUp,(data,def)=>{
+    let player = data.entity;
+    try{
+        if(player.__identifier__ == "minecraft:player"){
+            let extradata = system.getComponent(player,MinecraftComponent.ExtraData).data;
+            //server.log(extradata.toString());
+            //system.sendText(player,);
+            //UI容器中必须九个都为空才能拾取
+            let uiEmptyContainerCount = 0;
+            for(let i = 0;i < 9;i++){
+                let cName = extradata.value.UntrackedInteractionUIContainer.value[i].value.Name.value;
+                if(cName == ""){
+                    uiEmptyContainerCount ++;
+                }
+            }
+            if(uiEmptyContainerCount == 9){
+                return true;
+            }
+            else{
+                return false;
+            }
+        }
+    }catch(error){
         return true;
     }
 });
@@ -252,7 +285,25 @@ system.handlePolicy(MinecraftPolicy.EntityPickItemUp,(data,def)=>{
             let show = "";
             for (let index in datas){
                 let data = datas[index];
-                show += `<${index}>${data.time} ${data.name} ${data.behavior} ${data.description}\n`;
+                show += `§a<${index}>${data.time} ${data.name} ${data.behavior} ${data.description}\n`;
+            }
+            return show;
+        }
+        } as CommandOverload<[]>
+      ]
+      });
+
+      system.registerCommand("alertlog",{
+        description:"查看异常警告记录",
+        permission:1,
+        overloads:[{
+          parameters:[],
+          handler([]){
+            let datas = Array.from(db.query(QUERY_ALL_ALERTS,{}));
+            let show = "";
+            for (let index in datas){
+                let data = datas[index];
+                show += `§a<${index}>${data.time} ${data.name} ${data.alert} ${data.description}\n`;
             }
             return show;
         }
@@ -275,6 +326,18 @@ system.handlePolicy(MinecraftPolicy.EntityPickItemUp,(data,def)=>{
       ]
       });
 
+      system.registerCommand("alertlogclear",{
+        description:"清空自动检测记录（异常检测）",
+        permission:1,
+        overloads:[{
+          parameters:[],
+          handler([]){
+            let res = db.update(DELETE_ALERT_AUTOCHECK_LOG,{});
+            return `删除${res}条自动检测记录`;
+        }
+        } as CommandOverload<[]>
+      ]
+      });
       
       system.registerCommand("invcheck",{
         description:"检查背包",
@@ -291,13 +354,11 @@ system.handlePolicy(MinecraftPolicy.EntityPickItemUp,(data,def)=>{
                 let res = invCheck(p);
             }
             let etime = date.getTime();
-            if(this.entity){
-            system.sendText(this.entity,`检查了${player.length}个玩家 耗时${etime - stime}ms`);
-            //return res;
+            return `检查了${player.length}个玩家 耗时${etime - stime}ms`;
             }
-        }
     }as CommandOverload<["player"]>]
 });
+
 }
 //背包自动检查 检查异常物品/异常附魔
 export function invCheck(entity:IEntity){
@@ -355,6 +416,11 @@ export function invCheck(entity:IEntity){
             misbDB(playerName,"违禁品",`物品:${invName}数量:${invCount} [物品栏]`,"自动检测");
             count++;
         }
+        //检测玩家是否持有异常数量的物品
+        if(alertItemList.indexOf(invName) != -1 && invCount > 63){
+            alertDB(playerName,"异常数量物品",`物品:${invName}数量:${invCount} [物品栏]`,"自动检测");
+            server.log(`检测到${playerName}拥有异常数量物品 物品:${invName}数量:${invCount} [物品栏]`);
+        }
 
         let enchantNum;
         try{
@@ -394,6 +460,11 @@ export function invCheck(entity:IEntity){
             count++;
         }
 
+        if(alertItemList.indexOf(invName) != -1 && invCount > 63){
+            alertDB(playerName,"异常数量物品",`物品:${invName}数量:${invCount} [末影箱]`,"自动检测");
+            server.log(`检测到${playerName}拥有异常数量物品 物品:${invName}数量:${invCount} [末影箱]`);
+        }
+
         let enchantNum;
         try{
             enchantNum = extradata.value.EnderChestInventory.value[i].value.tag.value.ench.value.length;
@@ -416,10 +487,16 @@ export function invCheck(entity:IEntity){
         }
     }
     //system.sendText(entity,`完成检查 危险度:${count}`);
-    if(count > maxcount){
-    system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}的危险度${count}超过上限${maxcount} 予以封禁"}]}`,data=>{});
-    server.log(`${playerName}的危险度${count}超过上限${maxcount} 予以封禁`);
-    system.executeCommand(`fban ${playerName} misbehaviour-autocheck`,data=>{});
+    if(count > banLine){
+        system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}的危险度${count}超过上限${kickLine} 踢出"}]}`,data=>{});
+        server.log(`${playerName}的危险度${count}超过上限${banLine} 封禁`);
+        system.executeCommand(`fban ${playerName} misbehaviour-autocheck`,data=>{});
+    }
+    else if(count > kickLine){
+    system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}的危险度${count}超过上限${kickLine} 踢出"}]}`,data=>{});
+    server.log(`${playerName}的危险度${count}超过上限${kickLine} 踢出`);
+    system.executeCommand(`clear @a[name="${playerName}"]`,data=>{});
+    system.destroyEntity(entity);
     }
     return `检查完成 危险度${count}`;
 }
@@ -428,12 +505,23 @@ function misbDB($name,$behavior,$description,$extra){
     let date = new Date();
     db.update(INSERT_MISB,{
         $time:getTime(),
+        $position:"",
         $name,
-        $position:``,
         $behavior,
         $description,
         $extra,
         $dim:"0",
         $timestamp:date.getTime()
+    });
+}
+
+function alertDB($name,$alert,$description,$extra){
+    let date = new Date();
+    db.update(INSERT_ALERTS,{
+        $time:getTime(),
+        $name,
+        $alert,
+        $description,
+        $extra
     });
 }
