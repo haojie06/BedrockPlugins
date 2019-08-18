@@ -122,7 +122,7 @@ export function flyCheatReg() {
                             }
                         }
                         let eTime = new Date().getTime();
-                        server.log(`飞行检测耗时${eTime - sTime}ms`)
+                        //server.log(`飞行检测耗时${eTime - sTime}ms`)
                     } catch (error) {
                         
                     }

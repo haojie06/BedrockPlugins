@@ -18,6 +18,8 @@
         }
     }
 
+    let destroyCountMap = new Map();
+    let destroyCountTimeStamp = 0;
     function getName(entity) {
         return system.getComponent(entity, "minecraft:nameable" /* Nameable */).data.name;
     }
@@ -51,6 +53,27 @@
         let minute = date.getMinutes();
         let second = date.getSeconds();
         return `${month}/${day}/${hour}-${minute}-${second}`;
+    }
+    function checkMayFly(entity) {
+        try {
+            let extradata = system.getComponent(entity, "stone:extra_data" /* ExtraData */).data;
+            let mayfly = Number(extradata.value.abilities.value.mayfly.value);
+            if (mayfly == 1) {
+                return true;
+            }
+            else {
+                return false;
+            }
+        }
+        catch (error) {
+            return false;
+        }
+    }
+    function getDesTimeStamp() {
+        return destroyCountTimeStamp;
+    }
+    function setDesTimeStamp(timestamp) {
+        destroyCountTimeStamp = timestamp;
     }
 
     function fix(arr) {
@@ -110,6 +133,28 @@ SELECT * from misb WHERE name=$name;
     var db = new SQLite3("misbehavior.db");
     db.exec(CREATE_MISB_TABLE);
     db.exec(CTEATE_ALERTS_TABLE);
+    function misbDB($name, $behavior, $description, $extra) {
+        let date = new Date();
+        db.update(INSERT_MISB, {
+            $time: getTime(),
+            $position: "",
+            $name,
+            $behavior,
+            $description,
+            $extra,
+            $dim: "0",
+            $timestamp: date.getTime()
+        });
+    }
+    function alertDB($name, $alert, $description, $extra) {
+        db.update(INSERT_ALERTS, {
+            $time: getTime(),
+            $name,
+            $alert,
+            $description,
+            $extra
+        });
+    }
 
     let enchMap = new Map();
     let levelMap = new Map();
@@ -190,24 +235,11 @@ SELECT * from misb WHERE name=$name;
     let alertItemList = ["minecraft:nether_star", "minecraft:sticky_piston", "minecraft:piston", "minecraft:fire", "minecraft:diamond_block", "minecraft:enchanting_table", "minecraft:brewing_stand", "minecraft:dragon_egg", "minecraft:emerald_block", "minecraft:ender_chest", "minecraft:beacon", "minecraft:slime", "minecraft:experience_bottle", "minecraft:skull", "minecraft:end_crystal"];
     //危险度超过这个数会封禁玩家
     let kickLine = 5, banLine = 15;
+    //正常等级临界值  超出这个等级会被踢出
+    let normalLv = 250;
     function ItemModuleReg() {
         server.log("防物品作弊模块已加载");
         let date = new Date();
-        /*
-        system.listenForEvent(ReceiveFromMinecraftServer.EntityCreated,data=>{
-            let entity = data.data.entity;
-            try {
-                if(entity){
-                    if (entity.__identifier__ == "minecraft:player") {
-                        //背包检查
-                        //invCheck(entity);
-                    }
-                }
-            } catch (error) {
-                
-            }
-        });
-        */
         system.listenForEvent("minecraft:entity_death", data => {
             let entity = data.data.entity;
             try {
@@ -502,7 +534,7 @@ SELECT * from misb WHERE name=$name;
                         for (let p of player) {
                             let res = invCheck(p);
                         }
-                        let etime = date.getTime();
+                        let etime = new Date().getTime();
                         return `检查了${player.length}个玩家 耗时${etime - stime}ms`;
                     }
                 }]
@@ -519,7 +551,15 @@ SELECT * from misb WHERE name=$name;
         //附魔不可超过的等级
         let maxLevel = 5;
         let playerName = getName(entity);
-        //system.sendText(entity,extradata.toString());
+        let level = Number(extradata.value.PlayerLevel.value);
+        //玩家等级异常
+        if (level > normalLv) {
+            //出现异常等级的附魔 进行处理并记录到数据库中
+            system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}被检测到等级异常 lv:${level}"}]}`, data => { });
+            //记录异常
+            misbDB(playerName, "异常等级", `${level}级`, "自动检测");
+            system.destroyEntity(entity);
+        }
         //装备栏检查
         for (let i = 0; i < 4; i++) {
             let armorName = extradata.value.Armor.value[i].value.Name.value;
@@ -642,30 +682,229 @@ SELECT * from misb WHERE name=$name;
         }
         return `检查完成 危险度${count}`;
     }
-    function misbDB($name, $behavior, $description, $extra) {
-        let date = new Date();
-        db.update(INSERT_MISB, {
-            $time: getTime(),
-            $position: "",
-            $name,
-            $behavior,
-            $description,
-            $extra,
-            $dim: "0",
-            $timestamp: date.getTime()
+
+    let destroyStatusMap = new Map();
+    function destroyReg() {
+        server.log("MisBehavior 防破坏作弊模块已加载");
+        system.listenForEvent("minecraft:block_destruction_started", data => {
+            try {
+                let player = data.data.player;
+                let bPosition = data.data.block_position;
+                let playerName = getName(player);
+                /*
+                let ds:DestroyStatus = {
+                    startTime:date.getTime(),
+                    bx:bPosition.x,
+                    by:bPosition.y,
+                    bz:bPosition.z
+                };
+                */
+                destroyStatusMap.set(playerName, "start");
+            }
+            catch (error) {
+                server.log("MISBEHAVIOR:防破坏作弊模块出错");
+            }
+        });
+        system.listenForEvent("minecraft:block_destruction_stopped", data => {
+            try {
+                let player = data.data.player;
+                let playerName = getName(player);
+                let progress = data.data.destruction_progress;
+                let bPosition = data.data.block_position;
+                destroyStatusMap.delete(playerName);
+            }
+            catch (error) {
+                server.log("MISBEHAVIOR:防破坏作弊模块出错");
+            }
+        });
+        system.listenForEvent("minecraft:player_destroyed_block", data => {
+            try {
+                let player = data.data.player;
+                let bPosition = data.data.block_position;
+                let blockName = data.data.block_identifier;
+                let playerName = getName(player);
+                //添加破坏计数器
+                //system.sendText(player,`方块破坏 ${bPosition.x} ${bPosition.y} ${bPosition.z}`);
+                if (destroyCountMap.has(playerName)) {
+                    let count = destroyCountMap.get(playerName);
+                    destroyCountMap.set(playerName, count + 1);
+                }
+                else {
+                    destroyCountMap.set(playerName, 1);
+                }
+                if (!destroyStatusMap.has(playerName)) {
+                    system.sendText(player, `检测到异常`);
+                    misbDB(playerName, "瞬间破坏", `检测到伪创造瞬间破坏作弊`, "自动检测");
+                    system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c自动检测：高度怀疑${playerName}使用了伪创造瞬间破坏,踢出"}]}`, data => { });
+                    server.log(`自动检测：高度怀疑${playerName}使用了伪创造瞬间破坏,踢出`);
+                    system.destroyEntity(player);
+                    //依赖EasyList
+                    let datas = db.query(QUERY_MISB_BYNAME, { $name: playerName });
+                    if (datas.length > 3) {
+                        system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}被记录的异常行为超过3次，予以封禁"}]}`, data => { });
+                        system.executeCommand(`fban ${playerName} misbehaviour-autoban`, data => { });
+                    }
+                }
+                else {
+                }
+            }
+            catch (error) {
+            }
         });
     }
-    function alertDB($name, $alert, $description, $extra) {
-        db.update(INSERT_ALERTS, {
-            $time: getTime(),
-            $name,
-            $alert,
-            $description,
-            $extra
+
+    let flyStatusMap = new Map();
+    let misbFlyCountMap = new Map();
+    //目前飞行判断方法 两次检测中玩家周围都是空气 且坐标不发生改变
+    function flyCheatReg() {
+        server.log("反飞行作弊模块已加载");
+        system.registerCommand("flycheck", {
+            description: "检查异常飞行",
+            permission: 1,
+            overloads: [{
+                    parameters: [{
+                            name: "player",
+                            type: "player"
+                        }],
+                    handler([players]) {
+                        try {
+                            let sTime = new Date().getTime();
+                            for (let player of players) {
+                                //获得玩家周围的方块
+                                if (player) {
+                                    if (checkAdmin(player)) {
+                                        continue;
+                                    }
+                                    let tickAreaCmp = system.getComponent(player, "minecraft:tick_world" /* TickWorld */);
+                                    let tickingArea = tickAreaCmp.data.ticking_area;
+                                    let posCmp = system.getComponent(player, "minecraft:position" /* Position */);
+                                    let x = Math.floor(posCmp.data.x);
+                                    let y = Math.floor(posCmp.data.y);
+                                    let z = Math.floor(posCmp.data.z);
+                                    //let curBlock = system.getBlock(tickingArea,x,y+i,z).__identifier__;
+                                    //脚底下9个方块全部是air
+                                    let temp = system.getBlock(tickingArea, x, y - 1, z).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x + 1, y - 1, z + 1).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x - 1, y - 1, z - 1).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x + 1, y - 1, z - 1).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x - 1, y - 1, z + 1).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x, y - 1, z + 1).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x, y - 1, z - 1).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x + 1, y - 1, z).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x - 1, y - 1, z).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    //排除挂在梯子上的情况。。
+                                    temp = system.getBlock(tickingArea, x - 1, y, z).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x + 1, y, z).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x, y, z - 1).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x, y, z + 1).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    //system.sendText(player,`疑似飞行`);
+                                    let playerName = getName(player);
+                                    //查看是否上一次也是这里
+                                    if (flyStatusMap.has(playerName)) {
+                                        let fs = flyStatusMap.get(playerName);
+                                        //空中停留判定为飞行（也许可以优化一下这个判断？）  改成小范围停留也算了
+                                        if (x > fs.px - 2 && x < fs.px + 2 && y == fs.py && z > fs.pz - 2 && z < fs.pz + 2) {
+                                            if (!checkMayFly(player)) {
+                                                //system.sendText(player,`判定为异常飞行`);
+                                                misbDB(playerName, "飞行作弊", `检测到飞行作弊`, "自动检测");
+                                                if (misbFlyCountMap.has(playerName)) {
+                                                    let count = misbFlyCountMap.get(playerName);
+                                                    if (count > 2) {
+                                                        //踢出玩家
+                                                        system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c自动检测：检测到${playerName}违反引力作用,踢出"}]}`, data => { });
+                                                        server.log(`自动检测：检测到${playerName}飞行作弊,踢出`);
+                                                        system.destroyEntity(player);
+                                                        misbFlyCountMap.delete(playerName);
+                                                    }
+                                                    else {
+                                                        //仅仅是把玩家拉回地面 (最多向下100)
+                                                        misbFlyCountMap.set(playerName, count + 1);
+                                                        for (let i = 1; i < 100; i++) {
+                                                            let block = system.getBlock(tickingArea, x, y - i, z).__identifier__;
+                                                            if (block != "minecraft:air") {
+                                                                system.executeCommand(`tp @a[name="${playerName}"] ${x} ${y - i + 1} ${z}`, data => { });
+                                                                system.sendText(player, `你受到地心引力作用`);
+                                                                break;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                                else {
+                                                    misbFlyCountMap.set(playerName, 0);
+                                                }
+                                            }
+                                            else {
+                                                system.sendText(player, `你有飞行权限`, 5);
+                                            }
+                                        }
+                                        else {
+                                            //删除记录重新记录
+                                            flyStatusMap.delete(playerName);
+                                        }
+                                    }
+                                    else {
+                                        let fs = {
+                                            px: x,
+                                            py: y,
+                                            pz: z
+                                        };
+                                        flyStatusMap.set(playerName, fs);
+                                    }
+                                }
+                            }
+                            let eTime = new Date().getTime();
+                            //server.log(`飞行检测耗时${eTime - sTime}ms`)
+                        }
+                        catch (error) {
+                        }
+                    }
+                }
+            ]
         });
     }
 
     let tick = 0;
+    let tick2 = 0;
+    let tick3 = 0;
     system.initialize = function () {
         server.log("Misbehavior loaded");
         system.registerComponent("misbehavior:isplayer", {});
@@ -688,13 +927,54 @@ SELECT * from misb WHERE name=$name;
             }
         });
         ItemModuleReg();
+        destroyReg();
+        flyCheatReg();
     };
     system.update = function () {
         tick++;
+        tick2++;
+        tick3++;
         if (tick > 1200) {
             tick = 0;
             //system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c进行背包检查"}]}`,data=>{});
             system.executeCommand(`invcheck @a`, data => { });
+        }
+        if (tick2 > 20) {
+            tick2 = 0;
+            system.executeCommand(`flycheck @a`, data => { });
+        }
+        if (tick3 > 200) {
+            tick3 = 0;
+            //防止异常破坏速度
+            for (let key of destroyCountMap.keys()) {
+                let count = 0;
+                let useTime = 0;
+                let destroyCountTimeStamp = getDesTimeStamp();
+                if (destroyCountTimeStamp != 0) {
+                    let nowTimeStamp = new Date().getTime();
+                    useTime = (nowTimeStamp - destroyCountTimeStamp) / 1000;
+                    count = destroyCountMap.get(key) / useTime;
+                }
+                else {
+                    count = destroyCountMap.get(key) / 10;
+                }
+                setDesTimeStamp(new Date().getTime());
+                //system.executeCommand(`tellraw @a[name="${key}"] {"rawtext":[{"text":"200tick中总共破坏了${destroyCountMap.get(key)}个方块 平均每秒你破坏了${count}个方块 200tick耗时${useTime}s"}]}`,data=>{});
+                if (count > 12) {
+                    //异常的破坏速度
+                    system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c检测到${key}的破坏速度异常,平均每秒破坏了${count}个方块"}]}`, data => { });
+                    server.log(`检测到${key}的破坏速度异常,平均每秒破坏了${count}个方块`);
+                    //依赖EasyList
+                    system.executeCommand(`fkick @a[name="${key}"]`, data => { });
+                    misbDB(key, "破坏速度作弊", `平均每秒破坏${count}个方块`, "自动检测");
+                    let datas = db.query(QUERY_MISB_BYNAME, { $name: key });
+                    if (datas.length > 3) {
+                        system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${key}被记录的异常行为超过3次，予以封禁"}]}`, data => { });
+                        system.executeCommand(`fban ${key} misbehaviour-autoban`, data => { });
+                    }
+                }
+                destroyCountMap.delete(key);
+            }
         }
         if (kickTickAdd()) {
             for (let index in playerKicked) {

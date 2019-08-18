@@ -359,7 +359,6 @@ export function invCheck(entity:IEntity){
     let maxLevel = 5;
     let playerName = getName(entity);
     let level = Number(extradata.value.PlayerLevel.value);
-    server.log("执行背包检查");
     //玩家等级异常
     if(level > normalLv){
         //出现异常等级的附魔 进行处理并记录到数据库中

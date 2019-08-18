@@ -1,5 +1,6 @@
 import { system } from "./system";
-
+export let destroyCountMap = new Map();
+let destroyCountTimeStamp = 0;
 export function getName(entity: IEntity) {
   return system.getComponent<INameableComponent>(entity, MinecraftComponent.Nameable).data.name;
 }
@@ -86,4 +87,12 @@ export function checkFlying(entity:IEntity){
   } catch (error) {
     return "";
   }
+}
+
+export function getDesTimeStamp(){
+  return destroyCountTimeStamp;
+}
+
+export function setDesTimeStamp(timestamp){
+  destroyCountTimeStamp = timestamp;
 }

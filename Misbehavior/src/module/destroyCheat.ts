@@ -1,13 +1,14 @@
 import { system } from "../system";
 import {getName} from "../utils"
 import {db,QUERY_MISB_BYNAME,misbDB,alertDB} from "../database";
-
+import { destroyCountMap } from "../utils";
 interface DestroyStatus {
     startTime:number;
     bx:number;
     by:number;
     bz:number;
 }
+
 let destroyStatusMap = new Map();
 
 export function destroyReg(){
@@ -36,6 +37,9 @@ export function destroyReg(){
         try {
             let player = data.data.player;
             let playerName = getName(player);
+            let progress = data.data.destruction_progress;
+            let bPosition = data.data.block_position;
+            
             destroyStatusMap.delete(playerName);
         } catch (error) {
             server.log("MISBEHAVIOR:防破坏作弊模块出错");
@@ -48,6 +52,16 @@ export function destroyReg(){
             let bPosition = data.data.block_position;
             let blockName = data.data.block_identifier;
             let playerName = getName(player);
+
+            //添加破坏计数器
+            //system.sendText(player,`方块破坏 ${bPosition.x} ${bPosition.y} ${bPosition.z}`);
+            if(destroyCountMap.has(playerName)){
+                let count = destroyCountMap.get(playerName);
+                destroyCountMap.set(playerName,count+1);
+            }
+            else{
+                destroyCountMap.set(playerName,1);
+            }
             if(!destroyStatusMap.has(playerName)){
                 system.sendText(player,`检测到异常`);
                 misbDB(playerName,"瞬间破坏",`检测到伪创造瞬间破坏作弊`,"自动检测");
@@ -64,6 +78,9 @@ export function destroyReg(){
             }
             else{
             }
+
+
+
         } catch (error) {
             
         }
