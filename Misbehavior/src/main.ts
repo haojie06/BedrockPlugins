@@ -63,13 +63,13 @@ system.update = function () {
             if(destroyCountTimeStamp != 0){
                 let nowTimeStamp = new Date().getTime();
                 useTime = (nowTimeStamp - destroyCountTimeStamp) / 1000;
-                count = destroyCountMap.get(key) / useTime;
+                count = Number(destroyCountMap.get(key) / useTime);
             }else{
-                count = destroyCountMap.get(key) / 10;
+                count = Number(destroyCountMap.get(key) / 10);
             }
             setDesTimeStamp(new Date().getTime());
             //system.executeCommand(`tellraw @a[name="${key}"] {"rawtext":[{"text":"200tick中总共破坏了${destroyCountMap.get(key)}个方块 平均每秒你破坏了${count}个方块 200tick耗时${useTime}s"}]}`,data=>{});
-            if(count > 12){
+            if(count > 12 && count != Infinity){
                 //异常的破坏速度
                 system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c检测到${key}的破坏速度异常,平均每秒破坏了${count}个方块"}]}`,data=>{});
                 server.log(`检测到${key}的破坏速度异常,平均每秒破坏了${count}个方块`);
