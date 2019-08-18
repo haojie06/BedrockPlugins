@@ -55,6 +55,7 @@ export function destroyReg(){
 
             //添加破坏计数器
             //system.sendText(player,`方块破坏 ${bPosition.x} ${bPosition.y} ${bPosition.z}`);
+            /*
             if(destroyCountMap.has(playerName)){
                 let count = destroyCountMap.get(playerName);
                 destroyCountMap.set(playerName,count+1);
@@ -62,6 +63,7 @@ export function destroyReg(){
             else{
                 destroyCountMap.set(playerName,1);
             }
+            */
             if(!destroyStatusMap.has(playerName)){
                 system.sendText(player,`检测到异常`);
                 misbDB(playerName,"瞬间破坏",`检测到伪创造瞬间破坏作弊`,"自动检测");

@@ -18,8 +18,6 @@
         }
     }
 
-    let destroyCountMap = new Map();
-    let destroyCountTimeStamp = 0;
     function getName(entity) {
         return system.getComponent(entity, "minecraft:nameable" /* Nameable */).data.name;
     }
@@ -68,12 +66,6 @@
         catch (error) {
             return false;
         }
-    }
-    function getDesTimeStamp() {
-        return destroyCountTimeStamp;
-    }
-    function setDesTimeStamp(timestamp) {
-        destroyCountTimeStamp = timestamp;
     }
 
     function fix(arr) {
@@ -236,7 +228,7 @@ SELECT * from misb WHERE name=$name;
     //危险度超过这个数会封禁玩家
     let kickLine = 5, banLine = 15;
     //正常等级临界值  超出这个等级会被踢出
-    let normalLv = 250;
+    let normalLv = 200;
     function ItemModuleReg() {
         server.log("防物品作弊模块已加载");
         let date = new Date();
@@ -551,8 +543,9 @@ SELECT * from misb WHERE name=$name;
         //附魔不可超过的等级
         let maxLevel = 5;
         let playerName = getName(entity);
-        let level = Number(extradata.value.PlayerLevel.value);
+        let level = extradata.value.PlayerLevel.value;
         //玩家等级异常
+        //system.sendText(entity,`你的等级${level}`);
         if (level > normalLv) {
             //出现异常等级的附魔 进行处理并记录到数据库中
             system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}被检测到等级异常 lv:${level}"}]}`, data => { });
@@ -725,13 +718,15 @@ SELECT * from misb WHERE name=$name;
                 let playerName = getName(player);
                 //添加破坏计数器
                 //system.sendText(player,`方块破坏 ${bPosition.x} ${bPosition.y} ${bPosition.z}`);
-                if (destroyCountMap.has(playerName)) {
+                /*
+                if(destroyCountMap.has(playerName)){
                     let count = destroyCountMap.get(playerName);
-                    destroyCountMap.set(playerName, count + 1);
+                    destroyCountMap.set(playerName,count+1);
                 }
-                else {
-                    destroyCountMap.set(playerName, 1);
+                else{
+                    destroyCountMap.set(playerName,1);
                 }
+                */
                 if (!destroyStatusMap.has(playerName)) {
                     system.sendText(player, `检测到异常`);
                     misbDB(playerName, "瞬间破坏", `检测到伪创造瞬间破坏作弊`, "自动检测");
@@ -842,7 +837,7 @@ SELECT * from misb WHERE name=$name;
                                     if (flyStatusMap.has(playerName)) {
                                         let fs = flyStatusMap.get(playerName);
                                         //空中停留判定为飞行（也许可以优化一下这个判断？）  改成小范围停留也算了
-                                        if (x > fs.px - 2 && x < fs.px + 2 && y == fs.py && z > fs.pz - 2 && z < fs.pz + 2) {
+                                        if (x == fs.px && y == fs.py && z == fs.pz) {
                                             if (!checkMayFly(player)) {
                                                 //system.sendText(player,`判定为异常飞行`);
                                                 misbDB(playerName, "飞行作弊", `检测到飞行作弊`, "自动检测");
@@ -851,7 +846,7 @@ SELECT * from misb WHERE name=$name;
                                                     if (count > 2) {
                                                         //踢出玩家
                                                         system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c自动检测：检测到${playerName}违反引力作用,踢出"}]}`, data => { });
-                                                        server.log(`自动检测：检测到${playerName}飞行作弊,踢出`);
+                                                        server.log(`自动检测：检测到${playerName}异常飞行,踢出`);
                                                         system.destroyEntity(player);
                                                         misbFlyCountMap.delete(playerName);
                                                     }
@@ -904,7 +899,6 @@ SELECT * from misb WHERE name=$name;
 
     let tick = 0;
     let tick2 = 0;
-    let tick3 = 0;
     system.initialize = function () {
         server.log("Misbehavior loaded");
         system.registerComponent("misbehavior:isplayer", {});
@@ -933,7 +927,6 @@ SELECT * from misb WHERE name=$name;
     system.update = function () {
         tick++;
         tick2++;
-        tick3++;
         if (tick > 1200) {
             tick = 0;
             //system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c进行背包检查"}]}`,data=>{});
@@ -943,41 +936,39 @@ SELECT * from misb WHERE name=$name;
             tick2 = 0;
             system.executeCommand(`flycheck @a`, data => { });
         }
-        if (tick3 > 200) {
+        /*
+        if(tick3 > 200){
             tick3 = 0;
             //防止异常破坏速度
-            for (let key of destroyCountMap.keys()) {
+            for(let key of destroyCountMap.keys()){
                 let count = 0;
                 let useTime = 0;
                 let destroyCountTimeStamp = getDesTimeStamp();
-                if (destroyCountTimeStamp != 0) {
+                if(destroyCountTimeStamp != 0){
                     let nowTimeStamp = new Date().getTime();
                     useTime = (nowTimeStamp - destroyCountTimeStamp) / 1000;
                     count = Number(destroyCountMap.get(key) / useTime);
-                }
-                else {
+                }else{
                     count = Number(destroyCountMap.get(key) / 10);
                 }
                 setDesTimeStamp(new Date().getTime());
                 //system.executeCommand(`tellraw @a[name="${key}"] {"rawtext":[{"text":"200tick中总共破坏了${destroyCountMap.get(key)}个方块 平均每秒你破坏了${count}个方块 200tick耗时${useTime}s"}]}`,data=>{});
-                if (count > 12 && count != Infinity) {
+                if(count > 12 && count != Infinity){
                     //异常的破坏速度
-                    system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c检测到${key}的破坏速度异常,平均每秒破坏了${count}个方块"}]}`, data => { });
+                    system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c检测到${key}的破坏速度异常,平均每秒破坏了${count}个方块"}]}`,data=>{});
                     server.log(`检测到${key}的破坏速度异常,平均每秒破坏了${count}个方块`);
                     //依赖EasyList
-                    system.executeCommand(`fkick @a[name="${key}"]`, data => { });
-                    misbDB(key, "破坏速度作弊", `平均每秒破坏${count}个方块`, "自动检测");
-                    let datas = db.query(QUERY_MISB_BYNAME, { $name: key });
-                    /*
-                    if (datas.length > 3){
-                        system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${key}被记录的异常行为超过3次，予以封禁"}]}`,data=>{});
-                        system.executeCommand(`fban ${key} misbehaviour-autoban`,data=>{});
-                    }
-                    */
+                    system.executeCommand(`fkick @a[name="${key}"]`,data=>{});
+                    misbDB(key,"破坏速度作弊",`平均每秒破坏${count}个方块`,"自动检测");
+
+                    let datas = db.query(QUERY_MISB_BYNAME,{$name:key});
+
+
                 }
                 destroyCountMap.delete(key);
             }
         }
+        */
         if (kickTickAdd()) {
             for (let index in playerKicked) {
                 system.destroyEntity(playerKicked[index]);

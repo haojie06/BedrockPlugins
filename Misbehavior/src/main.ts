@@ -53,6 +53,7 @@ system.update = function () {
         tick2 = 0;
         system.executeCommand(`flycheck @a`,data=>{});
     }
+    /*
     if(tick3 > 200){
         tick3 = 0;
         //防止异常破坏速度
@@ -78,17 +79,13 @@ system.update = function () {
                 misbDB(key,"破坏速度作弊",`平均每秒破坏${count}个方块`,"自动检测");
 
                 let datas = db.query(QUERY_MISB_BYNAME,{$name:key});
-                /*
-                if (datas.length > 3){
-                    system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${key}被记录的异常行为超过3次，予以封禁"}]}`,data=>{});
-                    system.executeCommand(`fban ${key} misbehaviour-autoban`,data=>{});
-                }
-                */
+
 
             }
             destroyCountMap.delete(key);
         }
     }
+    */
     if(kickTickAdd()){
         for(let index in playerKicked){
             system.destroyEntity(playerKicked[index]);

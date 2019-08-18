@@ -11,7 +11,7 @@ let alertItemList = ["minecraft:nether_star","minecraft:sticky_piston","minecraf
 //危险度超过这个数会封禁玩家
 let kickLine = 5,banLine=15;
 //正常等级临界值  超出这个等级会被踢出
-let normalLv = 250;
+let normalLv = 200;
 let tick = 0;
 
 
@@ -358,8 +358,9 @@ export function invCheck(entity:IEntity){
     //附魔不可超过的等级
     let maxLevel = 5;
     let playerName = getName(entity);
-    let level = Number(extradata.value.PlayerLevel.value);
+    let level = extradata.value.PlayerLevel.value;
     //玩家等级异常
+    //system.sendText(entity,`你的等级${level}`);
     if(level > normalLv){
         //出现异常等级的附魔 进行处理并记录到数据库中
         system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}被检测到等级异常 lv:${level}"}]}`,data=>{});

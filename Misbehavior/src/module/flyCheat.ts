@@ -72,7 +72,7 @@ export function flyCheatReg() {
                             if(flyStatusMap.has(playerName)){
                                 let fs:FlyStatus = flyStatusMap.get(playerName);
                                 //空中停留判定为飞行（也许可以优化一下这个判断？）  改成小范围停留也算了
-                                if(x > fs.px-2 && x < fs.px+2 && y == fs.py && z > fs.pz-2 && z < fs.pz+2){
+                                if(x == fs.px && y == fs.py && z == fs.pz){
                                     if(!checkMayFly(player)){
                                     //system.sendText(player,`判定为异常飞行`);
                                     misbDB(playerName,"飞行作弊",`检测到飞行作弊`,"自动检测");
@@ -81,7 +81,7 @@ export function flyCheatReg() {
                                         if(count > 2){
                                             //踢出玩家
                                             system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c自动检测：检测到${playerName}违反引力作用,踢出"}]}`,data=>{});
-                                            server.log(`自动检测：检测到${playerName}飞行作弊,踢出`);
+                                            server.log(`自动检测：检测到${playerName}异常飞行,踢出`);
                                             system.destroyEntity(player);
                                             misbFlyCountMap.delete(playerName);
                                         }
