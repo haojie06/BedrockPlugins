@@ -11,7 +11,7 @@ let alertItemList = ["minecraft:nether_star","minecraft:sticky_piston","minecraf
 //危险度超过这个数会封禁玩家
 let kickLine = 5,banLine=15;
 //正常等级临界值  超出这个等级会被踢出
-let normalLv = 150;
+let normalLv = 250;
 let tick = 0;
 
 
@@ -339,7 +339,7 @@ system.handlePolicy(MinecraftPolicy.EntityPickItemUp,(data,def)=>{
             for(let p of player){
                 let res = invCheck(p);
             }
-            let etime = date.getTime();
+            let etime = new Date().getTime();
             return `检查了${player.length}个玩家 耗时${etime - stime}ms`;
             }
     }as CommandOverload<["player"]>]
@@ -348,6 +348,7 @@ system.handlePolicy(MinecraftPolicy.EntityPickItemUp,(data,def)=>{
 }
 //背包自动检查 检查异常物品/异常附魔
 export function invCheck(entity:IEntity){
+    
     if(checkAdmin(entity)){
         return `该玩家有免检查权限`;
     }
@@ -358,6 +359,7 @@ export function invCheck(entity:IEntity){
     let maxLevel = 5;
     let playerName = getName(entity);
     let level = Number(extradata.value.PlayerLevel.value);
+    server.log("执行背包检查");
     //玩家等级异常
     if(level > normalLv){
         //出现异常等级的附魔 进行处理并记录到数据库中

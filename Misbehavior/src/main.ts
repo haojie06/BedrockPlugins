@@ -1,7 +1,9 @@
 import { ItemModuleReg,invCheck } from "./module/ItemCheat";
 import {system,playerKicked,kickTickAdd,IUseCraftTableComponent} from "./system";
 import {destroyReg} from "./module/destroyCheat";
+import {flyCheatReg} from "./module/flyCheat";
 let tick = 0;
+let tick2 = 0;
 
 
 
@@ -33,14 +35,20 @@ system.initialize = function () {
 
 ItemModuleReg();
 destroyReg();
+flyCheatReg();
 }
 
 system.update = function () {
     tick++;
+    tick2++;
     if(tick > 1200){
         tick = 0;
         //system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c进行背包检查"}]}`,data=>{});
         system.executeCommand(`invcheck @a`,data=>{});
+    }
+    if(tick2 > 20){
+        tick2 = 0;
+        system.executeCommand(`flycheck @a`,data=>{});
     }
     if(kickTickAdd()){
         for(let index in playerKicked){

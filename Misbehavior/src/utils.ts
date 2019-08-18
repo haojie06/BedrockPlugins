@@ -61,3 +61,29 @@ export function getTime():string {
   let second = date.getSeconds();
   return `${month}/${day}/${hour}-${minute}-${second}`;
 }
+
+export function checkMayFly(entity:IEntity){
+  try {
+    let extradata = system.getComponent(entity,MinecraftComponent.ExtraData).data;
+    let mayfly = Number(extradata.value.abilities.value.mayfly.value);
+    if(mayfly == 1){
+      return true;
+    }
+    else{
+      return false;
+    }
+  } catch (error) {
+    return false;
+  }
+}
+
+export function checkFlying(entity:IEntity){
+  try {
+    let extradata = system.getComponent(entity,MinecraftComponent.ExtraData).data;
+    let mayfly = extradata.toString();
+    return mayfly;
+
+  } catch (error) {
+    return "";
+  }
+}
