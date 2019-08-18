@@ -1,6 +1,6 @@
 import {getName,checkAdmin,getTime,getDimensionOfEntity} from "../utils";
 import {system,playerKicked,kickTickReset,IUseCraftTableComponent} from "../system";
-import {db,DELETE_ALERT_AUTOCHECK_LOG,QUERY_ALL_ALERTS,INSERT_ALERTS,DELETE_MISB_AUTOCHECK_LOG,DELETE_MISB_LOG,INSERT_MISB,QUERY_ALL_MISB,QUERY_MISB_BYNAME} from "../database";
+import {db,misbDB,alertDB,DELETE_ALERT_AUTOCHECK_LOG,QUERY_ALL_ALERTS,INSERT_ALERTS,DELETE_MISB_AUTOCHECK_LOG,DELETE_MISB_LOG,INSERT_MISB,QUERY_ALL_MISB,QUERY_MISB_BYNAME} from "../database";
 import {enchMap,levelMap} from "./data";
 
 let playerQuery;
@@ -10,28 +10,14 @@ let unusualBlockList = ["minecraft:spawn_egg","minecraft:invisibleBedrock","mine
 let alertItemList = ["minecraft:nether_star","minecraft:sticky_piston","minecraft:piston","minecraft:fire","minecraft:diamond_block","minecraft:enchanting_table","minecraft:brewing_stand","minecraft:dragon_egg","minecraft:emerald_block","minecraft:ender_chest","minecraft:beacon","minecraft:slime","minecraft:experience_bottle","minecraft:skull","minecraft:end_crystal"];
 //危险度超过这个数会封禁玩家
 let kickLine = 5,banLine=15;
+//正常等级临界值  超出这个等级会被踢出
+let normalLv = 150;
 let tick = 0;
 
 
 export function ItemModuleReg() {
     server.log("防物品作弊模块已加载");
     let date = new Date();
-
-    /*
-    system.listenForEvent(ReceiveFromMinecraftServer.EntityCreated,data=>{
-        let entity = data.data.entity;
-        try {
-            if(entity){
-                if (entity.__identifier__ == "minecraft:player") {
-                    //背包检查
-                    //invCheck(entity);
-                }
-            }
-        } catch (error) {
-            
-        }
-    });
-    */
     
     system.listenForEvent("minecraft:entity_death",data=>{
         let entity = data.data.entity;
@@ -371,7 +357,15 @@ export function invCheck(entity:IEntity){
     //附魔不可超过的等级
     let maxLevel = 5;
     let playerName = getName(entity);
-    //system.sendText(entity,extradata.toString());
+    let level = Number(extradata.value.PlayerLevel.value);
+    //玩家等级异常
+    if(level > normalLv){
+        //出现异常等级的附魔 进行处理并记录到数据库中
+        system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}被检测到等级异常 lv:${level}"}]}`,data=>{});
+        //记录异常
+        misbDB(playerName,"异常等级",`${level}级`,"自动检测");
+        system.destroyEntity(entity);
+    }
     //装备栏检查
     for(let i = 0;i<4;i++){
         let armorName = extradata.value.Armor.value[i].value.Name.value
@@ -501,27 +495,5 @@ export function invCheck(entity:IEntity){
     return `检查完成 危险度${count}`;
 }
 
-function misbDB($name,$behavior,$description,$extra){
-    let date = new Date();
-    db.update(INSERT_MISB,{
-        $time:getTime(),
-        $position:"",
-        $name,
-        $behavior,
-        $description,
-        $extra,
-        $dim:"0",
-        $timestamp:date.getTime()
-    });
-}
 
-function alertDB($name,$alert,$description,$extra){
-    let date = new Date();
-    db.update(INSERT_ALERTS,{
-        $time:getTime(),
-        $name,
-        $alert,
-        $description,
-        $extra
-    });
-}
+

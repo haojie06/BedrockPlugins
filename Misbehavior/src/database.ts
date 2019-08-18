@@ -1,3 +1,5 @@
+import {getName,checkAdmin,getTime,getDimensionOfEntity} from "./utils";
+
 function fix(arr: TemplateStringsArray) {
     return arr
       .join("")
@@ -63,3 +65,28 @@ export const DELETE_ALERT_AUTOCHECK_LOG = fix`DELETE FROM alerts WHERE extra="è‡
 export var db = new SQLite3("misbehavior.db");
 db.exec(CREATE_MISB_TABLE);
 db.exec(CTEATE_ALERTS_TABLE);
+
+export function misbDB($name,$behavior,$description,$extra){
+  let date = new Date();
+  db.update(INSERT_MISB,{
+      $time:getTime(),
+      $position:"",
+      $name,
+      $behavior,
+      $description,
+      $extra,
+      $dim:"0",
+      $timestamp:date.getTime()
+  });
+}
+
+export function alertDB($name,$alert,$description,$extra){
+  let date = new Date();
+  db.update(INSERT_ALERTS,{
+      $time:getTime(),
+      $name,
+      $alert,
+      $description,
+      $extra
+  });
+}

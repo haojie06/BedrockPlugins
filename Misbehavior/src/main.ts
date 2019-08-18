@@ -1,6 +1,6 @@
 import { ItemModuleReg,invCheck } from "./module/ItemCheat";
 import {system,playerKicked,kickTickAdd,IUseCraftTableComponent} from "./system";
-import {enchantReg,enchantCheck} from "./module/enchantCheat";
+import {destroyReg} from "./module/destroyCheat";
 let tick = 0;
 
 
@@ -14,6 +14,7 @@ system.initialize = function () {
         ifUse:false,
         ifShow:false
     });
+
     
     system.listenForEvent(ReceiveFromMinecraftServer.EntityCreated,data=>{
         let entity = data.data.entity;
@@ -31,6 +32,7 @@ system.initialize = function () {
 });
 
 ItemModuleReg();
+destroyReg();
 }
 
 system.update = function () {
