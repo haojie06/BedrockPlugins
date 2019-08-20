@@ -10,9 +10,13 @@ export function equReg(){
     
     system.listenForEvent(ReceiveFromMinecraftServer.EntityCreated,data=>{
         let entity = data.data.entity;
-        if (entity.__identifier__ == "minecraft:player") {
-        system.createComponent(entity,"loreeffect:isplayer");
-    }});
+        try {
+            if (entity.__identifier__ == "minecraft:player") {
+                system.createComponent(entity,"loreeffect:isplayer");
+            }
+        } catch (error) {
+        }
+});
 };
 
 
@@ -164,7 +168,7 @@ system.update = function(){
                 px = pComp.data.x;
                 py = pComp.data.y;
                 pz = pComp.data.z;
-                if(possibility(0.1)){
+                if(possibility(0.15)){
                 spawnParticleInWorld("spiral-pink-1",[px,py-3.5,pz],dim);
                 }
             

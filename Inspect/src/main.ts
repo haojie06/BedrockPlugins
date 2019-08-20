@@ -83,6 +83,9 @@ levelMap.set("35",3);
 
 system.initialize = function () {
     server.log("Inspect背包信息查询 loaded");
+
+
+
     system.registerCommand("inspect",{
         description: "查看背包",
         permission: 1,
@@ -97,10 +100,11 @@ system.initialize = function () {
                 let player = players[0];
                 
                 let armors = ["头盔","胸甲","腿甲","鞋子"];
+                let playerName = getName(player);
                 let extradata = system.getComponent(player,MinecraftComponent.ExtraData).data;
                 let playerLevel = extradata.value.PlayerLevel.value;
                 let playerGameMode = extradata.value.PlayerGameMode.value;
-                let show = `§9§l玩家信息查询结果§r\n§3玩家等级:${playerLevel} 游戏模式:${playerGameMode}§r\n§e§l----------装备栏----------§r\n`;
+                let show = `§9§l玩家信息查询结果§r\n§3玩家${playerName} 等级:${playerLevel} 游戏模式:${playerGameMode}§r\n§e§l----------装备栏----------§r\n`;
                 for(let i = 0;i < 4;i++){
                     let armorEnchNum;
                     let armorName = extradata.value.Armor.value[i].value.Name.value.split(":")[1];
@@ -249,5 +253,9 @@ function checkLevel(id:string,lv:number){
         return true;
     }
 }
+
+function getName(entity: IEntity) {
+    return system.getComponent<INameableComponent>(entity, MinecraftComponent.Nameable).data.name;
+  }
 
 

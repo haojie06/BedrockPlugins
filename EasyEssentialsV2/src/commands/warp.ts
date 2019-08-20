@@ -99,8 +99,9 @@ export function warpReg(sys) {
                 if (!entity) throw "Designed for player usage";
                 const datas = Array.from(db.query(SELECT_ALL_WARP,{}));
                 let show:string = "";
-                for(let data of datas){
-                    show += `${data.name}:(${data.position}) by ${data.owner}\n`;
+                for(let index in datas){
+                    let data = datas[index];
+                    show += `§e<${index}>.§r§a${data.name}:(${data.position})  §3创建者:${data.owner}§r\n`;
                 }
                 let name = getName(entity);
                 return show;

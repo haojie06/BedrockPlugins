@@ -224,7 +224,31 @@ function onEntityCreate(data){
             else{
               //剩下的就是需要清理的生物
               if(system.hasComponent(entity,MinecraftComponent.Nameable)){
-              system.createComponent(entity,"lagremover:isMob");
+                let identifier = entity.__identifier__;
+                if(identifier == "minecraft:cod" || identifier == "minecraft:pufferfish" || identifier == "minecraft:squid" || identifier == "minecraft:tropicalfish" || identifier == "minecraft:salmon"){
+                  let rand = Math.random();
+                  //如果需要减少某种生物的生成
+                  if(rand < 0.7){
+                    let comp = system.getComponent<IPositionComponent>(entity,MinecraftComponent.Position);
+                    comp.data.y = -15;
+                    system.applyComponentChanges(entity, comp);
+                  }
+                  
+                }
+                else if(identifier == "minecraft:zombie_pigman"){
+                  let rand = Math.random();
+                  //如果需要减少某种生物的生成
+                  if(rand < 0.4){
+                    let comp = system.getComponent<IPositionComponent>(entity,MinecraftComponent.Position);
+                    comp.data.y = -15;
+                    system.applyComponentChanges(entity, comp);
+                  }
+                  
+                }
+                else{
+                    system.createComponent(entity,"lagremover:isMob");
+                }
+              
               }
             }
           }

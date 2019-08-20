@@ -1,5 +1,5 @@
 //一些小指令
-import {transNum} from "../utils";
+import {transNum,getName} from "../utils";
 let system;
 let testBlockNum = 50; //使用top指令的时候向上检测的方块数量
 export function toolReg(sys) {
@@ -93,6 +93,29 @@ export function toolReg(sys) {
                     }
                 }
             } as CommandOverload<["string"]>
+            ]
+        });
+
+        system.registerCommand("shock", {
+            description: "雷劈",
+            permission: 1,
+            overloads: [
+            {
+                parameters: [
+                {
+                    type: "player",
+                    name: "玩家"
+                }
+                ],
+                handler([players]) {
+                    for(let player of players){
+                        let name = getName(player);
+                        system.executeCommand(`execute @a[name="${name}"] ~ ~ ~ summon lightning_bolt ~ ~ ~`,data=>{});
+                        system.executeCommand(`execute @a[name="${name}"] ~ ~ ~ me §b被雷劈了§r`,data=>{});
+
+                    }
+                }
+            } as CommandOverload<["player"]>
             ]
         });
     

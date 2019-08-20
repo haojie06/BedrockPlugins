@@ -9,9 +9,9 @@ let unusualBlockList = ["minecraft:spawn_egg","minecraft:invisibleBedrock","mine
 //熊孩子喜欢刷的物品列表 (正常游戏很难获得一组的物品)
 let alertItemList = ["minecraft:nether_star","minecraft:sticky_piston","minecraft:piston","minecraft:fire","minecraft:diamond_block","minecraft:enchanting_table","minecraft:brewing_stand","minecraft:dragon_egg","minecraft:emerald_block","minecraft:ender_chest","minecraft:beacon","minecraft:slime","minecraft:experience_bottle","minecraft:skull","minecraft:end_crystal"];
 //危险度超过这个数会封禁玩家
-let kickLine = 5,banLine=15;
+let kickLine = 3,banLine=15;
 //正常等级临界值  超出这个等级会被踢出
-let normalLv = 200;
+let normalLv = 150;
 let tick = 0;
 
 
