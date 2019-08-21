@@ -35,6 +35,10 @@ function fix(arr: TemplateStringsArray) {
   );`;
 //获得一个玩家的所有行为
   export const SELECT_LOG_BY_NAME = fix`SELECT * FROM log WHERE name=$name;`;
+//获得几天内一个玩家一定范围内的所有行为(破坏/放置)
+  //export const SELECT_LOG_BY_NAME_DAY_POS = fix`SELECT * FROM log WHERE name=$name AND timestamp > $timestamp AND dim=$dim AND targetX > $minx AND targetX < $maxx AND targetY > $miny AND targetY < $maxy AND targetZ > $minz AND targetZ < $maxz AND action=$action;`;
+  export const SELECT_LOG_BY_NAME_DAY_POS = fix`SELECT * FROM log WHERE targetX >= $minx AND targetY >= $miny AND targetZ >= $minz AND targetX <= $maxx AND targetY <= $maxy AND targetZ <= $maxz AND dim = $dim AND timestamp > $timestamp AND name=$name AND action=$action;`;
+
 //获得所有的日志
   export const SELECT_ALL_LOG = fix`SELECT * FROM log;`;
 
@@ -71,6 +75,21 @@ export function delRecord(day:number):number{
 export function closeDB(){
 db = null;
 }
+export function readPlayerRecord($sX, $sY, $sZ, $eX, $eY, $eZ, $dim,$action,day,$player){
+  let $minX = Math.min($sX,$eX);
+  let $minY = Math.min($sY,$eY);
+  let $minZ = Math.min($sZ,$eZ);
+  let $maxX = Math.max($sX,$eX);
+  let $maxY = Math.max($sY,$eY);
+  let $maxZ = Math.max($sZ,$eZ);
+  let $timeline = new Date().getTime() - day * 24 * 60 * 60 * 1000;
+
+  let logs = db.query(SELECT_IN_ZONE_BYACTION_AFTERTIME_PNAME,{$minX, $minY, $minZ, $maxX, $maxY, $maxZ, $dim, $action, $timeline, $player});
+  let datas = Array.from(logs);
+
+  return datas;
+}
+
 export function readRecord($sX, $sY, $sZ, $eX, $eY, $eZ, $dim, $action="all", $hour=0,$player=""){
     let $minX = Math.min($sX,$eX);
     let $minY = Math.min($sY,$eY);

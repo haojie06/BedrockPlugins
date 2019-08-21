@@ -3,7 +3,7 @@ create by haojie06 2019/6/10
 用于记录玩家在游戏中的行为 （超简化版coi..）
 更新 支持1.12
 */
-import { db,addRecord,readRecord, delRecord, closeDB } from "./database";
+import { db,readPlayerRecord,addRecord,readRecord, delRecord, closeDB,SELECT_LOG_BY_NAME_DAY_POS } from "./database";
 import { getTime,stringToInt,transNum,checkIfContainer} from "./utils";
 
 const system = server.registerSystem(0, 0);
@@ -222,6 +222,55 @@ system.registerCommand("dellogs",{
   } as CommandOverload<["int"]>
 ]
 });
+
+system.registerCommand("bhundo",{
+  description:"撤销几天以内玩家的操作",
+  permission:1,
+  overloads:[{
+    parameters:[{
+      name:"几天以内",
+      type:"int"
+    },
+  {
+    name:"玩家名字",
+    type:"string"
+  },
+{
+  name:"起点",
+  type:"position"
+},
+{
+  name:"终点",
+  type:"position"
+}],
+    handler([day,$player,sp,ep]){
+      if(!this.entity) throw "只有玩家可以执行该命令";
+      //时间戳大于一个数值的进行撤销
+
+      let $dim = getDimensionOfEntity(this.entity);
+      system.sendText(this.entity,`§a查询${$player}的记录 维度${$dim}`);
+
+      //选择所有破坏记录
+      let breakDatas = readPlayerRecord(sp.x,sp.y,sp.z,ep.x,ep.y,ep.z,$dim,"break",day,$player);
+
+      let placeDatas = readPlayerRecord(sp.x,sp.y,sp.z,ep.x,ep.y,ep.z,$dim,"place",day,$player);
+      system.sendText(this.entity,`§a查询到${day}天以内玩家${$player}的破坏记录:${breakDatas.length}条 放置记录:${placeDatas.length}条`);
+      //开始尝试修复
+      system.sendText(this.entity,`§a§l开始尝试修复`);
+      for(let data of placeDatas){
+        system.executeCommand(`execute @a[name="${this.name}"] ~ ~ ~ fill ${data.targetX} ${data.targetY} ${data.targetZ} ${data.targetX} ${data.targetY} ${data.targetZ} air 0 replace`,data=>{});
+      }
+      for(let data of breakDatas){
+        system.executeCommand(`execute @a[name="${this.name}"] ~ ~ ~ fill ${data.targetX} ${data.targetY} ${data.targetZ} ${data.targetX} ${data.targetY} ${data.targetZ} ${data.target} 0 replace`,data=>{});
+      }
+      system.sendText(this.entity,`§a§l已执行修复`);
+
+    }
+  } as CommandOverload<["int","string","position","position"]>
+]
+});
+
+
 };
 
 system.shutdown = function() {
@@ -242,7 +291,7 @@ function getDimensionOfEntity(entity: IEntity){
   let dimension;
   if (system.hasComponent(entity, "stone:dimension")) {
     let comp = system.getComponent(entity,MinecraftComponent.Dimension);
-    dimension = comp.data;
+    dimension = String(comp.data);
 }
   else{
     dimension = "无法获得维度";
