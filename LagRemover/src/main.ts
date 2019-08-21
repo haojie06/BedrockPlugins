@@ -235,7 +235,7 @@ function onEntityCreate(data){
                   }
                   
                 }
-                else if(identifier == "minecraft:zombie_pigman"){
+                else if(identifier == "minecraft:zombie_pigman" || identifier == "minecraft:drowned"){
                   let rand = Math.random();
                   //如果需要减少某种生物的生成
                   if(rand < 0.4){

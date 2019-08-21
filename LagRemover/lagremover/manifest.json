@@ -1,0 +1,18 @@
+{
+  "format_version": 1,
+  "header": {
+    "name": "LagRemover",
+    "description": "试图清除卡顿",
+    "uuid": "5fbb4752-a384-41fc-8a0a-019b3a7a3928",
+    "version": [0, 0, 0],
+    "min_engine_version": [1, 12, 0]
+  },
+  "modules": [
+    {
+      "description": "data",
+      "type": "data",
+      "uuid": "ab29bdeb-2bcd-438a-97c4-a9d7f3fc666b",
+      "version": [0, 0, 0]
+    }
+  ]
+}
