@@ -2,20 +2,22 @@ import {backReg} from "./commands/back";
 import {warpReg} from "./commands/warp";
 import {homeReg} from "./commands/home";
 import {tpReg} from "./commands/tp";
+import {buildToolsReg} from "./commands/buildtools"
 import {toolReg} from "./commands/tools";
 import {utilsReg,getName} from "./utils";
-const system = server.registerSystem(0, 0);
+import {system} from "./system"
 
 
 system.initialize = function() {
     server.log("EasyEssentials 2.0 created by haojie06 loaded");
     system.listenForEvent("minecraft:entity_created",onPlayerCreated);
-    utilsReg(this);
-    backReg(this);
-    warpReg(this);
-    homeReg(this);
-    tpReg(this);
-    toolReg(this);
+    utilsReg(system);
+    backReg(system);
+    warpReg(system);
+    homeReg(system);
+    tpReg(system);
+    toolReg(system);
+    buildToolsReg();
 }
 
 
