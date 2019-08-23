@@ -5,33 +5,29 @@
   //掉落物白名单
   var itemWhitelist = ["minecraft:diamond", "minecraft:gold_ore", "minecraft:iron_ore", "minecraft:diamond_ore", "minecraft:diamond_block", "minecraft:enchanting_table", "minecraft:emerald_ore", "minecraft:emerald_block", "minecraft:beacon", "minecraft:iron_shovel", "minecraft:iron_pickaxe", "minecraft:iron_axe", "minecraft:bow", "minecraft:diamond", "minecraft:iron_ingot", "minecraft:gold_ingot", "minecraft:iron_sword", "minecraft:diamond_sword", "minecraft:diamond_shovel", "minecraft:diamond_pickaxe", "minecraft:diamond_axe"];
   //需要清理的实体
-  /*
-  let entityBlacklist:string[] = [
-  "minecraft:ravager","minecraft:zombie_villager","minecraft:evoker","minecraft:zombie_villager_v2","minecraft:phantom","minecraft:vex","minecraft:vindicator",
-  "minecraft:cat","minecraft:wolf","minecraft:silverfish","minecraft:polar_bear","minecraft:pufferfish",
-  "minecraft:rabbit","minecraft:mule","minecraft:llama","minecraft:horse",
-  "minecraft:guardian","minecraft:tropical_fish","minecraft:tropicalfish","minecraft:donkey","minecraft:cod",
-  "minecraft:slime","minecraft:skeleton_horse",
-  ,"minecraft:squid","minecraft:dolphin","minecraft:chicken","minecraft:cow","minecraft:salmon",
-  "minecraft:sheep","minecraft:pig","minecraft:spider","minecraft:turtle","fine:halfzombie","minecraft:bat","minecraft:blaze",
-  "minecraft:cave_spider","minecraft:creeper","minecraft:drowned","minecraft:enderman"
-  ,"minecraft:ghast","minecraft:husk","minecraft:magma_cube","minecraft:skeleton","minecraft:squid","minecraft:panda"
-  ,"minecraft:stray","minecraft:wither_skeleton","minecraft:zombie","minecraft:zombie_pigman","minecraft:ocelot","minecraft:mooshroom"];
-  */
   //实体清理白名单,里面的生物即使不命名也不会被自动清理 (排除非生物以及少数生物)
   var entityWhitelist = ["minecraft:elder_guardian", "minecraft:villager_v2", "minecraft:villager", "minecraft:ender_dragon", "minecraft:ravager", "minecraft:wither"];
-  //堆叠生物白名单
-  //let stackWhitelist:string[] = ["minecraft:xp_orb","minecraft:falling_block","minecraft:ravager","minecraft:pillager","minecraft:player","minecraft:armor_stand","minecraft:villager","minecraft:villager_v2","minecraft:villager_v2"];
   //需要清理的非生物实体
   var noNameEntityBlackList = ["minecraft:snowball", "minecraft:splash_potion", "minecraft:xp_bottle", "minecraft:wither_skull", "minecraft:egg", "minecraft:xp_orb", "minecraft:fireball", "minecraft:small_fireball", "minecraft:arrow"];
   //类似于盔甲架一类的实体
   var placeableEntityList = ["minecraft:tnt", "minecraft:armor_stand", "minecraft:boat", "minecraft:chest_minecart", "minecraft:end_crystal", "minecraft:furnace_minecart", "minecraft:hopper_minecart", "minecraft:item_frame", "minecraft:minecar", "minecraft:painting", "minecraft:tnt_minecart"];
+  //需要降低生成概率的生物
+  var limitEntityMap = new Map();
+  //将鳕鱼的生成降低为原来的0.3
+  limitEntityMap.set("minecraft:cod", 0.3);
+  limitEntityMap.set("minecraft:pufferfish", 0.3);
+  limitEntityMap.set("minecraft:squid", 0.35);
+  limitEntityMap.set("minecraft:tropicalfish", 0.3);
+  limitEntityMap.set("minecraft:salmon", 0.3);
+  limitEntityMap.set("minecraft:salmon", 0.3);
+  limitEntityMap.set("minecraft:drowned", 0.25);
+  limitEntityMap.set("minecraft:zombie_pigman", 0.25);
+  var limitEntities = Array.from(limitEntityMap.keys());
   var itemQuery, mobQuery, entityQuery, positionQuery, noNameEntityQuery, placeableEntityQuery;
   var notClearMobNum = 0, clearMobNum = 0;
   //模拟距离
   var tick = 0;
-  var clearInterval = 10800; //清理间隔设置（这里是提醒的间隔） 上一次清理后间隔1200tick提醒，然后再等一分钟开始清理 一共两分钟
-  //let clearInterval = 300;
+  var clearInterval = 4800; //清理间隔设置（这里是提醒的间隔） 上一次清理后间隔1200tick提醒，然后再等一分钟开始清理 一共两分钟
   var second = 0, minute = 0;
   system.initialize = function () {
       server.log("LagRemover Loaded");
@@ -219,19 +215,11 @@
                           //剩下的就是需要清理的生物
                           if (system.hasComponent(entity, "minecraft:nameable" /* Nameable */)) {
                               var identifier = entity.__identifier__;
-                              if (identifier == "minecraft:cod" || identifier == "minecraft:pufferfish" || identifier == "minecraft:squid" || identifier == "minecraft:tropicalfish" || identifier == "minecraft:salmon") {
+                              if (limitEntities.indexOf(identifier)) {
+                                  var val = 1 - limitEntityMap.get(identifier);
                                   var rand = Math.random();
                                   //如果需要减少某种生物的生成
-                                  if (rand < 0.7) {
-                                      var comp = system.getComponent(entity, "minecraft:position" /* Position */);
-                                      comp.data.y = -15;
-                                      system.applyComponentChanges(entity, comp);
-                                  }
-                              }
-                              else if (identifier == "minecraft:zombie_pigman" || identifier == "minecraft:drowned") {
-                                  var rand = Math.random();
-                                  //如果需要减少某种生物的生成
-                                  if (rand < 0.4) {
+                                  if (rand < val) {
                                       var comp = system.getComponent(entity, "minecraft:position" /* Position */);
                                       comp.data.y = -15;
                                       system.applyComponentChanges(entity, comp);
