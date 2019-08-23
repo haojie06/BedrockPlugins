@@ -226,9 +226,9 @@ SELECT * from misb WHERE name=$name;
     //熊孩子喜欢刷的物品列表 (正常游戏很难获得一组的物品)
     let alertItemList = ["minecraft:nether_star", "minecraft:sticky_piston", "minecraft:piston", "minecraft:fire", "minecraft:diamond_block", "minecraft:enchanting_table", "minecraft:brewing_stand", "minecraft:dragon_egg", "minecraft:emerald_block", "minecraft:ender_chest", "minecraft:beacon", "minecraft:slime", "minecraft:experience_bottle", "minecraft:skull", "minecraft:end_crystal"];
     //危险度超过这个数会封禁玩家
-    let kickLine = 5, banLine = 15;
+    let kickLine = 3, banLine = 15;
     //正常等级临界值  超出这个等级会被踢出
-    let normalLv = 200;
+    let normalLv = 150;
     function ItemModuleReg() {
         server.log("防物品作弊模块已加载");
         let date = new Date();
@@ -555,10 +555,11 @@ SELECT * from misb WHERE name=$name;
         }
         //装备栏检查
         for (let i = 0; i < 4; i++) {
-            let armorName = extradata.value.Armor.value[i].value.Name.value;
+            let armorName = extradata.value.Armor.value[i].value.Name.value.toString();
             if (armorName == undefined || armorName == "") {
                 continue;
             }
+            //armorName = String(armorName);
             let enchantNum;
             try {
                 enchantNum = extradata.value.Armor.value[i].value.tag.value.ench.value.length;
@@ -576,6 +577,8 @@ SELECT * from misb WHERE name=$name;
                         system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}的${armorName}被检测到异常附魔:${enchName} lv:${enchLv}"}]}`, data => { });
                         //记录异常
                         misbDB(playerName, "异常附魔", `物品:${armorName} 附魔${enchName}:${enchLv}级 [装备栏]`, "自动检测");
+                        armorName = armorName.split(":")[1];
+                        system.executeCommand(`clear "${playerName}" ${armorName}`, data => { });
                         count++;
                     }
                 }
@@ -583,7 +586,7 @@ SELECT * from misb WHERE name=$name;
         }
         //物品栏检查
         for (let i = 0; i < 36; i++) {
-            let invName = extradata.value.Inventory.value[i].value.Name.value;
+            let invName = extradata.value.Inventory.value[i].value.Name.value.toString();
             if (invName == undefined || invName == "") {
                 continue;
             }
@@ -592,6 +595,7 @@ SELECT * from misb WHERE name=$name;
             if (unusualBlockList.indexOf(invName) != -1) {
                 system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}被检测到持有违禁品:${invName} 数量:${invCount}"}]}`, data => { });
                 //记录异常
+                system.executeCommand(`clear "${playerName}" ${invName.split(":")[1]}`, data => { });
                 misbDB(playerName, "违禁品", `物品:${invName}数量:${invCount} [物品栏]`, "自动检测");
                 count++;
             }
@@ -616,6 +620,7 @@ SELECT * from misb WHERE name=$name;
                         //出现异常等级的附魔 进行处理并记录到数据库中
                         system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}的${invName}被检测到异常附魔:${enchName} lv:${enchLv}"}]}`, data => { });
                         //记录异常
+                        system.executeCommand(`clear "${playerName}" ${invName.split(":")[1]}`, data => { });
                         misbDB(playerName, "异常附魔", `物品:${invName} 附魔${enchName}:${enchLv}级 [物品栏]`, "自动检测");
                         count++;
                     }
@@ -814,6 +819,43 @@ SELECT * from misb WHERE name=$name;
                                     if (temp != "minecraft:air") {
                                         continue;
                                     }
+                                    //多检测一层看看能不能减少误判？
+                                    temp = system.getBlock(tickingArea, x, y - 2, z).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x + 1, y - 2, z + 1).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x - 1, y - 2, z - 1).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x + 1, y - 2, z - 1).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x - 1, y - 2, z + 1).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x, y - 2, z + 1).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x, y - 2, z - 1).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x + 1, y - 2, z).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
+                                    temp = system.getBlock(tickingArea, x - 1, y - 2, z).__identifier__;
+                                    if (temp != "minecraft:air") {
+                                        continue;
+                                    }
                                     //排除挂在梯子上的情况。。
                                     temp = system.getBlock(tickingArea, x - 1, y, z).__identifier__;
                                     if (temp != "minecraft:air") {
@@ -837,13 +879,13 @@ SELECT * from misb WHERE name=$name;
                                     if (flyStatusMap.has(playerName)) {
                                         let fs = flyStatusMap.get(playerName);
                                         //空中停留判定为飞行（也许可以优化一下这个判断？）  改成小范围停留也算了
-                                        if (x == fs.px && y == fs.py && z == fs.pz) {
+                                        if (x >= fs.px - 2 && x <= fs.px + 2 && y == fs.py && z >= fs.pz - 2 && z <= fs.pz + 2) {
                                             if (!checkMayFly(player)) {
                                                 //system.sendText(player,`判定为异常飞行`);
-                                                misbDB(playerName, "飞行作弊", `检测到飞行作弊`, "自动检测");
+                                                misbDB(playerName, "飞行作弊", `检测到疑似飞行作弊`, "自动检测");
                                                 if (misbFlyCountMap.has(playerName)) {
                                                     let count = misbFlyCountMap.get(playerName);
-                                                    if (count > 2) {
+                                                    if (count > 5) {
                                                         //踢出玩家
                                                         system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c自动检测：检测到${playerName}违反引力作用,踢出"}]}`, data => { });
                                                         server.log(`自动检测：检测到${playerName}异常飞行,踢出`);

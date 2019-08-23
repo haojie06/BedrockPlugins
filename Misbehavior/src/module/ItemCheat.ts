@@ -370,10 +370,11 @@ export function invCheck(entity:IEntity){
     }
     //装备栏检查
     for(let i = 0;i<4;i++){
-        let armorName = extradata.value.Armor.value[i].value.Name.value
+        let armorName = extradata.value.Armor.value[i].value.Name.value.toString();
         if(armorName == undefined || armorName == ""){
             continue;
         }
+        //armorName = String(armorName);
         let enchantNum;
         try{
             enchantNum = extradata.value.Armor.value[i].value.tag.value.ench.value.length;
@@ -390,6 +391,8 @@ export function invCheck(entity:IEntity){
                 system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}的${armorName}被检测到异常附魔:${enchName} lv:${enchLv}"}]}`,data=>{});
                 //记录异常
                 misbDB(playerName,"异常附魔",`物品:${armorName} 附魔${enchName}:${enchLv}级 [装备栏]`,"自动检测");
+                armorName = armorName.split(":")[1];
+                system.executeCommand(`clear "${playerName}" ${armorName}`,data=>{});
                 count++;
             }
             }
@@ -398,17 +401,18 @@ export function invCheck(entity:IEntity){
 
     //物品栏检查
     for(let i = 0;i<36;i++){
-        let invName = extradata.value.Inventory.value[i].value.Name.value;
+        let invName = extradata.value.Inventory.value[i].value.Name.value.toString();
         if(invName == undefined || invName == ""){
             continue;
         }
-
+        
         let invCount = Number(extradata.value.Inventory.value[i].value.Count.value);
 
         //检查物品是否违禁品
         if(unusualBlockList.indexOf(invName) != -1){
             system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}被检测到持有违禁品:${invName} 数量:${invCount}"}]}`,data=>{});
             //记录异常
+            system.executeCommand(`clear "${playerName}" ${invName.split(":")[1]}`,data=>{});
             misbDB(playerName,"违禁品",`物品:${invName}数量:${invCount} [物品栏]`,"自动检测");
             count++;
         }
@@ -434,6 +438,7 @@ export function invCheck(entity:IEntity){
                 //出现异常等级的附魔 进行处理并记录到数据库中
                 system.executeCommand(`tellraw @a {"rawtext":[{"text":"§c${playerName}的${invName}被检测到异常附魔:${enchName} lv:${enchLv}"}]}`,data=>{});
                 //记录异常
+                system.executeCommand(`clear "${playerName}" ${invName.split(":")[1]}`,data=>{});
                 misbDB(playerName,"异常附魔",`物品:${invName} 附魔${enchName}:${enchLv}级 [物品栏]`,"自动检测");
                 count++;
             }
