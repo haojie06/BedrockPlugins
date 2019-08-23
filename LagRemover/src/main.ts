@@ -23,7 +23,7 @@ limitEntityMap.set("minecraft:drowned",0.25);
 limitEntityMap.set("minecraft:zombie_pigman",0.25);
 let limitEntities = Array.from(limitEntityMap.keys());
 let itemQuery,mobQuery,entityQuery,positionQuery,playerQuery,noNameEntityQuery,placeableEntityQuery;
-let notClearMobNum = 0,clearMobNum = 0;
+let notClearMobNum = 0,clearMobNum = 0,clearItemNum;
 //模拟距离
 let tick = 0;
 let clearInterval = 4800; //清理间隔设置（这里是提醒的间隔） 上一次清理后间隔1200tick提醒，然后再等一分钟开始清理 一共两分钟
@@ -96,11 +96,16 @@ system.initialize = function () {
                    clearMobNum++;
                  }
                }
+              let items = system.getEntitiesFromQuery(itemQuery);
+              for(let item of items){
+                system.destroyEntity(item);
+                clearItemNum++;
+              }
               let endTime = Date.now();
               let useTime = endTime - beginTime;
-              let show = `§e管理员召唤清道夫清理了${clearMobNum}个待清理生物,有${notClearMobNum}个命名生物未被清理,耗时${useTime}ms`;
+              let show = `§e管理员召唤清道夫清理了${clearMobNum}个待清理生物,${clearItemNum}个掉落物,有${notClearMobNum}个命名生物未被清理,耗时${useTime}ms`;
               server.log(show);
-              system.executeCommand(`tellraw @a {"rawtext":[{"text":"§e管理员召唤清道夫清理了${clearMobNum}个待清理生物,有${notClearMobNum}个命名生物未被清理,耗时${useTime}ms"}]}`,data=>{});
+              system.executeCommand(`tellraw @a {"rawtext":[{"text":"§e管理员召唤清道夫清理了${clearMobNum}个待清理生物,${clearItemNum}个掉落物,有${notClearMobNum}个命名生物未被清理,耗时${useTime}ms"}]}`,data=>{});
               notClearMobNum = 0;
               clearMobNum = 0;
               return "已清理";

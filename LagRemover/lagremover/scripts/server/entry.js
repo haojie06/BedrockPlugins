@@ -24,7 +24,7 @@
   limitEntityMap.set("minecraft:zombie_pigman", 0.25);
   var limitEntities = Array.from(limitEntityMap.keys());
   var itemQuery, mobQuery, entityQuery, positionQuery, noNameEntityQuery, placeableEntityQuery;
-  var notClearMobNum = 0, clearMobNum = 0;
+  var notClearMobNum = 0, clearMobNum = 0, clearItemNum;
   //模拟距离
   var tick = 0;
   var clearInterval = 4800; //清理间隔设置（这里是提醒的间隔） 上一次清理后间隔1200tick提醒，然后再等一分钟开始清理 一共两分钟
@@ -93,11 +93,17 @@
                               clearMobNum++;
                           }
                       }
+                      var items = system.getEntitiesFromQuery(itemQuery);
+                      for (var _a = 0, items_1 = items; _a < items_1.length; _a++) {
+                          var item = items_1[_a];
+                          system.destroyEntity(item);
+                          clearItemNum++;
+                      }
                       var endTime = Date.now();
                       var useTime = endTime - beginTime;
-                      var show = "\u00A7e\u7BA1\u7406\u5458\u53EC\u5524\u6E05\u9053\u592B\u6E05\u7406\u4E86" + clearMobNum + "\u4E2A\u5F85\u6E05\u7406\u751F\u7269,\u6709" + notClearMobNum + "\u4E2A\u547D\u540D\u751F\u7269\u672A\u88AB\u6E05\u7406,\u8017\u65F6" + useTime + "ms";
+                      var show = "\u00A7e\u7BA1\u7406\u5458\u53EC\u5524\u6E05\u9053\u592B\u6E05\u7406\u4E86" + clearMobNum + "\u4E2A\u5F85\u6E05\u7406\u751F\u7269," + clearItemNum + "\u4E2A\u6389\u843D\u7269,\u6709" + notClearMobNum + "\u4E2A\u547D\u540D\u751F\u7269\u672A\u88AB\u6E05\u7406,\u8017\u65F6" + useTime + "ms";
                       server.log(show);
-                      system.executeCommand("tellraw @a {\"rawtext\":[{\"text\":\"\u00A7e\u7BA1\u7406\u5458\u53EC\u5524\u6E05\u9053\u592B\u6E05\u7406\u4E86" + clearMobNum + "\u4E2A\u5F85\u6E05\u7406\u751F\u7269,\u6709" + notClearMobNum + "\u4E2A\u547D\u540D\u751F\u7269\u672A\u88AB\u6E05\u7406,\u8017\u65F6" + useTime + "ms\"}]}", function (data) { });
+                      system.executeCommand("tellraw @a {\"rawtext\":[{\"text\":\"\u00A7e\u7BA1\u7406\u5458\u53EC\u5524\u6E05\u9053\u592B\u6E05\u7406\u4E86" + clearMobNum + "\u4E2A\u5F85\u6E05\u7406\u751F\u7269," + clearItemNum + "\u4E2A\u6389\u843D\u7269,\u6709" + notClearMobNum + "\u4E2A\u547D\u540D\u751F\u7269\u672A\u88AB\u6E05\u7406,\u8017\u65F6" + useTime + "ms\"}]}", function (data) { });
                       notClearMobNum = 0;
                       clearMobNum = 0;
                       return "已清理";
